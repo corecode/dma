@@ -1,0 +1,89 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Debian build rules for dma, the DragonFly mail agent
+
+include /usr/share/quilt/quilt.make
+
+PACKAGE=	dma
+VERSION = `sed -e 's/^[^ ]\+ (\([^)]\+\)).*/\1/; 1q' debian/changelog`
+VERSION_UP = `sed -e 's/^[^ ]\+ (0\.0\.\([^)-]\+\).*/\1/; 1q' debian/changelog | tr . -`
+VERSION_ADD ?= -debian-01
+
+#CFLAGS+=	-pipe -Wall -W -ansi -pedantic -Wbad-function-cast \
+#		-Wcast-align -Wcast-qual -Wchar-subscripts -Winline \
+#		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
+#		-Wredundant-decls -Wshadow -Wstrict-prototypes -Wwrite-strings
+ifneq (,$(filter werror,$(DEB_BUILD_OPTIONS)))
+	CFLAGS+=	-Werror
+endif
+ifneq (,$(filter nostrip,$(DEB_BUILD_OPTIONS)))
+	export STRIPFLAG=
+endif
+
+export CFLAGS
+
+diffsrc:
+	-diff -urN -x .svn debian/ ../svn/${PACKAGE}/tags/${PACKAGE}-${VERSION}${VERSION_ADD}/
+	-diff -urN -x .svn -x debian -x .pc -I'\$$Ringlet.*\$$' ./ ../svn/${PACKAGE}/tags/${PACKAGE}-dfly-${VERSION_UP}/
+
+build: build-stamp
+build-stamp: ${QUILT_STAMPFN}
+	dh_testdir
+	pmake
+	touch $@
+
+clean: 
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+	pmake clean
+	$(MAKE) -f debian/rules unpatch
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	pmake DESTDIR=$(CURDIR)/debian/$(PACKAGE) BINDIR=/usr/sbin install
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
+	install -c -o root -g root -m 644 $(CURDIR)/debian/dma.lintian-overrides $(CURDIR)/debian/$(PACKAGE)/usr/share/lintian/overrides/$(PACKAGE)
+	dh_installchangelogs 
+	dh_installdocs
+	dh_installexamples
+#	dh_install
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_python
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
+	dh_link usr/sbin/dma usr/sbin/sendmail
+	dh_link usr/share/man/man8/dma.8 usr/share/man/man8/sendmail.8
+	dh_strip
+	dh_compress
+	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma
+#	dh_perl
+#	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

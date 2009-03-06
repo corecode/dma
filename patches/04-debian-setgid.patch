@@ -1,0 +1,14 @@
+As per the Debian Policy, change the /usr/sbin/dma permissions from 2555
+to 2755, since removing root write access gains us nothing.
+
+--- a/Makefile
++++ b/Makefile
+@@ -15,7 +15,7 @@
+ 
+ BINOWN= root
+ BINGRP= mail
+-BINMODE=2555
++BINMODE=2755
+ #WARNS?=	1
+ 
+ # The pmake Debian package does not seem to deal properly with y.tab.h
