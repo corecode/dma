@@ -3,7 +3,6 @@ dma (0.0.2009.02.11-1~1) unstable; urgency=low
   * Initial release (Closes: #511410)
   * TODO:
     - handle double bounces;
-    - use liblockfile in deliver_local() for /var/mail locking;
     - crontab an invocation of "dma -q";
     - use debconf.
 

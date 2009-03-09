@@ -1,0 +1,182 @@
+Try to dot-lock the user's mailbox using the maillock(3) function from
+liblockfile, as mandated by Debian Policy.
+
+--- a/Makefile
++++ b/Makefile
+@@ -4,10 +4,11 @@
+ SUBDIR=	etc
+ 
+ CFLAGS+= -DHAVE_CRYPTO
++CFLAGS+= -DHAVE_LIBLOCKFILE
+ CFLAGS+= -I${.CURDIR}
+ 
+-DPADD=  ${LIBSSL} ${LIBCRYPTO}
+-LDADD=  -lssl -lcrypto
++DPADD=  ${LIBSSL} ${LIBCRYPTO} /usr/lib/liblockfile.a
++LDADD=  -lssl -lcrypto -llockfile
+ 
+ PROG=	dma
+ SRCS=	base64.c conf.c crypto.c net.c dma.c aliases_scan.l aliases_parse.y
+--- a/dma.c
++++ b/dma.c
+@@ -60,9 +60,11 @@
+ #include <syslog.h>
+ #include <unistd.h>
+ 
+-#include "dma.h"
+-
++#ifdef HAVE_LIBLOCKFILE
++#include <maillock.h>
++#endif
+ 
++#include "dma.h"
+ 
+ static void deliver(struct qitem *);
+ static int add_recp(struct queue *, const char *, const char *, int);
+@@ -525,6 +527,47 @@
+ 	exit(1);
+ }
+ 
++#ifdef HAVE_LIBLOCKFILE
++static char *
++liblockfile_strerror(int res)
++{
++	static char buf[512];
++	
++	switch (res) {
++		case L_SUCCESS:
++			snprintf(buf, sizeof(buf), "No error");
++			break;
++
++		case L_NAMELEN:
++			snprintf(buf, sizeof(buf), "Recipient name too long");
++			break;
++
++		case L_TMPLOCK:
++			snprintf(buf, sizeof(buf), "Error creating the temporary lockfile");
++			break;
++
++		case L_TMPWRITE:
++			snprintf(buf, sizeof(buf), "Error writing the process ID to the temporary lockfile");
++			break;
++
++		case L_MAXTRYS:
++			snprintf(buf, sizeof(buf), "Failed after the max number of attempts");
++			break;
++
++		case L_ERROR:
++			snprintf(buf, sizeof(buf), "Unknown error: %s",
++			  strerror(errno));
++			break;
++
++		default:
++			snprintf(buf, sizeof(buf),
++			  "Unexpected liblockfile error %d, errno is %d: %s",
++			  res, errno, strerror(errno));
++	}
++	return (buf);
++}
++#endif
++
+ static int
+ deliver_local(struct qitem *it, const char **errmsg)
+ {
+@@ -535,6 +578,10 @@
+ 	int error;
+ 	off_t mboxlen;
+ 	time_t now = time(NULL);
++#ifdef HAVE_LIBLOCKFILE
++	int try;
++	int res;
++#endif
+ 
+ 	error = snprintf(fn, sizeof(fn), "%s/%s", _PATH_MAILDIR, it->addr);
+ 	if (error < 0 || (size_t)error >= sizeof(fn)) {
+@@ -544,17 +591,42 @@
+ 	}
+ 
+ 	/* mailx removes users mailspool file if empty, so open with O_CREAT */
+-	mbox = open_locked(fn, O_WRONLY | O_APPEND | O_CREAT);
+-	if (mbox < 0) {
+-		syslog(LOG_ERR, "%s: local delivery deferred: can not open `%s': %m",
+-		       it->queueid, fn);
+-		return (1);
++#ifdef HAVE_LIBLOCKFILE
++	try = 0;
++	for (;;) {
++#endif
++		mbox = open_locked(fn, O_WRONLY | O_APPEND | O_CREAT);
++		if (mbox < 0) {
++			syslog(LOG_ERR, "%s: local delivery deferred: can not open `%s': %m",
++			       it->queueid, fn);
++			return (1);
++		}
++#ifdef HAVE_LIBLOCKFILE
++		res = maillock(it->addr, 0);
++		if (res == L_SUCCESS)
++			break;
++		else
++			syslog(LOG_WARNING, "%s: could not dot-lock `%s': %s",
++			       it->queueid, fn, liblockfile_strerror(res));
++		close(mbox);
++		if (try++ >= 5) {
++			syslog(LOG_ERR, "%s: local delivery deferred: can not dot-lock `%s'",
++			       it->queueid, fn);
++			return (1);
++		}
++		syslog(LOG_WARNING, "%s: sleeping to retry the dot-lock",
++		       it->queueid);
++		sleep(5 * try);
+ 	}
++#endif
+ 	mboxlen = lseek(mbox, 0, SEEK_CUR);
+ 
+ 	if (fseek(it->queuef, it->hdrlen, SEEK_SET) != 0) {
+ 		syslog(LOG_ERR, "%s: local delivery deferred: can not seek: %m",
+ 		       it->queueid);
++#ifdef HAVE_LIBLOCKFILE
++		mailunlock();
++#endif
+ 		return (1);
+ 	}
+ 
+@@ -562,6 +634,9 @@
+ 	if (error < 0 || (size_t)error >= sizeof(line)) {
+ 		syslog(LOG_ERR, "%s: local delivery deferred: can not write header: %m",
+ 		       it->queueid);
++#ifdef HAVE_LIBLOCKFILE
++		mailunlock();
++#endif
+ 		return (1);
+ 	}
+ 	if (write(mbox, line, error) != error)
+@@ -574,6 +649,9 @@
+ 		if (linelen == 0 || line[linelen - 1] != '\n') {
+ 			syslog(LOG_CRIT, "%s: local delivery failed: corrupted queue file",
+ 			       it->queueid);
++#ifdef HAVE_LIBLOCKFILE
++			mailunlock();
++#endif
+ 			*errmsg = "corrupted queue file";
+ 			error = -1;
+ 			goto chop;
+@@ -591,6 +669,9 @@
+ 	line[0] = '\n';
+ 	if (write(mbox, line, 1) != 1)
+ 		goto wrerror;
++#ifdef HAVE_LIBLOCKFILE
++	mailunlock();
++#endif
+ 	close(mbox);
+ 	return (0);
+ 
+@@ -602,6 +683,9 @@
+ 	if (ftruncate(mbox, mboxlen) != 0)
+ 		syslog(LOG_WARNING, "%s: error recovering mbox `%s': %m",
+ 		       it->queueid, fn);
++#ifdef HAVE_LIBLOCKFILE
++	mailunlock();
++#endif
+ 	close(mbox);
+ 	return (error);
+ }
