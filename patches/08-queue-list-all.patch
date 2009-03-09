@@ -1,0 +1,93 @@
+When listing the queue, show all messages, even those that are
+currently locked for delivery.  Indicate the lock with a '*' after
+the queue ID.
+
+--- a/dma.c
++++ b/dma.c
+@@ -667,7 +667,7 @@
+ }
+ 
+ static void
+-load_queue(struct queue *queue)
++load_queue(struct queue *queue, int nolock)
+ {
+ 	struct stat st;
+ 	struct qitem *it;
+@@ -683,7 +683,7 @@
+ 	char *queueid;
+ 	char *queuefn;
+ 	off_t hdrlen;
+-	int fd;
++	int fd, locked;
+ 
+ 	LIST_INIT(&queue->queue);
+ 
+@@ -705,12 +705,18 @@
+ 			continue;
+ 		if (asprintf(&queuefn, "%s/%s", config->spooldir, de->d_name) < 0)
+ 			goto fail;
++		locked = 0;
+ 		fd = open_locked(queuefn, O_RDONLY|O_NONBLOCK);
+ 		if (fd < 0) {
+ 			/* Ignore locked files */
+-			if (errno == EWOULDBLOCK)
++			if (errno != EWOULDBLOCK)
++				goto skip_item;
++			if (!nolock)
+ 				continue;
+-			goto skip_item;
++			fd = open(queuefn, O_RDONLY);
++			if (fd < 0)
++				goto skip_item;
++			locked = 1;
+ 		}
+ 
+ 		queuef = fdopen(fd, "r");
+@@ -751,6 +757,7 @@
+ 			it->queuef = queuef;
+ 			it->queueid = queueid;
+ 			it->queuefn = fn;
++			it->locked = locked;
+ 			fn = NULL;
+ 		}
+ 		if (LIST_EMPTY(&itmqueue.queue)) {
+@@ -810,9 +817,9 @@
+ 
+ 	LIST_FOREACH(it, &queue->queue, next) {
+ 		printf("\
+-ID\t: %s\n\
++ID\t: %s%s\n\
+ From\t: %s\n\
+-To\t: %s\n--\n", it->queueid, it->sender, it->addr);
++To\t: %s\n--\n", it->queueid, it->locked? "*": "", it->sender, it->addr);
+ 	}
+ }
+ 
+@@ -914,7 +921,7 @@
+ 		if (argc != 0)
+ 			errx(1, "sending mail and displaying queue is"
+ 				" mutually exclusive");
+-		load_queue(&lqueue);
++		load_queue(&lqueue, 1);
+ 		show_queue(&lqueue);
+ 		return (0);
+ 	}
+@@ -922,7 +929,7 @@
+ 	if (doqueue) {
+ 		if (argc != 0)
+ 			errx(1, "sending mail and queue pickup is mutually exclusive");
+-		load_queue(&lqueue);
++		load_queue(&lqueue, 0);
+ 		run_queue(&lqueue);
+ 		return (0);
+ 	}
+--- a/dma.h
++++ b/dma.h
+@@ -97,6 +97,7 @@
+ 	FILE *queuef;
+ 	off_t hdrlen;
+ 	int remote;
++	int locked;
+ };
+ LIST_HEAD(queueh, qitem);
+ 

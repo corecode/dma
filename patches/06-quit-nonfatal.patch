@@ -1,0 +1,21 @@
+Treat a QUIT error as merely a warning: RFC 2821 only mandates that
+a QUIT error should abort an unfinished transaction, and since we've
+reached this point, the DATA command has succeeded and the message has
+been accepted for delivery by the remote end.  Thus, just warn about it.
+
+--- a/net.c
++++ b/net.c
+@@ -462,11 +462,9 @@
+ 	}
+ 
+ 	send_remote_command(fd, "QUIT");
+-	if (read_remote(fd, 0, NULL) != 2) {
+-		syslog(LOG_ERR, "%s: remote delivery deferred: "
++	if (read_remote(fd, 0, NULL) != 2)
++		syslog(LOG_WARNING, "%s: remote delivery succeeded but "
+ 		       "QUIT failed: %s", it->queueid, neterr);
+-		return (1);
+-	}
+ out:
+ 
+ 	close(fd);

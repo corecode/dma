@@ -2,12 +2,8 @@ dma (0.0.2009.02.11-1~1) unstable; urgency=low
 
   * Initial release (Closes: #511410)
   * TODO:
-    - recognize permanent delivery errors;
-    - only warn on a QUIT error, treat the message as sent;
-    - find a way to list all queued mails;
     - use liblockfile in deliver_local() for /var/mail locking;
-    - RCPT TO failed: Success? :)
     - crontab an invocation of "dma -bp"
     - use debconf.
 
- -- Peter Pentchev <roam@ringlet.net>  Fri, 06 Mar 2009 15:28:33 +0200
+ -- Peter Pentchev <roam@ringlet.net>  Mon, 09 Mar 2009 16:14:23 +0200
