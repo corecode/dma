@@ -28,36 +28,28 @@ diffsrc:
 
 build: build-stamp
 build-stamp: ${QUILT_STAMPFN}
-	dh_testdir
+	dh build --before auto_build
 	pmake
+	dh build --after auto_build
 	touch $@
 
 clean: 
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp configure-stamp
+	dh clean --before auto_clean
 	pmake clean
+	dh clean --after auto_clean --before dh_clean
 	$(MAKE) -f debian/rules unpatch
-	dh_clean 
+	dh clean --remaining
 
 install: build
-	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs
+	dh install --before auto_install
 	pmake DESTDIR=$(CURDIR)/debian/$(PACKAGE) BINDIR=/usr/sbin install
 	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
-	dh_install
-	dh_installdocs
-	dh_installchangelogs 
-	dh_installexamples
-	dh_installcron
-	dh_installman
-	install -c -o root -g root -m 644 $(CURDIR)/debian/dma.lintian-overrides $(CURDIR)/debian/$(PACKAGE)/usr/share/lintian/overrides/$(PACKAGE)
+	dh install --after auto_install --before dh_link
 	dh_link usr/sbin/dma usr/sbin/sendmail
 	dh_link usr/share/man/man8/dma.8 usr/share/man/man8/sendmail.8
-	dh_compress
+	dh install --after dh_link --before fixperms
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma
+	dh install --after fixperms
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -65,14 +57,7 @@ binary-indep: build install
 
 # Build architecture-dependent files here.
 binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_strip
-	dh_shlibdeps
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
+	dh binary-arch
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install
