@@ -9,10 +9,6 @@ VERSION = `sed -e 's/^[^ ]\+ (\([^)]\+\)).*/\1/; 1q' debian/changelog`
 VERSION_UP = `sed -e 's/^[^ ]\+ (0\.0\.\([^)-]\+\).*/\1/; 1q' debian/changelog | tr . -`
 VERSION_ADD ?= -debian-01
 
-#CFLAGS+=	-pipe -Wall -W -ansi -pedantic -Wbad-function-cast \
-#		-Wcast-align -Wcast-qual -Wchar-subscripts -Winline \
-#		-Wmissing-prototypes -Wnested-externs -Wpointer-arith \
-#		-Wredundant-decls -Wshadow -Wstrict-prototypes -Wwrite-strings
 ifneq (,$(filter werror,$(DEB_BUILD_OPTIONS)))
 	CFLAGS+=	-Werror
 endif
