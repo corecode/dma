@@ -44,10 +44,7 @@ install: build
 	dh install --before auto_install
 	pmake DESTDIR=$(CURDIR)/debian/$(PACKAGE) BINDIR=/usr/sbin install
 	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
-	dh install --after auto_install --before dh_link
-	dh_link usr/sbin/dma usr/sbin/sendmail
-	dh_link usr/share/man/man8/dma.8 usr/share/man/man8/sendmail.8
-	dh install --after dh_link --before fixperms
+	dh install --after auto_install --before fixperms
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma
 	dh install --after fixperms
 
