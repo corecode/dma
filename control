@@ -14,6 +14,7 @@ Depends: liblockfile1 (>> 1.01), ${shlibs:Depends}, ${misc:Depends}
 Provides: mail-transport-agent
 Conflicts: mail-transport-agent
 Replaces: mail-transport-agent
+Recommends: safecat
 Description: the DragonFly Mail Agent, a lightweight MTA
  The DragonFly Mail Agent is a small Mail Transport Agent (MTA),
  designed for home and office use.  It accepts mails from locally

@@ -1,0 +1,2 @@
+debian/dbounce-simple-safecat usr/bin
+debian/dbounce-simple-safecat.1 usr/share/man/man1
