@@ -69,7 +69,7 @@ binary-arch: build install
 #	dh_installmime
 #	dh_python
 #	dh_installinit
-#	dh_installcron
+	dh_installcron
 #	dh_installinfo
 	dh_installman
 	dh_link usr/sbin/dma usr/sbin/sendmail
