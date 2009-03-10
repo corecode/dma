@@ -1,5 +1,6 @@
 On Debian, the aliases file lives in /etc, not /etc/mail.
-Also, define a smarthost by default, albeit an invalid one.
+Define a smarthost by default, albeit an invalid one.
+Use deferred delivery - the package includes a cron job running the queue.
 
 --- a/dma.8
 +++ b/dma.8
@@ -39,3 +40,9 @@ Also, define a smarthost by default, albeit an invalid one.
  
  # Path to your spooldir.  Just stay with the default.
  SPOOLDIR /var/spool/dma
+@@ -39,4 +39,4 @@
+ 
+ # Uncomment if you want to defer your mails.  This is useful if you are
+ # behind a dialup line.  You have to submit your mails manually with dma -q
+-#DEFER
++DEFER
