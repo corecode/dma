@@ -11,3 +11,7 @@
 11-double-bounce.patch
 12-man-q-argument.patch
 13-hardening.patch
+14-lock-new-files.patch
+15-bounce-message.patch
+16-bounce-full.patch
+17-mailname.patch

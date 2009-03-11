@@ -1,0 +1,15 @@
+Lock the temporary files after creating them to protect from a "dma -q"
+run at just the wrong time causing a double delivery attempt for
+the same message.
+
+--- a/dma.c
++++ b/dma.c
+@@ -225,6 +225,8 @@
+ 	fd = mkstemp(fn);
+ 	if (fd < 0)
+ 		return (-1);
++	if (flock(fd, LOCK_EX) == -1)
++		return (-1);
+ 	queue->mailfd = fd;
+ 	queue->tmpf = strdup(fn);
+ 	if (queue->tmpf == NULL) {

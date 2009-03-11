@@ -1,3 +1,15 @@
+dma (0.0.2009.02.11-1~2) unstable; urgency=low
+
+  * Add four new patches:
+    - lock the newly-created files to prevent double delivery attempts
+      if "dma -q" is run at just the wrong time;
+    - provide the proper bounce message on failed deliveries;
+    - add the FULLBOUNCE option;
+    - add the MAILNAME and MAILNAMEFILE options and use /etc/mailname
+      as the MAILNAMEFILE.
+
+ -- Peter Pentchev <roam@ringlet.net>  Wed, 11 Mar 2009 14:48:15 +0200
+
 dma (0.0.2009.02.11-1~1) unstable; urgency=low
 
   * Initial release (Closes: #511410)

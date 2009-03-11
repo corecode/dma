@@ -1,0 +1,111 @@
+Add the MAILNAME and MAILNAMEFILE config options.
+For Debian, use /etc/mailname for the MAILNAMEFILE.
+
+--- a/conf.c
++++ b/conf.c
+@@ -240,6 +240,14 @@
+ 				if (data != NULL)
+ 					config->dbounceprog = strdup(data);
+ 			}
++			else if (strcmp(word, "MAILNAME") == 0) {
++				if (data != NULL)
++					config->mailname = strdup(data);
++			}
++			else if (strcmp(word, "MAILNAMEFILE") == 0) {
++				if (data != NULL)
++					config->mailnamefile = strdup(data);
++			}
+ 			else if (strcmp(word, "VIRTUAL") == 0)
+ 				config->features |= VIRTUAL;
+ 			else if (strcmp(word, "STARTTLS") == 0)
+--- a/dma.8
++++ b/dma.8
+@@ -242,6 +242,20 @@
+ .Xc
+ Uncomment if you want the bounce message to include the complete original
+ message, not just the headers.
++.It Ic MAILNAME Xo
++(string, default=empty)
++.Xc
++The name to be used when introducing this host, if different from
++the result of
++.Xr hostname 1 .
++If specified, this option overrides
++.Sq MAILNAMEFILE .
++.It Ic MAILNAMEFILE Xo
++(string, default=empty)
++.Xc
++The name of the file to read the
++.Sq MAILNAME
++from.
+ .El
+ .Ss virtusertable
+ The
+--- a/dma.c
++++ b/dma.c
+@@ -82,10 +82,38 @@
+ hostname(void)
+ {
+ 	static char name[MAXHOSTNAMELEN+1];
+-
++	int initialized = 0;
++	FILE *fp;
++	size_t len;
++
++	if (initialized)
++		return (name);
++
++	if (config->mailname != NULL && config->mailname[0] != '\0') {
++		snprintf(name, sizeof(name), "%s", config->mailname);
++		initialized = 1;
++		return (name);
++	}
++	if (config->mailnamefile != NULL && config->mailnamefile[0] != '\0') {
++		fp = fopen(config->mailnamefile, "r");
++		if (fp != NULL) {
++			if (fgets(name, sizeof(name), fp) != NULL) {
++				len = strlen(name);
++				while (len > 0 &&
++				    (name[len - 1] == '\r' ||
++				     name[len - 1] == '\n'))
++					name[--len] = '\0';
++				if (name[0] != '\0') {
++					initialized = 1;
++					return (name);
++				}
++			}
++			fclose(fp);
++		}
++	}
+ 	if (gethostname(name, sizeof(name)) != 0)
+ 		strcpy(name, "(unknown hostname)");
+-
++	initialized = 1;
+ 	return name;
+ }
+ 
+--- a/dma.h
++++ b/dma.h
+@@ -122,6 +122,8 @@
+ 	SSL *ssl;
+ #endif /* HAVE_CRYPTO */
+ 	char *dbounceprog;
++	char *mailname;
++	char *mailnamefile;
+ };
+ 
+ 
+--- a/etc/dma.conf
++++ b/etc/dma.conf
+@@ -49,3 +49,11 @@
+ # Uncomment if you want the bounce message to include the complete original
+ # message, not just the headers.
+ #FULLBOUNCE
++
++# The name to be used when introducing this host, if different from
++# the result of "hostname".  If specified, this overrides MAILNAMEFILE.
++#MAILNAME mail.example.net
++
++# The name of the file to read the MAILNAME from; if this file is not
++# present, the result of "hostname" will be used.
++MAILNAMEFILE /etc/mailname
