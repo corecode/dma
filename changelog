@@ -9,7 +9,7 @@ dma (0.0.2009.02.11-1~2) unstable; urgency=low
       as the MAILNAMEFILE.
   * Add debian/README.source to document quilt usage as required by Policy.
 
- -- Peter Pentchev <roam@ringlet.net>  Wed, 11 Mar 2009 14:48:15 +0200
+ -- Peter Pentchev <roam@ringlet.net>  Wed, 11 Mar 2009 15:43:03 +0200
 
 dma (0.0.2009.02.11-1~1) unstable; urgency=low
 
