@@ -1,3 +1,9 @@
+dma (0.0.2009.02.11-1~3) unstable; urgency=low
+
+  * Add a new patch to guess the username better when getlogin(3) fails.
+
+ -- Peter Pentchev <roam@ringlet.net>  Thu, 12 Mar 2009 14:43:14 +0200
+
 dma (0.0.2009.02.11-1~2) unstable; urgency=low
 
   * Add four new patches:
