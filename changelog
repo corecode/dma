@@ -1,6 +1,8 @@
 dma (0.0.2009.02.11-1~3) unstable; urgency=low
 
   * Add a new patch to guess the username better when getlogin(3) fails.
+  * TODO:
+    - use debconf.
 
  -- Peter Pentchev <roam@ringlet.net>  Thu, 12 Mar 2009 14:43:14 +0200
 
@@ -20,7 +22,5 @@ dma (0.0.2009.02.11-1~2) unstable; urgency=low
 dma (0.0.2009.02.11-1~1) unstable; urgency=low
 
   * Initial release (Closes: #511410)
-  * TODO:
-    - use debconf.
 
  -- Peter Pentchev <roam@ringlet.net>  Tue, 10 Mar 2009 17:28:23 +0200
