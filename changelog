@@ -2,6 +2,7 @@ dma (0.0.2009.02.11-1~5) unstable; urgency=low
 
   * Add a new patch to implement sendmail's -t command-line option:
     parse the message itself to obtain the recipient addresses.
+  * Bump Standards-Version to 3.8.1 with no changes at all.
   * TODO:
     - use debconf.
 
