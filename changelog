@@ -1,8 +1,15 @@
+dma (0.0.2009.02.11-1~5) unstable; urgency=low
+
+  * Add a new patch to implement sendmail's -t command-line option:
+    parse the message itself to obtain the recipient addresses.
+  * TODO:
+    - use debconf.
+
+ -- Peter Pentchev <roam@ringlet.net>  Fri, 13 Mar 2009 15:24:00 +0200
+
 dma (0.0.2009.02.11-1~4) unstable; urgency=low
 
   * Add a new patch to ignore a whole slew of sendmail options.
-  * TODO:
-    - use debconf.
 
  -- Peter Pentchev <roam@ringlet.net>  Thu, 12 Mar 2009 15:36:42 +0200
 
