@@ -1,3 +1,10 @@
+dma (0.0.2009.02.11-1~6) unstable; urgency=low
+
+  * Fix my own queue display patch - if a message has multiple recipients,
+    only display it once :)
+
+ -- Peter Pentchev <roam@ringlet.net>  Tue, 24 Mar 2009 16:06:57 +0200
+
 dma (0.0.2009.02.11-1~5) unstable; urgency=low
 
   * Add a new patch to implement sendmail's -t command-line option:

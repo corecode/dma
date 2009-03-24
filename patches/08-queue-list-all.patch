@@ -4,28 +4,104 @@ the queue ID.
 
 --- a/dma.c
 +++ b/dma.c
-@@ -667,7 +667,7 @@
+@@ -73,6 +73,7 @@
+ struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
+ static int daemonize = 1;
+ struct config *config;
++static struct strlist seenmsg[16][16];
+ 
+ static int open_locked(const char *, int);
+ 
+@@ -666,8 +667,66 @@
+ 	/* NOTREACHED */
  }
  
++static int
++c2x(char c)
++{
++	if (c <= '9')
++		return (c - '0');
++	else if (c <= 'F')
++		return (c - 'A' + 10);
++	else
++		return (c - 'a' + 10);
++}
++
  static void
 -load_queue(struct queue *queue)
++seen_init(void)
++{
++	int i, j;
++
++	for (i = 0; i < 16; i++)
++		for (j = 0; j < 16; j++)
++			SLIST_INIT(&seenmsg[i][j]);
++}
++
++static int
++seen(const char *msgid)
++{
++	const char *p;
++	size_t len;
++	int i, j;
++	struct stritem *t;
++
++	p = strchr(msgid, '.');
++	if (p == NULL)
++		return (0);
++	len = p - msgid;
++	if (len >= 2) {
++		i = c2x(msgid[len - 2]);
++		j = c2x(msgid[len - 1]);
++	} else if (len == 1) {
++		i = c2x(msgid[0]);
++		j = 0;
++	} else {
++		i = j = 0;
++	}
++	if (i < 0 || i >= 16 || j < 0 || j >= 16)
++		errx(1, "INTERNAL ERROR: bad seen code for msgid %s", msgid);
++	SLIST_FOREACH(t, &seenmsg[i][j], next)
++		if (!strncmp(t->str, msgid, len))
++			return (1);
++	t = malloc(sizeof(*t));
++	if (t == NULL)
++		errx(1, "Could not allocate %lu bytes",
++		    (unsigned long)(sizeof(*t)));
++	t->str = strdup(msgid);
++	if (t->str == NULL)
++		errx(1, "Could not duplicate msgid %s", msgid);
++	SLIST_INSERT_HEAD(&seenmsg[i][j], t, next);
++	return (0);
++}
++
++static void
 +load_queue(struct queue *queue, int nolock)
  {
  	struct stat st;
  	struct qitem *it;
-@@ -683,7 +683,7 @@
+@@ -683,7 +742,7 @@
  	char *queueid;
  	char *queuefn;
  	off_t hdrlen;
 -	int fd;
-+	int fd, locked;
++	int fd, locked, seenit;
  
  	LIST_INIT(&queue->queue);
  
-@@ -705,12 +705,18 @@
+@@ -691,6 +750,7 @@
+ 	if (spooldir == NULL)
+ 		err(1, "reading queue");
+ 
++	seen_init();
+ 	while ((de = readdir(spooldir)) != NULL) {
+ 		sender = NULL;
+ 		queuef = NULL;
+@@ -705,12 +765,19 @@
  			continue;
  		if (asprintf(&queuefn, "%s/%s", config->spooldir, de->d_name) < 0)
  			goto fail;
++		seenit = seen(de->d_name);
 +		locked = 0;
  		fd = open_locked(queuefn, O_RDONLY|O_NONBLOCK);
  		if (fd < 0) {
@@ -33,7 +109,7 @@ the queue ID.
 -			if (errno == EWOULDBLOCK)
 +			if (errno != EWOULDBLOCK)
 +				goto skip_item;
-+			if (!nolock)
++			if (!nolock || seenit)
  				continue;
 -			goto skip_item;
 +			fd = open(queuefn, O_RDONLY);
@@ -43,7 +119,7 @@ the queue ID.
  		}
  
  		queuef = fdopen(fd, "r");
-@@ -751,6 +757,7 @@
+@@ -751,6 +818,7 @@
  			it->queuef = queuef;
  			it->queueid = queueid;
  			it->queuefn = fn;
@@ -51,7 +127,7 @@ the queue ID.
  			fn = NULL;
  		}
  		if (LIST_EMPTY(&itmqueue.queue)) {
-@@ -810,9 +817,9 @@
+@@ -810,9 +878,9 @@
  
  	LIST_FOREACH(it, &queue->queue, next) {
  		printf("\
@@ -63,7 +139,7 @@ the queue ID.
  	}
  }
  
-@@ -914,7 +921,7 @@
+@@ -914,7 +982,7 @@
  		if (argc != 0)
  			errx(1, "sending mail and displaying queue is"
  				" mutually exclusive");
@@ -72,7 +148,7 @@ the queue ID.
  		show_queue(&lqueue);
  		return (0);
  	}
-@@ -922,7 +929,7 @@
+@@ -922,7 +990,7 @@
  	if (doqueue) {
  		if (argc != 0)
  			errx(1, "sending mail and queue pickup is mutually exclusive");
