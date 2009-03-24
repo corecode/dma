@@ -28,10 +28,10 @@ to obtain the recipient addresses.
  static const char *username;
  static uid_t uid;
 +static FILE *scanfile;
+ static struct strlist seenmsg[16][16];
  
  static int open_locked(const char *, int);
- 
-@@ -396,11 +397,307 @@
+@@ -397,11 +398,307 @@
  }
  
  static int
@@ -339,7 +339,7 @@ to obtain the recipient addresses.
  
  	error = snprintf(line, sizeof(line), "\
  Received: from %s (uid %d)\n\
-@@ -418,8 +715,12 @@
+@@ -419,8 +716,12 @@
  	if (write(queue->mailfd, line, error) != error)
  		return (-1);
  
@@ -354,7 +354,7 @@ to obtain the recipient addresses.
  			break;
  		linelen = strlen(line);
  		if (linelen == 0 || line[linelen - 1] != '\n') {
-@@ -433,6 +734,8 @@
+@@ -434,6 +735,8 @@
  	}
  	if (fsync(queue->mailfd) != 0)
  		return (-1);
@@ -363,7 +363,7 @@ to obtain the recipient addresses.
  	return (0);
  }
  
-@@ -1104,14 +1407,14 @@
+@@ -1165,14 +1468,14 @@
  	struct queue queue;
  	struct queue lqueue;
  	int i, ch;
@@ -380,7 +380,7 @@ to obtain the recipient addresses.
  		switch (ch) {
  		case 'A':
  			/* -AX is being ignored, except for -A{c,m} */
-@@ -1153,6 +1456,10 @@
+@@ -1214,6 +1517,10 @@
  			doqueue = 1;
  			break;
  
@@ -391,7 +391,7 @@ to obtain the recipient addresses.
  		/* Ignored options */
  		case 'B':
  		case 'C':
-@@ -1225,12 +1532,19 @@
+@@ -1286,12 +1593,19 @@
  			errx(1, "invalid recipient `%s'\n", argv[i]);
  	}
  

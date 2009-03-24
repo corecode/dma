@@ -2,6 +2,7 @@ dma (0.0.2009.02.11-1~6) unstable; urgency=low
 
   * Fix my own queue display patch - if a message has multiple recipients,
     only display it once :)
+  * Refresh some other patches due to the line added at the start of dma.c.
 
  -- Peter Pentchev <roam@ringlet.net>  Tue, 24 Mar 2009 16:06:57 +0200
 
