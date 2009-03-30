@@ -1,56 +1,5 @@
-dma (0.0.2009.02.11-1~7) unstable; urgency=low
-
-  * Unbreak SMTP authentication - send EHLO, allow LOGIN over SSL.
-  * Update the 09-typos patch to fix another typo in crypto.c.
-  * Override the "no upstream changelog" lintian pedantic warning.
-  * Really minimize the rules file using debhelper's override targets.
-  * Finally, add some debconf-based configuration :)
-
- -- Peter Pentchev <roam@ringlet.net>  Mon, 30 Mar 2009 13:51:28 +0300
-
-dma (0.0.2009.02.11-1~6) unstable; urgency=low
-
-  * Fix my own queue display patch - if a message has multiple recipients,
-    only display it once :)
-  * Refresh some other patches due to the line added at the start of dma.c.
-
- -- Peter Pentchev <roam@ringlet.net>  Tue, 24 Mar 2009 16:06:57 +0200
-
-dma (0.0.2009.02.11-1~5) unstable; urgency=low
-
-  * Add a new patch to implement sendmail's -t command-line option:
-    parse the message itself to obtain the recipient addresses.
-  * Bump Standards-Version to 3.8.1 with no changes at all.
-
- -- Peter Pentchev <roam@ringlet.net>  Fri, 13 Mar 2009 15:24:00 +0200
-
-dma (0.0.2009.02.11-1~4) unstable; urgency=low
-
-  * Add a new patch to ignore a whole slew of sendmail options.
-
- -- Peter Pentchev <roam@ringlet.net>  Thu, 12 Mar 2009 15:36:42 +0200
-
-dma (0.0.2009.02.11-1~3) unstable; urgency=low
-
-  * Add a new patch to guess the username better when getlogin(3) fails.
-
- -- Peter Pentchev <roam@ringlet.net>  Thu, 12 Mar 2009 14:43:14 +0200
-
-dma (0.0.2009.02.11-1~2) unstable; urgency=low
-
-  * Add four new patches:
-    - lock the newly-created files to prevent double delivery attempts
-      if "dma -q" is run at just the wrong time;
-    - provide the proper bounce message on failed deliveries;
-    - add the FULLBOUNCE option;
-    - add the MAILNAME and MAILNAMEFILE options and use /etc/mailname
-      as the MAILNAMEFILE.
-  * Add debian/README.source to document quilt usage as required by Policy.
-
- -- Peter Pentchev <roam@ringlet.net>  Wed, 11 Mar 2009 15:43:03 +0200
-
-dma (0.0.2009.02.11-1~1) unstable; urgency=low
+dma (0.0.2009.02.11-1) unstable; urgency=low
 
   * Initial release (Closes: #511410)
 
- -- Peter Pentchev <roam@ringlet.net>  Tue, 10 Mar 2009 17:28:23 +0200
+ -- Peter Pentchev <roam@ringlet.net>  Mon, 30 Mar 2009 17:52:19 +0300
