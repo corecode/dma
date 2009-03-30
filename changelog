@@ -1,3 +1,9 @@
+dma (0.0.2009.02.11-1~7) unstable; urgency=low
+
+  * Unbreak SMTP authentication - send EHLO, allow LOGIN over SSL.
+
+ -- Peter Pentchev <roam@ringlet.net>  Mon, 30 Mar 2009 13:51:28 +0300
+
 dma (0.0.2009.02.11-1~6) unstable; urgency=low
 
   * Fix my own queue display patch - if a message has multiple recipients,

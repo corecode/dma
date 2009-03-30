@@ -18,3 +18,4 @@
 18-guess-username.patch
 19-ignore-options.patch
 20-parse-recipient.patch
+21-smtp-auth.patch
