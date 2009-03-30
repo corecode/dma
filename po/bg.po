@@ -1,0 +1,72 @@
+# debconf translation for dma, the DragonFly Mail Agent
+# Copyright (C) 2009  Peter Pentchev
+# This file is distributed under the same license as the dma package.
+# Peter Pentchev <roam@ringlet.net>, 2009
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dma-dfly 2009-02-11\n"
+"Report-Msgid-Bugs-To: dma@packages.debian.org\n"
+"POT-Creation-Date: 2009-03-30 16:27+0300\n"
+"PO-Revision-Date: 2009-03-30 16:51+0300\n"
+"Last-Translator: Peter Pentchev <roam@ringlet.net>\n"
+"Language-Team: Bulgaria <dict@fsa-bg.org>n\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid "Mailname of your system:"
+msgstr "Пощенско име на системата:"
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"This is the fully-qualified host name of the computer running dma. It "
+"defaults to the output of \"hostname --fqdn\"."
+msgstr ""
+"Това е пълното име на сървъра, върху който работи dma.  По подразбиране "
+"се използва резултатът от командата \"hostname --fqdn\"."
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid "Smarthost:"
+msgstr "Smarthost:"
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid ""
+"This is the name of a remote server to which to send each message. If it is "
+"left blank, dma will try to deliver all messages by itself; however, for the "
+"present it cannot really handle MX record lookups. The default is a host "
+"named \"mail\" in the same domain as your computer."
+msgstr ""
+"Това е името на отдалечен сървър, към който ще бъдат изпращани всички "
+"съобщения.  Ако това поле е празно, dma ще се опита да достави съобщенията "
+"направо до получателите им; за момента обаче dma всъщност не се справя "
+"с DNS MX заявки.  Името на smarthost по подразбиране е хост, наречен "
+"\"mail\", в същия домейн като Вашия сървър."
+
+#. Type: string
+#. Description
+#: ../templates:3001
+msgid "A program to handle double-bounces:"
+msgstr "Програма, която да обработва недоставени съобщения за грешки"
+
+#. Type: string
+#. Description
+#: ../templates:3001
+msgid ""
+"This is the name of a program that dma will invoke when a bounced message "
+"bounces in its own right.  Leave this blank if you like dma's default "
+"behavior of simply aborting the delivery, or specify the name or full path "
+"to a program that will process the double-bounce message."
+msgstr ""
+"Това е името или пълният път към програма, която dma ще изпълни всеки път, "
+"когато съобщение за грешка при доставка също не може да бъде доставено.  "
+"Ако това поле е празно, dma просто ще се откаже от доставката."

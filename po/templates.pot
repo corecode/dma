@@ -1,0 +1,63 @@
+# debconf translation for dma, the DragonFly Mail Agent
+# Copyright (C) 2009  Peter Pentchev
+# This file is distributed under the same license as the dma package.
+# Peter Pentchev <roam@ringlet.net>, 2009
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: dma@packages.debian.org\n"
+"POT-Creation-Date: 2009-03-30 16:27+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid "Mailname of your system:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"This is the fully-qualified host name of the computer running dma. It "
+"defaults to the output of \"hostname --fqdn\"."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid "Smarthost:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid ""
+"This is the name of a remote server to which to send each message. If it is "
+"left blank, dma will try to deliver all messages by itself; however, for the "
+"present it cannot really handle MX record lookups. The default is a host "
+"named \"mail\" in the same domain as your computer."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:3001
+msgid "A program to handle double-bounces:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:3001
+msgid ""
+"This is the name of a program that dma will invoke when a bounced message "
+"bounces in its own right.  Leave this blank if you like dma's default "
+"behavior of simply aborting the delivery, or specify the name or full path "
+"to a program that will process the double-bounce message."
+msgstr ""
