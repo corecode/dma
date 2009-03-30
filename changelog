@@ -1,6 +1,7 @@
 dma (0.0.2009.02.11-1~7) unstable; urgency=low
 
   * Unbreak SMTP authentication - send EHLO, allow LOGIN over SSL.
+  * Update the 09-typos patch to fix another typo in crypto.c.
 
  -- Peter Pentchev <roam@ringlet.net>  Mon, 30 Mar 2009 13:51:28 +0300
 
