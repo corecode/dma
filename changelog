@@ -4,6 +4,7 @@ dma (0.0.2009.02.11-1~7) unstable; urgency=low
   * Update the 09-typos patch to fix another typo in crypto.c.
   * Override the "no upstream changelog" lintian pedantic warning.
   * Really minimize the rules file using debhelper's override targets.
+  * Finally, add some debconf-based configuration :)
 
  -- Peter Pentchev <roam@ringlet.net>  Mon, 30 Mar 2009 13:51:28 +0300
 
@@ -20,8 +21,6 @@ dma (0.0.2009.02.11-1~5) unstable; urgency=low
   * Add a new patch to implement sendmail's -t command-line option:
     parse the message itself to obtain the recipient addresses.
   * Bump Standards-Version to 3.8.1 with no changes at all.
-  * TODO:
-    - use debconf.
 
  -- Peter Pentchev <roam@ringlet.net>  Fri, 13 Mar 2009 15:24:00 +0200
 

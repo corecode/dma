@@ -1,0 +1,18 @@
+Template: shared/mailname
+Type: string
+Description: Mailname of your system:
+ This is the fully-qualified host name of the computer running dma.
+ It defaults to the output of "hostname --fqdn".
+
+Template: dma/relayhost
+Type: string
+Description: Smarthost:
+ This is the name of a remote server to which to send each message.
+ If it is left blank, dma will try to deliver all messages by itself;
+ however, for the present it cannot really handle MX record lookups.
+ The default is a host named "mail" in the same domain as your computer.
+
+Template: dma/dbounceprog
+Type: string
+Description: A program to handle double-bounces:
+ Foo.
