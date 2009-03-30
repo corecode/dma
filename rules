@@ -27,35 +27,21 @@ diffsrc:
 	-diff -urN -x .svn debian/ ../svn/${PACKAGE}/tags/${PACKAGE}-${VERSION}${VERSION_ADD}/
 	-diff -urN -x .svn -x debian -x .pc -I'\$$Ringlet.*\$$' ./ ../svn/${PACKAGE}/tags/${PACKAGE}-dfly-${VERSION_UP}/
 
-build: build-stamp
-build-stamp: ${QUILT_STAMPFN}
-	dh build --before auto_build
+override_dh_auto_configure:	${QUILT_STAMPFN}
+
+override_dh_auto_build:
 	pmake
-	dh build --after auto_build
-	touch $@
 
-clean: 
-	dh clean --before auto_clean
+override_dh_auto_clean:
 	pmake clean
-	dh clean --after auto_clean --before dh_clean
 	$(MAKE) -f debian/rules unpatch
-	dh clean --remaining
 
-install: build
-	dh install --before auto_install
+override_dh_auto_install:
 	pmake DESTDIR=$(CURDIR)/debian/$(PACKAGE) BINDIR=/usr/sbin install
 	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
-	dh install --after auto_install --before fixperms
+
+override_dh_fixperms:
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma
-	dh install --after fixperms
 
-# Build architecture-independent files here.
-binary-indep: build install
-# We have nothing to do by default.
-
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh binary-arch
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install
+%:
+	dh $@
