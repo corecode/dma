@@ -1,0 +1,112 @@
+Handle the "too many open files" error gracefully, retrying.
+
+--- a/dma.c
++++ b/dma.c
+@@ -79,6 +79,7 @@
+ static uid_t uid;
+ static FILE *scanfile;
+ static struct strlist seenmsg[16][16];
++static int morefiles;
+ 
+ static int open_locked(const char *, int);
+ 
+@@ -1311,15 +1312,21 @@
+ 	char *queueid;
+ 	char *queuefn;
+ 	off_t hdrlen;
+-	int fd, locked, seenit;
++	int fd, locked, seenit, inmore;
+ 
+ 	LIST_INIT(&queue->queue);
+ 
++	inmore = morefiles;
++	if (morefiles) {
++		morefiles = 0;
++	} else {
++		seen_init();
++	}
++
+ 	spooldir = opendir(config->spooldir);
+ 	if (spooldir == NULL)
+ 		err(1, "reading queue");
+ 
+-	seen_init();
+ 	while ((de = readdir(spooldir)) != NULL) {
+ 		sender = NULL;
+ 		queuef = NULL;
+@@ -1335,12 +1342,22 @@
+ 		if (asprintf(&queuefn, "%s/%s", config->spooldir, de->d_name) < 0)
+ 			goto fail;
+ 		seenit = seen(de->d_name);
++		if (inmore && seenit) {
++			free(queuefn);
++			continue;
++		}
+ 		locked = 0;
+ 		fd = open_locked(queuefn, O_RDONLY|O_NONBLOCK);
+ 		if (fd < 0) {
+ 			/* Ignore locked files */
+-			if (errno != EWOULDBLOCK)
++			if (errno != EWOULDBLOCK) {
++				if (errno == EMFILE || errno == ENFILE) {
++					morefiles = 1;
++					free(queuefn);
++					break;
++				}
+ 				goto skip_item;
++			}
+ 			if (!nolock || seenit)
+ 				continue;
+ 			fd = open(queuefn, O_RDONLY);
+@@ -1425,12 +1442,15 @@
+ static void
+ run_queue(struct queue *queue)
+ {
+-	struct qitem *it;
++	struct qitem *it, *other;
+ 
+ 	if (LIST_EMPTY(&queue->queue))
+ 		return;
+ 
+ 	it = go_background(queue);
++	LIST_FOREACH(other, &queue->queue, next)
++		if (other->queuef != it->queuef && other->queuef != NULL)
++			close(fileno(other->queuef));
+ 	deliver(it);
+ 	/* NOTREACHED */
+ }
+@@ -1450,6 +1470,8 @@
+ ID\t: %s%s\n\
+ From\t: %s\n\
+ To\t: %s\n--\n", it->queueid, it->locked? "*": "", it->sender, it->addr);
++		if (it->queuef != NULL)
++			close(fileno(it->queuef));
+ 	}
+ }
+ 
+@@ -1571,16 +1593,21 @@
+ 		if (argc != 0)
+ 			errx(1, "sending mail and displaying queue is"
+ 				" mutually exclusive");
+-		load_queue(&lqueue, 1);
+-		show_queue(&lqueue);
++		do {
++			load_queue(&lqueue, 1);
++			if (!LIST_EMPTY(&lqueue.queue))
++				show_queue(&lqueue);
++		} while (morefiles);
+ 		return (0);
+ 	}
+ 
+ 	if (doqueue) {
+ 		if (argc != 0)
+ 			errx(1, "sending mail and queue pickup is mutually exclusive");
+-		load_queue(&lqueue, 0);
+-		run_queue(&lqueue);
++		do {
++			load_queue(&lqueue, 0);
++			run_queue(&lqueue);
++		} while (morefiles);
+ 		return (0);
+ 	}
+ 
