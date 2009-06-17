@@ -1,21 +1,27 @@
-Template: shared/mailname
+Template: dma/mailname
 Type: string
-_Description: Mailname of your system:
- This is the fully-qualified host name of the computer running dma.
- It defaults to the output of "hostname --fqdn".
+_Description: System mail name:
+ The 'mail name' is the domain name used to 'qualify' mail addresses
+ without a domain name.
+ .
+ This name will also be used by other programs. It should be the
+ single, fully qualified domain name (FQDN).
+ .
+ Thus, if a mail address on the local host is foo@example.org,
+ the correct value for this option would be example.org.
 
 Template: dma/relayhost
 Type: string
 _Description: Smarthost:
- This is the name of a remote server to which to send each message.
- If it is left blank, dma will try to deliver all messages by itself;
- however, for the present it cannot really handle MX record lookups.
- The default is a host named "mail" in the same domain as your computer.
+ Please enter the IP address or the host name of a mail server that
+ this system should use as outgoing smarthost.  If no smarthost is
+ specified, dma will try to deliver all messages by itself; however,
+ for the present it cannot handle MX record lookups.
 
 Template: dma/dbounceprog
 Type: string
 _Description: A program to handle double-bounces:
- This is the name of a program that dma will invoke when a bounced
- message bounces in its own right.  Leave this blank if you like dma's
+ Please enter the name of a program that dma will invoke when a bounced
+ message bounces in its own right.  Leave this blank to keep dma's
  default behavior of simply aborting the delivery, or specify the name
  or full path to a program that will process the double-bounce message.

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dma-dfly 2009-02-11\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
-"POT-Creation-Date: 2009-03-30 16:27+0300\n"
+"POT-Creation-Date: 2009-06-17 14:29+0300\n"
 "PO-Revision-Date: 2009-03-30 16:51+0300\n"
 "Last-Translator: Peter Pentchev <roam@ringlet.net>\n"
 "Language-Team: Bulgaria <dict@fsa-bg.org>n\n"
@@ -18,18 +18,37 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../templates:1001
-msgid "Mailname of your system:"
+msgid "System mail name:"
 msgstr "Пощенско име на системата:"
 
 #. Type: string
 #. Description
 #: ../templates:1001
 msgid ""
-"This is the fully-qualified host name of the computer running dma. It "
-"defaults to the output of \"hostname --fqdn\"."
+"The 'mail name' is the domain name used to 'qualify' mail addresses without "
+"a domain name."
 msgstr ""
-"Това е пълното име на сървъра, върху който работи dma.  По подразбиране "
-"се използва резултатът от командата \"hostname --fqdn\"."
+"Пощенското име се използва за допълване на пощенски адреси без домейн."
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"This name will also be used by other programs. It should be the single, "
+"fully qualified domain name (FQDN)."
+msgstr ""
+"Това име ще бъде използвано и от други програми и трябва да бъде пълно име "
+"на домейн (FQDN - Fully Qualified Domain Name)."
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"Thus, if a mail address on the local host is foo@example.org, the correct "
+"value for this option would be example.org."
+msgstr ""
+"Например, ако даден пощенски адрес на този компютър е foo@example.org, то "
+"правилното пощенско име е example.org."
 
 #. Type: string
 #. Description
@@ -40,17 +59,21 @@ msgstr "Smarthost:"
 #. Type: string
 #. Description
 #: ../templates:2001
+#| msgid ""
+#| "This is the name of a remote server to which to send each message. If it "
+#| "is left blank, dma will try to deliver all messages by itself; however, "
+#| "for the present it cannot really handle MX record lookups. The default is "
+#| "a host named \"mail\" in the same domain as your computer."
 msgid ""
-"This is the name of a remote server to which to send each message. If it is "
-"left blank, dma will try to deliver all messages by itself; however, for the "
-"present it cannot really handle MX record lookups. The default is a host "
-"named \"mail\" in the same domain as your computer."
+"Please enter the IP address or the host name of a mail server that this "
+"system should use as outgoing smarthost.  If no smarthost is specified, dma "
+"will try to deliver all messages by itself; however, for the present it "
+"cannot handle MX record lookups."
 msgstr ""
-"Това е името на отдалечен сървър, към който ще бъдат изпращани всички "
-"съобщения.  Ако това поле е празно, dma ще се опита да достави съобщенията "
-"направо до получателите им; за момента обаче dma всъщност не се справя "
-"с DNS MX заявки.  Името на smarthost по подразбиране е хост, наречен "
-"\"mail\", в същия домейн като Вашия сървър."
+"Въведете IP адрес или име на пощенски сървър (smarthost), който да се "
+"използва за изпращане на изходящата поща.  Ако това поле е празно, dma ще "
+"се опита да достави съобщенията направо до получателите им; за момента "
+"обаче dma не може да прави DNS MX заявки."
 
 #. Type: string
 #. Description
@@ -61,12 +84,19 @@ msgstr "Програма, която да обработва недоставе�
 #. Type: string
 #. Description
 #: ../templates:3001
+#| msgid ""
+#| "This is the name of a program that dma will invoke when a bounced message "
+#| "bounces in its own right.  Leave this blank if you like dma's default "
+#| "behavior of simply aborting the delivery, or specify the name or full "
+#| "path to a program that will process the double-bounce message."
 msgid ""
-"This is the name of a program that dma will invoke when a bounced message "
-"bounces in its own right.  Leave this blank if you like dma's default "
+"Please enter the name of a program that dma will invoke when a bounced "
+"message bounces in its own right.  Leave this blank to keep dma's default "
 "behavior of simply aborting the delivery, or specify the name or full path "
 "to a program that will process the double-bounce message."
 msgstr ""
-"Това е името или пълният път към програма, която dma ще изпълни всеки път, "
-"когато съобщение за грешка при доставка също не може да бъде доставено.  "
-"Ако това поле е празно, dma просто ще се откаже от доставката."
+"Въведете името или пълния път към програма, която dma ще изпълни всеки път, "
+"когато съобщение за грешка при доставка също не може да бъде доставено. "
+"Оставете това поле празно, ако искате dma да се откаже от доставката, или "
+"въведете името или пълния път към програмата, която да обработи съобщението "
+"за грешка при доставка."

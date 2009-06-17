@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
-"POT-Creation-Date: 2009-03-30 16:27+0300\n"
+"POT-Creation-Date: 2009-06-17 14:29+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,15 +19,31 @@ msgstr ""
 #. Type: string
 #. Description
 #: ../templates:1001
-msgid "Mailname of your system:"
+msgid "System mail name:"
 msgstr ""
 
 #. Type: string
 #. Description
 #: ../templates:1001
 msgid ""
-"This is the fully-qualified host name of the computer running dma. It "
-"defaults to the output of \"hostname --fqdn\"."
+"The 'mail name' is the domain name used to 'qualify' mail addresses without "
+"a domain name."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"This name will also be used by other programs. It should be the single, "
+"fully qualified domain name (FQDN)."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"Thus, if a mail address on the local host is foo@example.org, the correct "
+"value for this option would be example.org."
 msgstr ""
 
 #. Type: string
@@ -40,10 +56,10 @@ msgstr ""
 #. Description
 #: ../templates:2001
 msgid ""
-"This is the name of a remote server to which to send each message. If it is "
-"left blank, dma will try to deliver all messages by itself; however, for the "
-"present it cannot really handle MX record lookups. The default is a host "
-"named \"mail\" in the same domain as your computer."
+"Please enter the IP address or the host name of a mail server that this "
+"system should use as outgoing smarthost.  If no smarthost is specified, dma "
+"will try to deliver all messages by itself; however, for the present it "
+"cannot handle MX record lookups."
 msgstr ""
 
 #. Type: string
@@ -56,8 +72,8 @@ msgstr ""
 #. Description
 #: ../templates:3001
 msgid ""
-"This is the name of a program that dma will invoke when a bounced message "
-"bounces in its own right.  Leave this blank if you like dma's default "
+"Please enter the name of a program that dma will invoke when a bounced "
+"message bounces in its own right.  Leave this blank to keep dma's default "
 "behavior of simply aborting the delivery, or specify the name or full path "
 "to a program that will process the double-bounce message."
 msgstr ""
