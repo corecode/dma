@@ -12,7 +12,7 @@ In immediate delivery mode, the new dma process is spawned as soon as
 the message is submitted to the queue.  In deferred mode, which is
 the default for the Debian package, the message is left in the queue
 and will only be processed when dma is invoked separately with the "-q"
-command-line option.  I personally prefer this delivery mode - even though
+command-line option.  This is the preferred delivery mode - even though
 there may be slight delays, the queue must still be processed periodically
 anyway (if an immediate delivery is deferred, the message is still left
 on the queue), so there's no harm done in always doing it that way.
@@ -26,16 +26,14 @@ delivery problems.
 
 2. Smarthost operation by default - needs to be configured!
 
-For the present, the dma mail transfer agent does not really handle
-direct MX lookups very well.  It is highly recommended that you only
-use it with a smarthost configured via the SMARTHOST directive in
-the /etc/dma/dma.conf file.  Note that the default SMARTHOST value of
-"mail.example.com" is virtually guaranteed not to work, as per
-the special status of the "example.com" domain according to RFC 2606 :)
+For the present, the dma mail transfer agent cannot handle direct
+MX lookups.  It is highly recommended that you only use it with
+a smarthost configured via the SMARTHOST directive in
+the /etc/dma/dma.conf file.
 
 3. Double-bounce handling
 
-By default, the dma mail transfer agent does not really handle double
+By default, the dma mail transfer agent does not attempt to handle double
 bounces - it aborts the delivery with a critical syslog message.
 This, combined with the Debian package's default of "flush the queue
 every five minutes", may pose something of a strain on the mail server :)
@@ -44,10 +42,8 @@ an external program to handle double bounces with the DBOUNCEPROG
 directive in the /etc/dma/dma.conf file.  Also included is a sample
 program, dbounce-simple-safecat, which uses the safecat utility to
 copy the bounce message into a Maildir-structured storage,
-/var/spool/mail/dma-bounces by default.  Its functionality will be
-extended in the future to allow more configuration and to possibly
-parse the message to make it actually mailbox-compatible - for the present,
-the copied file still has the dma internal format, which is plain text,
-but is not really a mailbox :)
+/var/spool/mail/dma-bounces by default.  For the present, the copied file
+still has the dma internal format, which is plain text, but is not really
+a mailbox :)
 
- -- Peter Pentchev <roam@ringlet.net>  Tue, 10 Mar 2009 12:04:48 +0200
+ -- Peter Pentchev <roam@ringlet.net>  Wed, 17 Jun 2009 15:07:05 +0300
