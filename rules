@@ -2,8 +2,6 @@
 # -*- makefile -*-
 # Debian build rules for dma, the DragonFly mail agent
 
-include /usr/share/quilt/quilt.make
-
 PACKAGE=	dma
 VERSION = `sed -e 's/^[^ ]\+ (\([^)]\+\)).*/\1/; 1q' debian/changelog`
 VERSION_UP = `sed -e 's/^[^ ]\+ (0\.0\.\([^)-]\+\).*/\1/; 1q' debian/changelog | tr . -`
@@ -27,14 +25,11 @@ diffsrc:
 	-diff -urN -x .svn debian/ ../svn/${PACKAGE}/tags/${PACKAGE}-${VERSION}${VERSION_ADD}/
 	-diff -urN -x .svn -x debian -x .pc -I'\$$Ringlet.*\$$' ./ ../svn/${PACKAGE}/tags/${PACKAGE}-dfly-${VERSION_UP}/
 
-override_dh_auto_configure:	${QUILT_STAMPFN}
-
 override_dh_auto_build:
 	pmake
 
 override_dh_auto_clean:
 	pmake clean
-	$(MAKE) -f debian/rules unpatch
 
 override_dh_auto_install:
 	pmake DESTDIR=$(CURDIR)/debian/$(PACKAGE) BINDIR=/usr/sbin install
@@ -44,4 +39,4 @@ override_dh_fixperms:
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma
 
 %:
-	dh $@
+	dh --with quilt $@
