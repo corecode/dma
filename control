@@ -15,13 +15,13 @@ Provides: mail-transport-agent
 Conflicts: mail-transport-agent
 Replaces: mail-transport-agent
 Recommends: safecat
-Description: the DragonFly Mail Agent, a lightweight MTA
+Description: lightweight mail transport agent
  The DragonFly Mail Agent is a small Mail Transport Agent (MTA),
- designed for home and office use.  It accepts mails from locally
- installed Mail User Agents (MUA) and delivers the mails either locally
- or to a remote destination.  Remote delivery includes several features
- like TLS/SSL support and SMTP authentication.
+ designed for home and office use.  It accepts mails from local Mail
+ User Agents (MUA) and delivers them either to local mailboxes or
+ remote SMTP servers.  Remote delivery includes support for features
+ such as TLS/SSL and SMTP authentication.
  .
- dma is not intended as a replacement for real, big MTAs like Sendmail,
- Postfix, or Exim.  Consequently, dma does not listen on port 25 for
- incoming connections.
+ dma is not intended as a replacement for full-featured MTAs like
+ Sendmail, Postfix, or Exim.  Consequently, dma does not listen on
+ port 25 for incoming connections.
