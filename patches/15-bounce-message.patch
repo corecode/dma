@@ -5,7 +5,7 @@ array in net.c... and I'm not quite sure if I want to do that just now.
 
 --- a/dma.c
 +++ b/dma.c
-@@ -439,7 +439,7 @@
+@@ -440,7 +440,7 @@
  }
  
  static void
@@ -14,7 +14,7 @@ array in net.c... and I'm not quite sure if I want to do that just now.
  {
  	struct queue bounceq;
  	struct qitem *bit;
-@@ -598,6 +598,7 @@
+@@ -599,6 +599,7 @@
  		VERSION, hostname(),
  		it->addr,
  		reason);
@@ -22,7 +22,7 @@ array in net.c... and I'm not quite sure if I want to do that just now.
  	if (error < 0)
  		goto fail;
  	if (fflush(bit->queuef) != 0)
-@@ -674,7 +675,7 @@
+@@ -675,7 +676,7 @@
  #endif
  
  static int
@@ -31,7 +31,7 @@ array in net.c... and I'm not quite sure if I want to do that just now.
  {
  	char fn[PATH_MAX+1];
  	char line[1000];
-@@ -757,7 +758,7 @@
+@@ -758,7 +759,7 @@
  #ifdef HAVE_LIBLOCKFILE
  			mailunlock();
  #endif
@@ -40,7 +40,7 @@ array in net.c... and I'm not quite sure if I want to do that just now.
  			error = -1;
  			goto chop;
  		}
-@@ -800,7 +801,7 @@
+@@ -801,7 +802,7 @@
  {
  	int error;
  	unsigned int backoff = MIN_RETRY;
@@ -49,7 +49,7 @@ array in net.c... and I'm not quite sure if I want to do that just now.
  	struct timeval now;
  	struct stat st;
  
-@@ -831,12 +832,9 @@
+@@ -832,12 +833,9 @@
  		}
  		if (gettimeofday(&now, NULL) == 0 &&
  		    (now.tv_sec - st.st_mtime > MAX_TIMEOUT)) {

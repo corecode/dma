@@ -27,7 +27,7 @@ Add the FULLBOUNCE config option to include the full message in the bounce.
  The
 --- a/dma.c
 +++ b/dma.c
-@@ -585,7 +585,7 @@
+@@ -586,7 +586,7 @@
  \n\
  %s\n\
  \n\
@@ -36,7 +36,7 @@ Add the FULLBOUNCE config option to include the full message in the bounce.
  \n\
  ",
  		bounceq.id,
-@@ -597,7 +597,9 @@
+@@ -598,7 +598,9 @@
  		rfc822date(),
  		VERSION, hostname(),
  		it->addr,
@@ -47,7 +47,7 @@ Add the FULLBOUNCE config option to include the full message in the bounce.
  	free(reason);
  	if (error < 0)
  		goto fail;
-@@ -606,14 +608,20 @@
+@@ -607,14 +609,20 @@
  
  	if (fseek(it->queuef, it->hdrlen, SEEK_SET) != 0)
  		goto fail;

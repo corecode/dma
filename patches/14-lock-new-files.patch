@@ -4,7 +4,7 @@ the same message.
 
 --- a/dma.c
 +++ b/dma.c
-@@ -225,6 +225,8 @@
+@@ -226,6 +226,8 @@
  	fd = mkstemp(fn);
  	if (fd < 0)
  		return (-1);

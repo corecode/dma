@@ -87,7 +87,7 @@ Appease the Debian hardening wrapper:
  int
 --- a/dma.c
 +++ b/dma.c
-@@ -608,7 +608,8 @@
+@@ -609,7 +609,8 @@
  			break;
  		if (line[0] == '\n')
  			break;

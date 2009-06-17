@@ -2,7 +2,7 @@ Ignore a whole slew of sendmail options.  Probably some more left.
 
 --- a/dma.c
 +++ b/dma.c
-@@ -1111,7 +1111,7 @@
+@@ -1174,7 +1174,7 @@
  	snprintf(tag, 254, "dma");
  
  	opterr = 0;
@@ -11,7 +11,7 @@ Ignore a whole slew of sendmail options.  Probably some more left.
  		switch (ch) {
  		case 'A':
  			/* -AX is being ignored, except for -A{c,m} */
-@@ -1153,6 +1153,21 @@
+@@ -1216,6 +1216,21 @@
  			doqueue = 1;
  			break;
  

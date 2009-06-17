@@ -13,7 +13,7 @@ to utmp/wtmp, etc.
  static struct strlist seenmsg[16][16];
  
  static int open_locked(const char *, int);
-@@ -118,6 +120,45 @@
+@@ -120,6 +122,45 @@
  	return name;
  }
  
@@ -59,7 +59,7 @@ to utmp/wtmp, etc.
  static char *
  set_from(const char *osender)
  {
-@@ -126,7 +167,7 @@
+@@ -128,7 +169,7 @@
  
  	if ((config->features & VIRTUAL) != 0) {
  		SLIST_FOREACH(v, &virtusers, next) {
@@ -68,7 +68,7 @@ to utmp/wtmp, etc.
  				sender = strdup(v->address);
  				if (sender == NULL)
  					return(NULL);
-@@ -140,7 +181,7 @@
+@@ -142,7 +183,7 @@
  		if (sender == NULL)
  			return (NULL);
  	} else {
@@ -77,7 +77,7 @@ to utmp/wtmp, etc.
  			return (NULL);
  	}
  
-@@ -368,7 +409,7 @@
+@@ -370,7 +411,7 @@
  \tid %"PRIxMAX"\n\
  \tby %s (%s)\n\
  \t%s\n",
@@ -86,7 +86,7 @@ to utmp/wtmp, etc.
  		sender,
  		queue->id,
  		hostname(), VERSION,
-@@ -1182,6 +1223,7 @@
+@@ -1184,6 +1225,7 @@
  	opterr = 1;
  
  	openlog(tag, LOG_PID | LOG_PERROR, LOG_MAIL);

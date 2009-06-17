@@ -47,7 +47,7 @@ helper installed by the package.
  The
 --- a/dma.c
 +++ b/dma.c
-@@ -443,12 +443,114 @@
+@@ -444,12 +444,114 @@
  	struct qitem *bit;
  	char line[1000];
  	int error;

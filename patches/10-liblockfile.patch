@@ -33,7 +33,7 @@ liblockfile, as mandated by Debian Policy.
  
  static void deliver(struct qitem *);
  static int add_recp(struct queue *, const char *, const char *, int);
-@@ -525,6 +527,47 @@
+@@ -526,6 +528,47 @@
  	exit(1);
  }
  
@@ -81,7 +81,7 @@ liblockfile, as mandated by Debian Policy.
  static int
  deliver_local(struct qitem *it, const char **errmsg)
  {
-@@ -535,6 +578,10 @@
+@@ -536,6 +579,10 @@
  	int error;
  	off_t mboxlen;
  	time_t now = time(NULL);
@@ -92,7 +92,7 @@ liblockfile, as mandated by Debian Policy.
  
  	error = snprintf(fn, sizeof(fn), "%s/%s", _PATH_MAILDIR, it->addr);
  	if (error < 0 || (size_t)error >= sizeof(fn)) {
-@@ -544,17 +591,42 @@
+@@ -545,17 +592,42 @@
  	}
  
  	/* mailx removes users mailspool file if empty, so open with O_CREAT */
@@ -140,7 +140,7 @@ liblockfile, as mandated by Debian Policy.
  		return (1);
  	}
  
-@@ -562,6 +634,9 @@
+@@ -563,6 +635,9 @@
  	if (error < 0 || (size_t)error >= sizeof(line)) {
  		syslog(LOG_ERR, "%s: local delivery deferred: can not write header: %m",
  		       it->queueid);
@@ -150,7 +150,7 @@ liblockfile, as mandated by Debian Policy.
  		return (1);
  	}
  	if (write(mbox, line, error) != error)
-@@ -574,6 +649,9 @@
+@@ -575,6 +650,9 @@
  		if (linelen == 0 || line[linelen - 1] != '\n') {
  			syslog(LOG_CRIT, "%s: local delivery failed: corrupted queue file",
  			       it->queueid);
@@ -160,7 +160,7 @@ liblockfile, as mandated by Debian Policy.
  			*errmsg = "corrupted queue file";
  			error = -1;
  			goto chop;
-@@ -591,6 +669,9 @@
+@@ -592,6 +670,9 @@
  	line[0] = '\n';
  	if (write(mbox, line, 1) != 1)
  		goto wrerror;
@@ -170,7 +170,7 @@ liblockfile, as mandated by Debian Policy.
  	close(mbox);
  	return (0);
  
-@@ -602,6 +683,9 @@
+@@ -603,6 +684,9 @@
  	if (ftruncate(mbox, mboxlen) != 0)
  		syslog(LOG_WARNING, "%s: error recovering mbox `%s': %m",
  		       it->queueid, fn);
