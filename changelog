@@ -1,5 +1,6 @@
 dma (0.0.2009.02.11-1) unstable; urgency=low
 
-  * Initial release (Closes: #511410)
+  * Initial release
+    (Closes: #511410, #533458, #533614, #533890, #534101, #534860)
 
- -- Peter Pentchev <roam@ringlet.net>  Wed, 17 Jun 2009 15:15:49 +0300
+ -- Peter Pentchev <roam@ringlet.net>  Mon, 29 Jun 2009 14:31:29 +0300
