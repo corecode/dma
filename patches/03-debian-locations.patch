@@ -4,7 +4,7 @@ Use deferred delivery - the package includes a cron job running the queue.
 
 --- a/dma.8
 +++ b/dma.8
-@@ -141,7 +141,7 @@
+@@ -143,7 +143,7 @@
  .Pa dma.conf .
  .Bl -tag -width 4n
  .It Ic SMARTHOST Xo
@@ -13,7 +13,7 @@ Use deferred delivery - the package includes a cron job running the queue.
  .Xc
  If you want to send outgoing mails via a smarthost, set this variable to
  your smarthosts address.
-@@ -156,7 +156,7 @@
+@@ -158,7 +158,7 @@
  will deliver all mails to this port, regardless of whether a smarthost is set
  or not.
  .It Ic ALIASES Xo
@@ -40,9 +40,12 @@ Use deferred delivery - the package includes a cron job running the queue.
  
  # Path to your spooldir.  Just stay with the default.
  SPOOLDIR /var/spool/dma
-@@ -39,4 +39,4 @@
+@@ -39,7 +39,7 @@
  
  # Uncomment if you want to defer your mails.  This is useful if you are
  # behind a dialup line.  You have to submit your mails manually with dma -q
 -#DEFER
 +DEFER
+ 
+ # Uncomment if you want the bounce message to include the complete original
+ # message, not just the headers.

@@ -3,7 +3,7 @@ not have the ".Dx" macro yet.
 
 --- a/dma.8
 +++ b/dma.8
-@@ -248,7 +248,7 @@
+@@ -269,7 +269,7 @@
  The
  .Nm
  utility first appeared in

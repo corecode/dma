@@ -3,12 +3,12 @@ to 2755, since removing root write access gains us nothing.
 
 --- a/Makefile
 +++ b/Makefile
-@@ -15,7 +15,7 @@
+@@ -14,7 +14,7 @@
  
  BINOWN= root
  BINGRP= mail
 -BINMODE=2555
 +BINMODE=2755
- #WARNS?=	1
+ WARNS?=	6
  
  # The pmake Debian package does not seem to deal properly with y.tab.h

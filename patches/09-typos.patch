@@ -1,31 +1,13 @@
-Fix two typos and a word order problem.
+Fix a typo.
 
 --- a/crypto.c
 +++ b/crypto.c
-@@ -155,7 +155,7 @@
- 	error = SSL_connect(config->ssl);
- 	if (error < 0) {
- 		syslog(LOG_ERR, "%s: remote delivery failed:"
--		       " SSL handshake fataly failed: %m", it->queueid);
-+		       " SSL handshake failed fatally: %m", it->queueid);
- 		return (-1);
- 	}
- 
-@@ -163,7 +163,7 @@
- 	cert = SSL_get_peer_certificate(config->ssl);
- 	if (cert == NULL) {
- 		syslog(LOG_ERR, "%s: remote delivery deferred:"
--		       " Peer did not provied certificate: %m", it->queueid);
-+		       " Peer did not provide certificate: %m", it->queueid);
- 	}
- 	X509_free(cert);
- 
-@@ -267,7 +267,7 @@
+@@ -271,7 +271,7 @@
  	/* Send AUTH command according to RFC 2554 */
  	send_remote_command(fd, "AUTH CRAM-MD5");
  	if (read_remote(fd, sizeof(buffer), buffer) != 3) {
--		syslog(LOG_ERR, "%s: smarthost authentification:"
-+		syslog(LOG_ERR, "%s: smarthost authentication:"
+-		syslog(LOG_DEBUG, "%s: smarthost authentification:"
++		syslog(LOG_DEBUG, "%s: smarthost authentication:"
  		       " AUTH cram-md5 not available: %s", it->queueid,
  		       neterr);
  		/* if cram-md5 is not available */

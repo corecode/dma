@@ -1,11 +1,9 @@
 Several fixes to make dma build on Debian:
 - build and install the files in the etc/ subdirectory;
-- disable compiler warnings;
 - generate aliases_parse.h and let the others depend on it;
-- replace open(..., O_EXLOCK) with a new open_locked() routine;
-- use st_mtime instead of st_mtimespec;
-- define the __unused function attribute;
-- do not redefine PATH_MAX.
+- define the __DECONST macro;
+- prototype open_locked() in dma.c, just in case;
+- use mtime instead of mtimespec.
 
 All of these are taken from the Ringlet Subversion repository:
 http://svn.ringlet.net/svn/ringlet/mail/dma/
@@ -19,16 +17,13 @@ http://svn.ringlet.net/cgi-bin/viewvc/viewvc.cgi/ringlet/mail/dma/
  
 +SUBDIR=	etc
 +
- CFLAGS+= -DHAVE_CRYPTO
  CFLAGS+= -I${.CURDIR}
  
-@@ -14,6 +16,25 @@
- BINOWN= root
- BINGRP= mail
+ DPADD=  ${LIBSSL} ${LIBCRYPTO}
+@@ -15,4 +17,23 @@
  BINMODE=2555
--WARNS?=	1
-+#WARNS?=	1
-+
+ WARNS?=	6
+ 
 +# The pmake Debian package does not seem to deal properly with y.tab.h
 +
 +DPSRCS+=	aliases_parse.h
@@ -45,96 +40,40 @@ http://svn.ringlet.net/cgi-bin/viewvc/viewvc.cgi/ringlet/mail/dma/
 +
 +aliases_parse.o:	aliases_parse.h
 +aliases_scan.o:	aliases_parse.h
- 
++
  .include <bsd.prog.mk>
 +
 +.include <bsd.subdir.mk>
 --- a/dma.c
 +++ b/dma.c
 @@ -74,6 +74,8 @@
- static int daemonize = 1;
- struct config *config;
+ static struct strlist seenmsg[16][16];
+ 
  
 +static int open_locked(const char *, int);
 +
  char *
  hostname(void)
  {
-@@ -542,7 +544,7 @@
- 	}
- 
- 	/* mailx removes users mailspool file if empty, so open with O_CREAT */
--	mbox = open(fn, O_WRONLY | O_EXLOCK | O_APPEND | O_CREAT);
-+	mbox = open_locked(fn, O_WRONLY | O_APPEND | O_CREAT);
- 	if (mbox < 0) {
- 		syslog(LOG_ERR, "%s: local delivery deferred: can not open `%s': %m",
- 		       it->queueid, fn);
-@@ -639,7 +641,7 @@
+@@ -803,7 +805,7 @@
  			exit(1);
  		}
  		if (gettimeofday(&now, NULL) == 0 &&
 -		    (now.tv_sec - st.st_mtimespec.tv_sec > MAX_TIMEOUT)) {
 +		    (now.tv_sec - st.st_mtime > MAX_TIMEOUT)) {
- 			char *msg;
- 
- 			if (asprintf(&msg,
-@@ -703,7 +705,7 @@
- 			continue;
- 		if (asprintf(&queuefn, "%s/%s", config->spooldir, de->d_name) < 0)
- 			goto fail;
--		fd = open(queuefn, O_RDONLY|O_EXLOCK|O_NONBLOCK);
-+		fd = open_locked(queuefn, O_RDONLY|O_NONBLOCK);
- 		if (fd < 0) {
- 			/* Ignore locked files */
- 			if (errno == EWOULDBLOCK)
-@@ -962,3 +964,24 @@
- 	/* NOTREACHED */
- 	return (0);
- }
-+
-+static int
-+open_locked(const char *fname, int flags)
-+{
-+#ifndef O_EXLOCK
-+	int fd, save_errno;
-+
-+	fd = open(fname, flags, 0);
-+	if (fd < 0)
-+		return(fd);
-+	if (flock(fd, LOCK_EX|((flags & O_NONBLOCK)? LOCK_NB: 0)) < 0) {
-+		save_errno = errno;
-+		close(fd);
-+		errno = save_errno;
-+		return(-1);
-+	}
-+	return(fd);
-+#else
-+	return(open(fname, flags|O_EXLOCK));
-+#endif
-+}
+ 			asprintf(__DECONST(void *, &errmsg),
+ 				 "Could not deliver for the last %d seconds. Giving up.",
+ 				 MAX_TIMEOUT);
 --- a/dma.h
 +++ b/dma.h
-@@ -46,6 +46,13 @@
- #include <stdint.h>
- #include <stdio.h>
+@@ -52,6 +52,10 @@
+ #endif  /* __GNUC__ */
+ #endif
  
-+#ifndef __unused
-+#ifdef __GNUC__
-+#define __unused	__attribute__((unused))
-+#else
-+#define __unused
-+#endif  /* __GNUC__ */
-+#endif
- 
++#ifndef __DECONST
++#define	__DECONST(type, var)	((type)(uintptr_t)(const void *)(var))
++#endif  /* __DECONST */
++
  #define VERSION	"DragonFly Mail Agent"
  
-@@ -53,7 +60,9 @@
- #define MIN_RETRY	300		/* 5 minutes */
- #define MAX_RETRY	(3*60*60)	/* retry at least every 3 hours */
- #define MAX_TIMEOUT	(5*24*60*60)	/* give up after 5 days */
-+#ifndef PATH_MAX
- #define PATH_MAX	1024		/* Max path len */
-+#endif
- #define	SMTP_PORT	25		/* Default SMTP port */
- #define CON_TIMEOUT	120		/* Connection timeout */
- 
+ #define BUF_SIZE	2048

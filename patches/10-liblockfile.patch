@@ -3,10 +3,10 @@ liblockfile, as mandated by Debian Policy.
 
 --- a/Makefile
 +++ b/Makefile
-@@ -4,10 +4,11 @@
+@@ -3,10 +3,11 @@
+ 
  SUBDIR=	etc
  
- CFLAGS+= -DHAVE_CRYPTO
 +CFLAGS+= -DHAVE_LIBLOCKFILE
  CFLAGS+= -I${.CURDIR}
  
@@ -19,7 +19,7 @@ liblockfile, as mandated by Debian Policy.
  SRCS=	base64.c conf.c crypto.c net.c dma.c aliases_scan.l aliases_parse.y
 --- a/dma.c
 +++ b/dma.c
-@@ -60,9 +60,11 @@
+@@ -56,9 +56,11 @@
  #include <syslog.h>
  #include <unistd.h>
  
@@ -33,7 +33,7 @@ liblockfile, as mandated by Debian Policy.
  
  static void deliver(struct qitem *);
  static int add_recp(struct queue *, const char *, const char *, int);
-@@ -526,6 +528,47 @@
+@@ -689,6 +691,47 @@
  	exit(1);
  }
  
@@ -42,7 +42,7 @@ liblockfile, as mandated by Debian Policy.
 +liblockfile_strerror(int res)
 +{
 +	static char buf[512];
-+	
++
 +	switch (res) {
 +		case L_SUCCESS:
 +			snprintf(buf, sizeof(buf), "No error");
@@ -81,7 +81,7 @@ liblockfile, as mandated by Debian Policy.
  static int
  deliver_local(struct qitem *it, const char **errmsg)
  {
-@@ -536,6 +579,10 @@
+@@ -699,6 +742,10 @@
  	int error;
  	off_t mboxlen;
  	time_t now = time(NULL);
@@ -92,13 +92,13 @@ liblockfile, as mandated by Debian Policy.
  
  	error = snprintf(fn, sizeof(fn), "%s/%s", _PATH_MAILDIR, it->addr);
  	if (error < 0 || (size_t)error >= sizeof(fn)) {
-@@ -545,17 +592,42 @@
+@@ -708,17 +755,42 @@
  	}
  
  	/* mailx removes users mailspool file if empty, so open with O_CREAT */
 -	mbox = open_locked(fn, O_WRONLY | O_APPEND | O_CREAT);
 -	if (mbox < 0) {
--		syslog(LOG_ERR, "%s: local delivery deferred: can not open `%s': %m",
+-		syslog(LOG_NOTICE, "%s: local delivery deferred: can not open `%s': %m",
 -		       it->queueid, fn);
 -		return (1);
 +#ifdef HAVE_LIBLOCKFILE
@@ -107,7 +107,7 @@ liblockfile, as mandated by Debian Policy.
 +#endif
 +		mbox = open_locked(fn, O_WRONLY | O_APPEND | O_CREAT);
 +		if (mbox < 0) {
-+			syslog(LOG_ERR, "%s: local delivery deferred: can not open `%s': %m",
++			syslog(LOG_NOTICE, "%s: local delivery deferred: can not open `%s': %m",
 +			       it->queueid, fn);
 +			return (1);
 +		}
@@ -116,15 +116,15 @@ liblockfile, as mandated by Debian Policy.
 +		if (res == L_SUCCESS)
 +			break;
 +		else
-+			syslog(LOG_WARNING, "%s: could not dot-lock `%s': %s",
++			syslog(LOG_NOTICE, "%s: could not dot-lock `%s': %s",
 +			       it->queueid, fn, liblockfile_strerror(res));
 +		close(mbox);
 +		if (try++ >= 5) {
-+			syslog(LOG_ERR, "%s: local delivery deferred: can not dot-lock `%s'",
++			syslog(LOG_NOTICE, "%s: local delivery deferred: can not dot-lock `%s'",
 +			       it->queueid, fn);
 +			return (1);
 +		}
-+		syslog(LOG_WARNING, "%s: sleeping to retry the dot-lock",
++		syslog(LOG_NOTICE, "%s: sleeping to retry the dot-lock",
 +		       it->queueid);
 +		sleep(5 * try);
  	}
@@ -132,7 +132,7 @@ liblockfile, as mandated by Debian Policy.
  	mboxlen = lseek(mbox, 0, SEEK_CUR);
  
  	if (fseek(it->queuef, it->hdrlen, SEEK_SET) != 0) {
- 		syslog(LOG_ERR, "%s: local delivery deferred: can not seek: %m",
+ 		syslog(LOG_NOTICE, "%s: local delivery deferred: can not seek: %m",
  		       it->queueid);
 +#ifdef HAVE_LIBLOCKFILE
 +		mailunlock();
@@ -140,9 +140,9 @@ liblockfile, as mandated by Debian Policy.
  		return (1);
  	}
  
-@@ -563,6 +635,9 @@
+@@ -726,6 +798,9 @@
  	if (error < 0 || (size_t)error >= sizeof(line)) {
- 		syslog(LOG_ERR, "%s: local delivery deferred: can not write header: %m",
+ 		syslog(LOG_NOTICE, "%s: local delivery deferred: can not write header: %m",
  		       it->queueid);
 +#ifdef HAVE_LIBLOCKFILE
 +		mailunlock();
@@ -150,7 +150,7 @@ liblockfile, as mandated by Debian Policy.
  		return (1);
  	}
  	if (write(mbox, line, error) != error)
-@@ -575,6 +650,9 @@
+@@ -738,6 +813,9 @@
  		if (linelen == 0 || line[linelen - 1] != '\n') {
  			syslog(LOG_CRIT, "%s: local delivery failed: corrupted queue file",
  			       it->queueid);
@@ -160,7 +160,7 @@ liblockfile, as mandated by Debian Policy.
  			*errmsg = "corrupted queue file";
  			error = -1;
  			goto chop;
-@@ -592,6 +670,9 @@
+@@ -755,6 +833,9 @@
  	line[0] = '\n';
  	if (write(mbox, line, 1) != 1)
  		goto wrerror;
@@ -170,7 +170,7 @@ liblockfile, as mandated by Debian Policy.
  	close(mbox);
  	return (0);
  
-@@ -603,6 +684,9 @@
+@@ -766,6 +847,9 @@
  	if (ftruncate(mbox, mboxlen) != 0)
  		syslog(LOG_WARNING, "%s: error recovering mbox `%s': %m",
  		       it->queueid, fn);

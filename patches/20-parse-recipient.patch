@@ -23,21 +23,20 @@ to obtain the recipient addresses.
  .Nm
 --- a/dma.c
 +++ b/dma.c
-@@ -77,6 +77,7 @@
+@@ -73,6 +73,7 @@
  struct config *config;
  static const char *username;
  static uid_t uid;
 +static FILE *scanfile;
  static struct strlist seenmsg[16][16];
  
- static int open_locked(const char *, int);
-@@ -399,11 +400,307 @@
+ 
+@@ -429,6 +430,300 @@
  }
  
  static int
 +parse_header_line(struct queue *queue, const char *sender, const char *line)
 +{
-+	size_t len;
 +	const char *p;
 +	enum dma_header_state st;
 +	char buf[1000];
@@ -330,16 +329,18 @@ to obtain the recipient addresses.
 +}
 +
 +static int
- readmail(struct queue *queue, const char *sender, int nodot)
+ strprefixcmp(const char *str, const char *prefix)
  {
+ 	return (strncasecmp(str, prefix, strlen(prefix)));
+@@ -440,6 +735,7 @@
  	char line[1000];	/* by RFC2822 */
  	size_t linelen;
  	int error;
 +	FILE *infile;
- 
- 	error = snprintf(line, sizeof(line), "\
- Received: from %s (uid %d)\n\
-@@ -421,8 +718,12 @@
+ 	int had_headers = 0;
+ 	int had_from = 0;
+ 	int had_messagid = 0;
+@@ -461,8 +757,12 @@
  	if (write(queue->mailfd, line, error) != error)
  		return (-1);
  
@@ -354,7 +355,7 @@ to obtain the recipient addresses.
  			break;
  		linelen = strlen(line);
  		if (linelen == 0 || line[linelen - 1] != '\n') {
-@@ -436,6 +737,8 @@
+@@ -504,6 +804,8 @@
  	}
  	if (fsync(queue->mailfd) != 0)
  		return (-1);
@@ -363,7 +364,7 @@ to obtain the recipient addresses.
  	return (0);
  }
  
-@@ -1167,14 +1470,14 @@
+@@ -1252,7 +1554,7 @@
  	struct queue queue;
  	struct queue lqueue;
  	int i, ch;
@@ -372,7 +373,8 @@ to obtain the recipient addresses.
  
  	atexit(deltmp);
  	LIST_INIT(&queue.queue);
- 	snprintf(tag, 254, "dma");
+@@ -1267,7 +1569,7 @@
+ 	}
  
  	opterr = 0;
 -	while ((ch = getopt(argc, argv, "A:b:B:C:d:Df:F:h:iL:N:no:O:q:r:R:UV:vX:")) != -1) {
@@ -380,7 +382,7 @@ to obtain the recipient addresses.
  		switch (ch) {
  		case 'A':
  			/* -AX is being ignored, except for -A{c,m} */
-@@ -1216,6 +1519,10 @@
+@@ -1309,6 +1611,10 @@
  			doqueue = 1;
  			break;
  
@@ -391,8 +393,8 @@ to obtain the recipient addresses.
  		/* Ignored options */
  		case 'B':
  		case 'C':
-@@ -1288,12 +1595,19 @@
- 			errx(1, "invalid recipient `%s'\n", argv[i]);
+@@ -1382,12 +1688,19 @@
+ 			errx(1, "invalid recipient `%s'", argv[i]);
  	}
  
 -	if (LIST_EMPTY(&queue.queue))
@@ -400,7 +402,7 @@ to obtain the recipient addresses.
  		errx(1, "no recipients");
  
  	if (gentempf(&queue) != 0)
- 		err(1, "create temp file");
+ 		err(1, "can not create temp file");
  
 +	if (headerrecips) {
 +		if (scanmail(&queue, sender) != 0)
@@ -410,7 +412,7 @@ to obtain the recipient addresses.
 +	}
 +
  	if (preparespool(&queue, sender) != 0)
- 		err(1, "creating spools (1)");
+ 		err(1, "can not create spools (1)");
  
 --- a/dma.h
 +++ b/dma.h
