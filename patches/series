@@ -5,7 +5,6 @@
 09-typos.patch
 10-liblockfile.patch
 11-double-bounce.patch
-15-bounce-message.patch
 17-mailname.patch
 20-parse-recipient.patch
 22-openfiles.patch
