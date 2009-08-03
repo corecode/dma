@@ -364,7 +364,7 @@ to obtain the recipient addresses.
  	return (0);
  }
  
-@@ -1252,7 +1554,7 @@
+@@ -1251,7 +1553,7 @@
  	struct queue queue;
  	struct queue lqueue;
  	int i, ch;
@@ -373,7 +373,7 @@ to obtain the recipient addresses.
  
  	atexit(deltmp);
  	LIST_INIT(&queue.queue);
-@@ -1267,7 +1569,7 @@
+@@ -1266,7 +1568,7 @@
  	}
  
  	opterr = 0;
@@ -382,7 +382,7 @@ to obtain the recipient addresses.
  		switch (ch) {
  		case 'A':
  			/* -AX is being ignored, except for -A{c,m} */
-@@ -1309,6 +1611,10 @@
+@@ -1308,6 +1610,10 @@
  			doqueue = 1;
  			break;
  
@@ -393,7 +393,7 @@ to obtain the recipient addresses.
  		/* Ignored options */
  		case 'B':
  		case 'C':
-@@ -1382,12 +1688,19 @@
+@@ -1381,12 +1687,19 @@
  			errx(1, "invalid recipient `%s'", argv[i]);
  	}
  

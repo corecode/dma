@@ -11,7 +11,7 @@ Handle the "too many open files" error gracefully, retrying.
  
  static int open_locked(const char *, int);
  
-@@ -1392,15 +1392,21 @@
+@@ -1391,15 +1391,21 @@
  	char *queueid;
  	char *queuefn;
  	off_t hdrlen;
@@ -35,7 +35,7 @@ Handle the "too many open files" error gracefully, retrying.
  	while ((de = readdir(spooldir)) != NULL) {
  		sender = NULL;
  		queuef = NULL;
-@@ -1416,12 +1422,22 @@
+@@ -1415,12 +1421,22 @@
  		if (asprintf(&queuefn, "%s/%s", config->spooldir, de->d_name) < 0)
  			goto fail;
  		seenit = seen(de->d_name);
@@ -59,7 +59,7 @@ Handle the "too many open files" error gracefully, retrying.
  			if (!ignorelock || seenit)
  				continue;
  			fd = open(queuefn, O_RDONLY);
-@@ -1506,12 +1522,15 @@
+@@ -1505,12 +1521,15 @@
  static void
  run_queue(struct queue *queue)
  {
@@ -76,7 +76,7 @@ Handle the "too many open files" error gracefully, retrying.
  	deliver(it);
  	/* NOTREACHED */
  }
-@@ -1534,6 +1553,8 @@
+@@ -1533,6 +1552,8 @@
  		       it->queueid,
  		       it->locked ? "*" : "",
  		       it->sender, it->addr);
@@ -85,7 +85,7 @@ Handle the "too many open files" error gracefully, retrying.
  	}
  }
  
-@@ -1664,16 +1685,21 @@
+@@ -1663,16 +1684,21 @@
  		if (argc != 0)
  			errx(1, "sending mail and displaying queue is"
  				" mutually exclusive");
