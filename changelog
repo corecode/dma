@@ -8,6 +8,8 @@ dma (0.0.2009.07.17-2) unstable; urgency=low
   * Only enable the build hardening wrapper if the "hardening" build
     option is specified.
   * Switch the copyright file header from the Wiki to DEP 5.
+  * Remove the manual page ".Dx" patch - the groff version in Squeeze
+    knows about the .Dx mdoc macro.
 
  -- Peter Pentchev <roam@ringlet.net>  Tue, 01 Sep 2009 11:50:03 +0300
 
