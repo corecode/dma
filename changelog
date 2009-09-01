@@ -5,6 +5,8 @@ dma (0.0.2009.07.17-2) unstable; urgency=low
     Closes: #544357
   * Randomize the Message-Id a bit more.  Closes: #544475
   * Bump Standards-Version to 3.8.3 with no changes.
+  * Only enable the build hardening wrapper if the "hardening" build
+    option is specified.
 
  -- Peter Pentchev <roam@ringlet.net>  Tue, 01 Sep 2009 11:50:03 +0300
 

@@ -15,7 +15,7 @@ endif
 ifneq (,$(filter nostrip,$(DEB_BUILD_OPTIONS)))
 	export STRIPFLAG=
 endif
-ifeq (,$(filter nohardening,$(DEB_BUILD_OPTIONS)))
+ifneq (,$(filter hardening,$(DEB_BUILD_OPTIONS)))
 export DEB_BUILD_HARDENING=1
 else
 export DEB_BUILD_HARDENING=0
