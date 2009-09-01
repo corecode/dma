@@ -8,3 +8,4 @@
 17-mailname.patch
 20-parse-recipient.patch
 22-openfiles.patch
+23-dirent-d_type.patch

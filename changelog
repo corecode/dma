@@ -1,3 +1,11 @@
+dma (0.0.2009.07.17-2) unstable; urgency=low
+
+  * Allow the spool directory to live on a filesystem that does not
+    set the d_type member of the dirent structure, like XFS.
+    Closes: #544357
+
+ -- Peter Pentchev <roam@ringlet.net>  Tue, 01 Sep 2009 11:50:03 +0300
+
 dma (0.0.2009.07.17-1) unstable; urgency=low
 
   * Initial release

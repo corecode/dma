@@ -1,0 +1,29 @@
+Cater to XFS's weirdness - handle the case when a dirent's d_type
+field is not filled in by doing an extra stat().
+
+Debian:		#544357
+
+--- a/dma.c
++++ b/dma.c
+@@ -1416,10 +1416,20 @@
+ 
+ 		/* ignore temp files */
+ 		if (strncmp(de->d_name, "tmp_", 4) == 0 ||
+-		    de->d_type != DT_REG)
++		    (de->d_type != DT_REG && de->d_type != DT_UNKNOWN))
+ 			continue;
+ 		if (asprintf(&queuefn, "%s/%s", config->spooldir, de->d_name) < 0)
+ 			goto fail;
++		if (de->d_type == DT_UNKNOWN) {
++			if (stat(queuefn, &st) == -1) {
++				free(queuefn);
++				goto fail;
++			}
++			if (!S_ISREG(st.st_mode)) {
++				free(queuefn);
++				continue;
++			}
++		}
+ 		seenit = seen(de->d_name);
+ 		if (inmore && seenit) {
+ 			free(queuefn);
