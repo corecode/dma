@@ -1,0 +1,50 @@
+Randomize the generated Message-Id field a bit more.
+
+Debian:		#544475
+
+--- a/Makefile
++++ b/Makefile
+@@ -3,6 +3,7 @@
+ 
+ SUBDIR=	etc
+ 
++CFLAGS+= -DHAVE_RANDOM
+ CFLAGS+= -DHAVE_LIBLOCKFILE
+ CFLAGS+= -I${.CURDIR}
+ 
+--- a/dma.c
++++ b/dma.c
+@@ -786,8 +786,15 @@
+ 				} else if (!had_messagid) {
+ 					/* XXX better msgid, assign earlier and log? */
+ 					had_messagid = 1;
+-					snprintf(line, sizeof(line), "Message-Id: <%"PRIxMAX"@%s>\n",
+-						 queue->id, hostname());
++					snprintf(line, sizeof(line), "Message-Id: <%"PRIxMAX".%"PRIxMAX".%"PRIxMAX"@%s>\n",
++						 (uintmax_t)time(NULL),
++						 queue->id,
++#ifdef HAVE_RANDOM
++						 (uintmax_t)random(),
++#else
++						 (uintmax_t)rand(),
++#endif
++						 hostname());
+ 				} else if (!had_from) {
+ 					had_from = 1;
+ 					snprintf(line, sizeof(line), "From: <%s>\n", sender);
+@@ -1589,6 +1596,15 @@
+ 	atexit(deltmp);
+ 	LIST_INIT(&queue.queue);
+ 	snprintf(tag, 254, "dma");
++#ifdef HAVE_RANDOM
++#ifdef HAVE_SRANDOMDEV
++	srandomdev();
++#else
++	srandom((unsigned long)((time(NULL) ^ getpid()) + ((uintptr_t)argv)));
++#endif /* SRANDOMDEV */
++#else
++	srand((unsigned)((time(NULL) ^ getpid()) + ((uintptr_t)argv)));
++#endif /* RANDOM */
+ 
+ 	if (strcmp(argv[0], "mailq") == 0) {
+ 		argv++; argc--;
