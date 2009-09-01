@@ -1,4 +1,9 @@
-Fix a typo.
+Description: Fix a typo in an error message.
+ I'll forward this patch as soon as I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/crypto.c
 +++ b/crypto.c

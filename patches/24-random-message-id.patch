@@ -1,6 +1,10 @@
-Randomize the generated Message-Id field a bit more.
-
-Debian:		#544475
+Description: Randomize the generated Message-Id field a bit more.
+ I'll forward this patch when I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Bug-Debian: http://bugs.debian.org/544475
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/Makefile
 +++ b/Makefile

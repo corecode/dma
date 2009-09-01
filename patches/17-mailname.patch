@@ -1,6 +1,12 @@
-Fix a file descriptor leak in the MAILNAMEFILE code.
-Fix a mistake in my patch submitted to DFBSD - "initialized" should be static!
-For Debian, use /etc/mailname for the MAILNAMEFILE.
+Description: Several fixes to the mail name file parsing.
+ Fix a file descriptor leak in the MAILNAMEFILE code.
+ Fix a mistake in my patch submitted to DFBSD - "initialized" should be static!
+ I'll forward these parts of the patch when I catch up with upstream.
+ For Debian, use /etc/mailname for the MAILNAMEFILE.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/dma.c
 +++ b/dma.c

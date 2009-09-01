@@ -1,5 +1,10 @@
-As per the Debian Policy, change the /usr/sbin/dma permissions from 2555
-to 2755, since removing root write access gains us nothing.
+Description: Install the dma binary with the correct permissions.
+ As per the Debian Policy, change the /usr/sbin/dma permissions from 2555
+ to 2755, since removing root write access gains us nothing.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: not-needed
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/Makefile
 +++ b/Makefile

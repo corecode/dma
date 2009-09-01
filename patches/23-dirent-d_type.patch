@@ -1,7 +1,12 @@
-Cater to XFS's weirdness - handle the case when a dirent's d_type
-field is not filled in by doing an extra stat().
-
-Debian:		#544357
+Description: Allow the spool to be on a filesystem that does not set d_type.
+ Some filesystems (notably XFS) do not set the d_type field in the dirent
+ structure.  This prevents dma from delivering any of the queued messages.
+ I'll forward this patch when I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Bug-Debian: http://bugs.debian.org/544357
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/dma.c
 +++ b/dma.c

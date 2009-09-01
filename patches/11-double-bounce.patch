@@ -1,7 +1,14 @@
-Implement double-bounce handling via an external program, controlled
-by the DBOUNCEPROG config parameter.
-Enable this handling by default, using the dbounce-simple-safecat
-helper installed by the package.
+Description: Implement double-bounce handling via an external program.
+ Implement double-bounce handling via an external program, controlled
+ by the DBOUNCEPROG config parameter.
+ Enable this handling by default, using the dbounce-simple-safecat
+ helper installed by the package.
+ Unfortunately, Simon Schubert <corecode@dragonflybsd.org> did not
+ accept this part of my changes to dma in issue 1321.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Bug: http://bugs.dragonflybsd.org/issue1321
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/conf.c
 +++ b/conf.c

@@ -1,13 +1,13 @@
-Several fixes to make dma build on Debian:
-- build and install the files in the etc/ subdirectory;
-- generate aliases_parse.h and let the others depend on it;
-- define the __DECONST macro;
-- prototype open_locked() in dma.c, just in case;
-- use mtime instead of mtimespec.
-
-All of these are taken from the Ringlet Subversion repository:
-http://svn.ringlet.net/svn/ringlet/mail/dma/
-http://svn.ringlet.net/cgi-bin/viewvc/viewvc.cgi/ringlet/mail/dma/
+Description: Several fixes to make dma build on Debian.
+ - build and install the files in the etc/ subdirectory;
+ - generate aliases_parse.h and let the others depend on it;
+ - define the __DECONST macro;
+ - prototype open_locked() in dma.c, just in case;
+ - use mtime instead of mtimespec.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: not-needed
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/Makefile
 +++ b/Makefile

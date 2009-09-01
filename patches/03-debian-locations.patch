@@ -1,6 +1,11 @@
-On Debian, the aliases file lives in /etc, not /etc/mail.
-Define a smarthost by default, albeit an invalid one.
-Use deferred delivery - the package includes a cron job running the queue.
+Description: Customize the /etc/dma configuration files for Debian.
+ On Debian, the aliases file lives in /etc, not /etc/mail.
+ Define a smarthost by default, albeit an invalid one.
+ Use deferred delivery - the package includes a cron job running the queue.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: not-needed
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/dma.8
 +++ b/dma.8

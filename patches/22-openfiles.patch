@@ -1,4 +1,9 @@
-Handle the "too many open files" error gracefully, retrying.
+Desciption: Handle the "too many open files" error gracefully, retrying.
+ I'll forward this patch when I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/dma.c
 +++ b/dma.c

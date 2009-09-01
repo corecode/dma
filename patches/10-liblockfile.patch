@@ -1,5 +1,8 @@
-Try to dot-lock the user's mailbox using the maillock(3) function from
-liblockfile, as mandated by Debian Policy.
+Description: Dot-lock the user's mailbox with maillock(3) from liblockfile.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: not-needed
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/Makefile
 +++ b/Makefile

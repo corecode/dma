@@ -1,5 +1,10 @@
-Implement the sendmail -t command-line option: parse the message itself
-to obtain the recipient addresses.
+Description: Implement sendmail -t, parse the message for recipients.
+ Unfortunately, Simon Schubert <corecode@dragonflybsd.org> did not
+ accept this part of my changes in issue 1321.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Bug: http://bugs.dragonflybsd.org/issue1321
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-09-01
 
 --- a/dma.8
 +++ b/dma.8
