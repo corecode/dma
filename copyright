@@ -1,5 +1,6 @@
-Format-Specification: http://wiki.debian.org/Proposals/CopyrightFormat?recall=184
-Upstream-Name: dma
+Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=59
+Name: dma
+Source: http://devel.ringlet.net/mail/dma/
 
 Files: base64.c
 Copyright: Copyright (c) 2008 The DragonFly Project.  All rights reserved.
