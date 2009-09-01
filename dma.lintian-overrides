@@ -1,3 +1,4 @@
 dma: setgid-binary usr/sbin/dma 2755 root/mail
 dma: non-standard-dir-perm var/spool/dma/ 0770 != 0755
 dma: no-upstream-changelog
+dma: manpage-has-errors-from-man *Unknown DragonFly version*
