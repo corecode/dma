@@ -44,7 +44,7 @@ override_dh_auto_install:
 	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
 
 override_dh_fixperms:
-	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma
+	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma -Xetc/dma
 
 %:
 	dh --with quilt $@

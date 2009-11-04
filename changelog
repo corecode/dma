@@ -1,3 +1,10 @@
+dma (0.0.2009.07.17-3) unstable; urgency=low
+
+  * Really install the files in /etc/dma/ as root/mail/640.
+    Closes: #544664
+
+ -- Peter Pentchev <roam@ringlet.net>  Wed, 04 Nov 2009 14:09:45 +0200
+
 dma (0.0.2009.07.17-2) unstable; urgency=low
 
   * Allow the spool directory to live on a filesystem that does not
