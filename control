@@ -2,7 +2,7 @@ Source: dma
 Section: mail
 Priority: optional
 Maintainer: Peter Pentchev <roam@ringlet.net>
-Build-Depends: debhelper (>= 7.0.50), byacc, flex, hardening-wrapper, liblockfile-dev, libssl-dev, pmake, quilt (>= 0.46-7), po-debconf
+Build-Depends: debhelper (>= 7.0.50), byacc, flex, hardening-wrapper, liblockfile-dev, libssl-dev, pmake, po-debconf
 Standards-Version: 3.8.3
 Homepage: http://devel.ringlet.net/mail/dma/
 Vcs-Svn: http://svn.ringlet.net/svn/ringlet/mail/dma/trunk/dma-pkg/debian/

@@ -4,6 +4,7 @@ dma (0.0.2009.07.17-3) unstable; urgency=low
     Closes: #544664
   * Install the /usr/bin/mailq and /usr/bin/newaliases symlinks.
     Closes: #558421
+  * Switch to the 3.0 (quilt) source format.
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 04 Nov 2009 14:09:45 +0200
 
