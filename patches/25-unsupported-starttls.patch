@@ -1,0 +1,39 @@
+Description: Fix a crash when the SMTP server does not support STARTTLS.
+ Properly defer the delivery instead of segfaulting if the SMTP server
+ replies with a 4xx or 5xx code to the STARTTLS command.
+ I'll forward this patch when I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Bug-Debian: http://bugs.debian.org/547594
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2009-12-09
+
+--- a/net.c
++++ b/net.c
+@@ -336,12 +336,12 @@
+ static void
+ close_connection(int fd)
+ {
+-	if (((config->features & SECURETRANS) != 0) &&
+-	    ((config->features & NOSSL) == 0))
+-		SSL_shutdown(config->ssl);
+-
+-	if (config->ssl != NULL)
++	if (config->ssl != NULL) {
++		if (((config->features & SECURETRANS) != 0) &&
++		    ((config->features & NOSSL) == 0))
++			SSL_shutdown(config->ssl);
+ 		SSL_free(config->ssl);
++	}
+ 
+ 	close(fd);
+ }
+@@ -390,7 +390,7 @@
+ 
+ 	if ((config->features & SECURETRANS) != 0) {
+ 		error = smtp_init_crypto(it, fd, config->features);
+-		if (error >= 0)
++		if (error == 0)
+ 			syslog(LOG_DEBUG, "%s: SSL initialization successful",
+ 				it->queueid);
+ 		else
