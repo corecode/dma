@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dma 0.0.2009.07.17-2\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-17 14:29+0300\n"
+"POT-Creation-Date: 2009-12-09 19:54+0200\n"
 "PO-Revision-Date: 2009-10-25 06:52+0900\n"
 "Last-Translator: Hideki Yamane (Debian-JP) <henrich@debian.or.jp>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
@@ -29,7 +29,8 @@ msgid ""
 "The 'mail name' is the domain name used to 'qualify' mail addresses without "
 "a domain name."
 msgstr ""
-"「メール名」は、ドメイン名を抜いたメールアドレスを「修飾する」ドメイン名です。"
+"「メール名」は、ドメイン名を抜いたメールアドレスを「修飾する」ドメイン名で"
+"す。"
 
 #. Type: string
 #. Description
@@ -38,8 +39,8 @@ msgid ""
 "This name will also be used by other programs. It should be the single, "
 "fully qualified domain name (FQDN)."
 msgstr ""
-"この名前は他のプログラムからも使われます。単一の完全修飾ドメイン名 (FQDN) "
-"である必要があります。"
+"この名前は他のプログラムからも使われます。単一の完全修飾ドメイン名 (FQDN) で"
+"ある必要があります。"
 
 #. Type: string
 #. Description
@@ -48,8 +49,8 @@ msgid ""
 "Thus, if a mail address on the local host is foo@example.org, the correct "
 "value for this option would be example.org."
 msgstr ""
-"つまり、ローカルホストのメールアドレスが foo@example.org の場合、このオプション"
-"の正しい値は example.org になります。"
+"つまり、ローカルホストのメールアドレスが foo@example.org の場合、このオプショ"
+"ンの正しい値は example.org になります。"
 
 #. Type: string
 #. Description
@@ -62,14 +63,14 @@ msgstr "スマートホスト:"
 #: ../templates:2001
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
-"system should use as outgoing smarthost.  If no smarthost is specified, dma "
+"system should use as outgoing smarthost. If no smarthost is specified, dma "
 "will try to deliver all messages by itself; however, for the present it "
 "cannot handle MX record lookups."
 msgstr ""
-"このシステムが外部配送用スマートホストに使うメールサーバの IP アドレスあるいは"
-"ホスト名を入力してください。スマートホストが指定されない場合、dma はすべての"
-"メッセージを自身で配送しようとします。しかし現状では MX レコードの参照を解決"
-"できません。"
+"このシステムが外部配送用スマートホストに使うメールサーバの IP アドレスあるい"
+"はホスト名を入力してください。スマートホストが指定されない場合、dma はすべて"
+"のメッセージを自身で配送しようとします。しかし現状では MX レコードの参照を解"
+"決できません。"
 
 #. Type: string
 #. Description
@@ -88,6 +89,5 @@ msgid ""
 msgstr ""
 "弾かれたメッセージがさらにバウンスされる際に dma が起動するプログラムの名前を"
 "入力してください。これを空のままにして dma のデフォルトの挙動、つまり単に配送"
-"を中止するようにするか、あるいはダブルバウンスメッセージを処理するプログラムの"
-"名前またはフルパスを指定してください。"
-
+"を中止するようにするか、あるいはダブルバウンスメッセージを処理するプログラム"
+"の名前またはフルパスを指定してください。"

@@ -66,7 +66,7 @@ msgstr "Отправляющий сервер (smarthost):"
 #: ../templates:2001
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
-"system should use as outgoing smarthost.  If no smarthost is specified, dma "
+"system should use as outgoing smarthost. If no smarthost is specified, dma "
 "will try to deliver all messages by itself; however, for the present it "
 "cannot handle MX record lookups."
 msgstr ""

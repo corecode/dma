@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dma-dfly 2009-02-11\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-17 14:29+0300\n"
+"POT-Creation-Date: 2009-12-09 19:54+0200\n"
 "PO-Revision-Date: 2009-03-30 16:51+0300\n"
 "Last-Translator: Peter Pentchev <roam@ringlet.net>\n"
 "Language-Team: Bulgaria <dict@fsa-bg.org>n\n"
@@ -27,8 +27,7 @@ msgstr "Пощенско име на системата:"
 msgid ""
 "The 'mail name' is the domain name used to 'qualify' mail addresses without "
 "a domain name."
-msgstr ""
-"Пощенското име се използва за допълване на пощенски адреси без домейн."
+msgstr "Пощенското име се използва за допълване на пощенски адреси без домейн."
 
 #. Type: string
 #. Description
@@ -59,21 +58,16 @@ msgstr "Smarthost:"
 #. Type: string
 #. Description
 #: ../templates:2001
-#| msgid ""
-#| "This is the name of a remote server to which to send each message. If it "
-#| "is left blank, dma will try to deliver all messages by itself; however, "
-#| "for the present it cannot really handle MX record lookups. The default is "
-#| "a host named \"mail\" in the same domain as your computer."
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
-"system should use as outgoing smarthost.  If no smarthost is specified, dma "
+"system should use as outgoing smarthost. If no smarthost is specified, dma "
 "will try to deliver all messages by itself; however, for the present it "
 "cannot handle MX record lookups."
 msgstr ""
 "Въведете IP адрес или име на пощенски сървър (smarthost), който да се "
-"използва за изпращане на изходящата поща.  Ако това поле е празно, dma ще "
-"се опита да достави съобщенията направо до получателите им; за момента "
-"обаче dma не може да прави DNS MX заявки."
+"използва за изпращане на изходящата поща.  Ако това поле е празно, dma ще се "
+"опита да достави съобщенията направо до получателите им; за момента обаче "
+"dma не може да прави DNS MX заявки."
 
 #. Type: string
 #. Description
@@ -84,11 +78,6 @@ msgstr "Програма, която да обработва недоставе�
 #. Type: string
 #. Description
 #: ../templates:3001
-#| msgid ""
-#| "This is the name of a program that dma will invoke when a bounced message "
-#| "bounces in its own right.  Leave this blank if you like dma's default "
-#| "behavior of simply aborting the delivery, or specify the name or full "
-#| "path to a program that will process the double-bounce message."
 msgid ""
 "Please enter the name of a program that dma will invoke when a bounced "
 "message bounces in its own right.  Leave this blank to keep dma's default "

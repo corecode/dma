@@ -69,7 +69,7 @@ msgstr "«Smarthost»:"
 #. Type: string
 #. Description
 #: ../templates:2001
-msgid "Please enter the IP address or the host name of a mail server that this system should use as outgoing smarthost.  If no smarthost is specified, dma will try to deliver all messages by itself; however, for the present it cannot handle MX record lookups."
+msgid "Please enter the IP address or the host name of a mail server that this system should use as outgoing smarthost. If no smarthost is specified, dma will try to deliver all messages by itself; however, for the present it cannot handle MX record lookups."
 msgstr "Introduzca la dirección IP o el nombre de la máquina del servidor de correo que este sistema debería utilizar como «smarthost» saliente. Si no se especifica ningún «smarthost», dma intentará entregar los mensajes por su cuenta, por ahora no puede gestionar las búsquedas de registros MX."
 
 #. Type: string

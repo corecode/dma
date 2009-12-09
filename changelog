@@ -8,6 +8,7 @@ dma (0.0.2009.07.17-3) unstable; urgency=low
   * Update the debconf translations:
     - add German.  Closes: #552754
     - add Japanese.  Closes: #554515
+    - remove a double space and unfuzzy the translations.  Closes: #552586
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 04 Nov 2009 14:09:45 +0200
 
