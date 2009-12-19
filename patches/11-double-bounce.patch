@@ -185,13 +185,14 @@ Last-Update: 2009-09-01
  };
 --- a/etc/dma.conf
 +++ b/etc/dma.conf
-@@ -41,6 +41,11 @@
+@@ -43,6 +43,12 @@
  # behind a dialup line.  You have to submit your mails manually with dma -q
  DEFER
  
 +# The double-bounce handler program.  Leave this blank if you like dma's
 +# default behavior of simply aborting the delivery, or specify the name or
 +# full path to a program that will process the double-bounce message.
++# NOTE: on Debian systems this is handled via debconf!
 +DBOUNCEPROG dbounce-simple-safecat
 +
  # Uncomment if you want the bounce message to include the complete original

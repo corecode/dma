@@ -15,20 +15,13 @@ else
 	fi
 fi
 
-if [ -f /etc/dma/dma.conf ]; then
-	rval=`awk '$1 == "SMARTHOST" {print $2}' /etc/dma/dma.conf` || true
-	db_set dma/relayhost "$rval" || true
-	rval=`awk '$1 == "DBOUNCEPROG" {print $2}' /etc/dma/dma.conf` || true
-	db_set dma/dbounceprog "$rval" || true
-else
-	db_get dma/relayhost || true
-	if [ -z "$RET" ]; then
-		db_set dma/relayhost "mail.`hostname --domain`" || true
-	fi
-	db_get dma/defer || true
-	if [ -z "$RET" ]; then
-		db_set dma/defer 'dbounce-simple-safecat' || true
-	fi
+db_get dma/relayhost || true
+if [ -z "$RET" ]; then
+	db_set dma/relayhost "mail.`hostname --domain`" || true
+fi
+db_get dma/defer || true
+if [ -z "$RET" ]; then
+	db_set dma/defer 'dbounce-simple-safecat' || true
 fi
 
 state=1

@@ -29,11 +29,13 @@ Last-Update: 2009-09-01
  Just stick with the default.
 --- a/etc/dma.conf
 +++ b/etc/dma.conf
-@@ -2,13 +2,13 @@
+@@ -2,13 +2,15 @@
  #
  # Your smarthost (also called relayhost).  Leave blank if you don't want
  # smarthost support.
 -#SMARTHOST
++# NOTE: on Debian systems this is handled via debconf!
++# Please use dpkg-reconfigure dma to change this value.
 +SMARTHOST mail.example.com
  
  # Use this SMTP port.  Most users will be fine with the default (25)
@@ -45,7 +47,7 @@ Last-Update: 2009-09-01
  
  # Path to your spooldir.  Just stay with the default.
  SPOOLDIR /var/spool/dma
-@@ -39,7 +39,7 @@
+@@ -39,7 +41,7 @@
  
  # Uncomment if you want to defer your mails.  This is useful if you are
  # behind a dialup line.  You have to submit your mails manually with dma -q

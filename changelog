@@ -12,6 +12,11 @@ dma (0.0.2009.07.17-3) unstable; urgency=low
     - remove a double space and unfuzzy the translations.  Closes: #552586
   * Fix a crash when the SMTP server does not support STARTTLS.
     Closes: #547594
+  * Always use the user-supplied value from the debconf query for
+    the smarthost and the double-bounce program.  This may result in
+    debconf overriding a manually-edited config file, so add a note to
+    dma.conf stating that these values are handled via debconf.
+    Closes: #544663
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 09 Dec 2009 21:08:19 +0200
 
