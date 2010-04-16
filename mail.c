@@ -321,7 +321,6 @@ newaddr:
 		errlog(1, NULL);
 
 	add_recp(queue, addr, 1);
-	fprintf(stderr, "parsed `%s'\n", addr);
 	goto again;
 }
 
