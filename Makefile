@@ -1,19 +1,48 @@
-# $DragonFly: src/libexec/dma/Makefile,v 1.5 2008/09/19 00:36:57 corecode Exp $
+#
+# If you want to compile dma for Linux, you probably have to do:
+# make -f Makefile.plain CPPFLAGS="-DNEED_REALLOCF -DNEED_STRLCPY \
+#	-DNEED_GETPROGNAME"
 #
 
-CFLAGS+= -I${.CURDIR}
+CC?=		gcc
+CFLAGS?=	-O -pipe
+LDADD?=		-lssl -lcrypto -lresolv
 
-DPADD=  ${LIBSSL} ${LIBCRYPTO}
-LDADD=  -lssl -lcrypto
+INSTALL?=	install -p
+PREFIX?=	/usr/local
+SBIN?=		${PREFIX}/sbin
+CONFDIR?=	${PREFIX}/etc
+MAN?=		${PREFIX}/share/man
 
-PROG=	dma
-SRCS=	aliases_parse.y aliases_scan.l base64.c conf.c crypto.c
-SRCS+=	dma.c dns.c local.c mail.c net.c spool.c util.c
-MAN=	dma.8
+YACC?=		yacc
+LEX?=		lex
 
-BINOWN= root
-BINGRP= mail
-BINMODE=2555
-WARNS?=	6
+OBJS=	aliases_parse.o aliases_scan.o base64.o conf.o crypto.o
+OBJS+=	dma.o dns.o local.o mail.o net.o spool.o util.o
+OBJS+=	dfcompat.o
 
-.include <bsd.prog.mk>
+all: dma
+
+clean:
+	-rm -f .depend dma *.[do]
+	-rm -f aliases_parse.[ch] aliases_scan.c
+ 
+install: all
+	${INSTALL} -d ${DESTDIR}${SBIN} ${DESTDIR}${CONFDIR}
+	${INSTALL} -d ${DESTDIR}${MAN}/man8
+	${INSTALL} -m 0755 dma ${DESTDIR}${SBIN}
+	${INSTALL} -m 0644 dma.8 ${DESTDIR}${MAN}/man8/
+
+aliases_parse.c: aliases_parse.y
+	${YACC} -d -o aliases_parse.c aliases_parse.y
+
+aliases_scan.c: aliases_scan.l
+	${LEX} -t aliases_scan.l > aliases_scan.c
+
+.SUFFIXES: .c .o
+
+.c.o:
+	${CC} ${CFLAGS} ${CPPFLAGS} -include dfcompat.h -o $@ -c $<
+
+dma: ${OBJS}
+	${CC} ${LDADD} -o $@ ${OBJS}
