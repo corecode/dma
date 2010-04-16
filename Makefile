@@ -1,7 +1,11 @@
 #
-# If you want to compile dma for Linux, you probably have to do:
-# make -f Makefile.plain CPPFLAGS="-DNEED_REALLOCF -DNEED_STRLCPY \
-#	-DNEED_GETPROGNAME"
+# Depending on your operating system, you might want to influence
+# the conditional inclusion of some helper functions:
+#
+# Define HAVE_* (in caps) if your system already provides:
+#   reallocf
+#   strlcpy
+#   getprogname
 #
 
 CC?=		gcc
