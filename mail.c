@@ -268,7 +268,9 @@ again:
 			goto skip;
 
 		case '<':
+			/* this is the real address now */
 			ps->brackets = 1;
+			ps->pos = 0;
 			goto skip;
 
 		case '>':
