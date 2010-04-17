@@ -102,6 +102,10 @@ set_from(struct queue *queue, const char *osender)
 		sender = strdup(osender);
 		if (sender == NULL)
 			return (NULL);
+	} else if (getenv("EMAIL") != NULL) {
+		sender = strdup(getenv("EMAIL"));
+		if (sender == NULL)
+			return (NULL);
 	} else {
 		if (asprintf(&sender, "%s@%s", username, hostname()) <= 0)
 			return (NULL);
