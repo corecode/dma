@@ -32,6 +32,9 @@
  * SUCH DAMAGE.
  */
 
+#include "dfcompat.h"
+
+#include <sys/file.h>
 #include <sys/stat.h>
 
 #include <ctype.h>

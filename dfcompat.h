@@ -1,6 +1,8 @@
 #ifndef DFCOMPAT_H
 #define DFCOMPAT_H
 
+#define _GNU_SOURCE
+
 #include <sys/types.h>
 
 #ifndef __DECONST

@@ -176,7 +176,7 @@ smtp_init_crypto(int fd, int feature)
  */
 void
 hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
-    caddr_t digest)
+    unsigned char* digest)
 {
         MD5_CTX context;
         unsigned char k_ipad[65];    /* inner padding -
@@ -248,7 +248,8 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
 int
 smtp_auth_md5(int fd, char *login, char *password)
 {
-	unsigned char buffer[BUF_SIZE], digest[BUF_SIZE], ascii_digest[33];
+	unsigned char digest[BUF_SIZE];
+	char buffer[BUF_SIZE], ascii_digest[33];
 	char *temp;
 	int len, i;
 	static char hextab[] = "0123456789abcdef";
@@ -269,7 +270,8 @@ smtp_auth_md5(int fd, char *login, char *password)
 
 	/* skip 3 char status + 1 char space */
 	base64_decode(buffer + 4, temp);
-	hmac_md5(temp, strlen(temp), password, strlen(password), digest);
+	hmac_md5((unsigned char *)temp, strlen(temp),
+		 (unsigned char *)password, strlen(password), digest);
 	free(temp);
 
 	ascii_digest[32] = 0;

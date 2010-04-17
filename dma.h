@@ -166,7 +166,7 @@ void parse_virtuser(const char *);
 void parse_authfile(const char *);
 
 /* crypto.c */
-void hmac_md5(unsigned char *, int, unsigned char *, int, caddr_t);
+void hmac_md5(unsigned char *, int, unsigned char *, int, unsigned char *);
 int smtp_auth_md5(int, char *, char *);
 int smtp_init_crypto(int, int);
 

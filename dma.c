@@ -32,10 +32,13 @@
  * SUCH DAMAGE.
  */
 
+#include "dfcompat.h"
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/queue.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 
 #include <dirent.h>

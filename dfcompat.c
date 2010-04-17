@@ -20,6 +20,8 @@
  * $DragonFly: src/lib/libc/string/strlcpy.c,v 1.4 2005/09/18 16:32:34 asmodai Exp $
  */
 
+#include "dfcompat.h"
+
 #include <sys/types.h>
 #include <string.h>
 
@@ -105,7 +107,6 @@ reallocf(void *ptr, size_t size)
 
 #ifdef __GLIBC__
 
-#define __USE_GNU
 #include <errno.h>
 
 const char *

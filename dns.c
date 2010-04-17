@@ -120,8 +120,8 @@ dns_get_mx_list(const char *host, int port, struct mx_hostentry **he, int no_mx)
 	ns_msg msg;
 	ns_rr rr;
 	const char *searchhost;
-	const char *cp;
-	char *ans;
+	const unsigned char *cp;
+	unsigned char *ans;
 	struct mx_hostentry *hosts = NULL;
 	size_t nhosts = 0;
 	size_t anssz;
@@ -179,7 +179,7 @@ repeat:
 		if (ns_parserr(&msg, ns_s_an, i, &rr))
 			goto transerr;
 
-		cp = (const char *)ns_rr_rdata(rr);
+		cp = ns_rr_rdata(rr);
 
 		switch (ns_rr_type(rr)) {
 		case ns_t_mx:
