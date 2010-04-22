@@ -31,7 +31,7 @@
 .\"
 .\" $DragonFly: src/libexec/dma/dma.8,v 1.10 2008/09/06 14:17:56 swildner Exp $
 .\"
-.Dd August 27, 2009
+.Dd April 22, 2010
 .Dt DMA 8
 .Os
 .Sh NAME
@@ -88,8 +88,10 @@ s are are ignored.
 Don't run in the background.
 Useful for debugging.
 .It Fl f Ar sender
-Set sender address to
+Set sender address (envelope-from) to
 .Ar sender .
+This overrides the value of the environment variable
+.Ev EMAIL .
 .It Fl i
 Ignore dots alone on lines by themselves in incoming messages.
 This should be set if you are reading data from a file.
@@ -247,6 +249,21 @@ If specified, this option overrides
 The name of the file to read the
 .Sq MAILNAME
 from.
+.El
+.Ss Environment variables
+The behavior of
+.Nm
+can be influenced by some environment variables.
+.Pp
+.Bl -tag -width 4n
+.It Ev EMAIL Xo
+.Xc
+Used to set the sender address (envelope-from).
+Use a plain address, in the form of
+.Li user@example.com .
+This value will be overridden when the
+.Fl f
+flag is used.
 .El
 .Sh SEE ALSO
 .Xr mailaddr 7 ,
