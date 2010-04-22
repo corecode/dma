@@ -56,7 +56,6 @@
 #define	SMTP_PORT	25		/* Default SMTP port */
 #define CON_TIMEOUT	120		/* Connection timeout */
 
-#define VIRTUAL		0x001		/* Support for address rewrites */
 #define STARTTLS	0x002		/* StartTLS support */
 #define SECURETRANS	0x004		/* SSL/TLS in general */
 #define NOSSL		0x008		/* Do not use SSL */
@@ -107,7 +106,6 @@ struct config {
 	int port;
 	const char *aliases;
 	const char *spooldir;
-	const char *virtualpath;
 	const char *authpath;
 	const char *certfile;
 	int features;
@@ -118,13 +116,6 @@ struct config {
 	SSL *ssl;
 };
 
-
-struct virtuser {
-	SLIST_ENTRY(virtuser) next;
-	char *login;
-	char *address;
-};
-SLIST_HEAD(virtusers, virtuser);
 
 struct authuser {
 	SLIST_ENTRY(authuser) next;
@@ -148,7 +139,6 @@ struct mx_hostentry {
 extern struct aliases aliases;
 extern struct config config;
 extern struct strlist tmpfs;
-extern struct virtusers virtusers;
 extern struct authusers authusers;
 extern const char *username;
 extern const char *logident_base;
@@ -162,7 +152,6 @@ extern FILE *yyin;
 /* conf.c */
 void trim_line(char *);
 void parse_conf(const char *);
-void parse_virtuser(const char *);
 void parse_authfile(const char *);
 
 /* crypto.c */

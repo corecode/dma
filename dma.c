@@ -63,7 +63,6 @@ static void deliver(struct qitem *);
 
 struct aliases aliases = LIST_HEAD_INITIALIZER(aliases);
 struct strlist tmpfs = SLIST_HEAD_INITIALIZER(tmpfs);
-struct virtusers virtusers = LIST_HEAD_INITIALIZER(virtusers);
 struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
 const char *username;
 const char *logident_base;
@@ -75,7 +74,6 @@ struct config config = {
 	.port		= 25,
 	.aliases	= "/var/mail/aliases",
 	.spooldir	= "/var/spool/dma",
-	.virtualpath	= NULL,
 	.authpath	= NULL,
 	.certfile	= NULL,
 	.features	= 0,
@@ -87,19 +85,7 @@ struct config config = {
 static char *
 set_from(struct queue *queue, const char *osender)
 {
-	struct virtuser *v;
 	char *sender;
-
-	if ((config.features & VIRTUAL) != 0) {
-		SLIST_FOREACH(v, &virtusers, next) {
-			if (strcmp(v->login, username) == 0) {
-				sender = strdup(v->address);
-				if (sender == NULL)
-					return(NULL);
-				goto out;
-			}
-		}
-	}
 
 	if (osender) {
 		sender = strdup(osender);
@@ -486,12 +472,6 @@ skipopts:
 	/* XXX fork root here */
 
 	parse_conf(CONF_PATH);
-
-	if (config.features & VIRTUAL) {
-		if (config.virtualpath == NULL)
-			errlogx(1, "no virtuser file specified, but VIRTUAL configured");
-		parse_virtuser(config.virtualpath);
-	}
 
 	if (config.authpath != NULL)
 		parse_authfile(config.authpath);

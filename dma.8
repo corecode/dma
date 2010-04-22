@@ -135,8 +135,6 @@ can be configured with three config files:
 auth.conf
 .It
 dma.conf
-.It
-virtusertable
 .El
 .Pp
 These three files are stored per default in
@@ -192,22 +190,12 @@ Path to
 .Nm Ap s
 spool directory.
 Just stick with the default.
-.It Ic VIRTPATH Xo
-(string, default=/etc/dma/virtusertable)
-.Xc
-Path to the
-.Sq virtusertable
-file.
 .It Ic AUTHPATH Xo
 (string, default=/etc/dma/auth.conf)
 .Xc
 Path to the
 .Sq auth.conf
 file.
-.It Ic VIRTUAL Xo
-(boolean, default=commented)
-.Xc
-Comment if you want virtual user support.
 .It Ic SECURETRANS Xo
 (boolean, default=commented)
 .Xc
@@ -260,15 +248,6 @@ The name of the file to read the
 .Sq MAILNAME
 from.
 .El
-.Ss virtusertable
-The
-.Pa virtusertable
-file specifies a virtual user table.
-Each line has the format
-.Dq Li localuser:mail-address .
-Some smarthosts do not accept mails from unresolvable email address
-(e.g.\& user@localhost) so you have to rewrite your outgoing email
-address to a valid address.
 .Sh SEE ALSO
 .Xr mailaddr 7 ,
 .Xr mailwrapper 8 ,
