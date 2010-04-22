@@ -13,10 +13,16 @@ CFLAGS?=	-O -pipe
 LDADD?=		-lssl -lcrypto -lresolv
 
 INSTALL?=	install -p
+CHGRP?=		chgrp
+CHMOD?=		chmod
+
 PREFIX?=	/usr/local
 SBIN?=		${PREFIX}/sbin
 CONFDIR?=	${PREFIX}/etc
 MAN?=		${PREFIX}/share/man
+VAR?=		/var
+DMASPOOL?=	${VAR}/spool/dma
+VARMAIL?=	${VAR}/mail
 
 YACC?=		yacc
 LEX?=		lex
@@ -34,8 +40,12 @@ clean:
 install: all
 	${INSTALL} -d ${DESTDIR}${SBIN} ${DESTDIR}${CONFDIR}
 	${INSTALL} -d ${DESTDIR}${MAN}/man8
-	${INSTALL} -m 0755 dma ${DESTDIR}${SBIN}
+	${INSTALL} -m 2755 -o root -g mail dma ${DESTDIR}${SBIN}
 	${INSTALL} -m 0644 dma.8 ${DESTDIR}${MAN}/man8/
+	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${DMASPOOL}
+	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${VARMAIL}
+	-${CHGRP} mail ${DESTDIR}${VARMAIL}/*
+	-${CHMOD} g+w ${DESTDIR}${VARMAIL}/*
 
 aliases_parse.c: aliases_parse.y
 	${YACC} -d -o aliases_parse.c aliases_parse.y
