@@ -2,3 +2,4 @@
 - use proper sysexit codes
 - handle/use ESMTP extensions
 - .forward support
+- create mbox files with correct user/permissions
