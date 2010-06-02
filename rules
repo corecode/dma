@@ -3,9 +3,6 @@
 # Debian build rules for dma, the DragonFly mail agent
 
 PACKAGE=	dma
-VERSION = `sed -e 's/^[^ ]\+ (\([^)]\+\)).*/\1/; 1q' debian/changelog`
-VERSION_UP = `sed -e 's/^[^ ]\+ (0\.0\.\([^)-]\+\).*/\1/; 1q' debian/changelog | tr . -`
-VERSION_ADD ?= -debian-01
 
 ifneq (,$(filter werror,$(DEB_BUILD_OPTIONS)))
 	CFLAGS+=	-Werror
@@ -20,10 +17,6 @@ export DEB_BUILD_HARDENING=0
 endif
 
 export CFLAGS
-
-diffsrc:
-	-diff -urN -x .svn debian/ ../svn/${PACKAGE}/tags/${PACKAGE}-${VERSION}${VERSION_ADD}/
-	-diff -urN -x .svn -x debian -x .pc -I'\$$Ringlet.*\$$' ./ ../svn/${PACKAGE}/tags/${PACKAGE}-dfly-${VERSION_UP}/
 
 override_dh_auto_build:
 	pmake
