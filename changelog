@@ -5,6 +5,9 @@ dma (0.0.2009.07.17-4) UNRELEASED; urgency=low
     proposed format and bump the year on my copyright notice.
   * Remove the diffsrc rules target which was intended for my own
     internal use, but has outlived its time.
+  * Use dpkg-buildflags from dpkg-dev >= 1.15.7~ to get the default
+    values for CFLAGS, CPPFLAGS, and LDFLAGS; no longer rely on
+    dpkg-buildpackage to set them by default.
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 02 Jun 2010 14:10:05 +0300
 

@@ -4,6 +4,10 @@
 
 PACKAGE=	dma
 
+CFLAGS=		$(shell dpkg-buildflags --get CFLAGS)
+CPPFLAGS=	$(shell dpkg-buildflags --get CPPFLAGS)
+LDFLAGS=	$(shell dpkg-buildflags --get LDFLAGS)
+
 ifneq (,$(filter werror,$(DEB_BUILD_OPTIONS)))
 	CFLAGS+=	-Werror
 endif
@@ -16,7 +20,7 @@ else
 export DEB_BUILD_HARDENING=0
 endif
 
-export CFLAGS
+export CFLAGS CPPFLAGS LDFLAGS
 
 override_dh_auto_build:
 	pmake
