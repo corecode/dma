@@ -1,6 +1,5 @@
-Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=59
+Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep6.mdwn?op=file&rev=135
 Name: dma
-Source: http://devel.ringlet.net/mail/dma/
 
 Files: base64.c
 Copyright: Copyright (c) 2008 The DragonFly Project.  All rights reserved.
@@ -30,7 +29,7 @@ Copyright: Copyright (c) 2008 The DragonFly Project.  All rights reserved.
 License: BSD-3
 
 Files: debian/*
-Copyright: Copyright (c) 2009 Peter Pentchev.
+Copyright: Copyright (c) 2009, 2010 Peter Pentchev.
 License: BSD-3
 
 License: BSD-3
