@@ -5,8 +5,8 @@
 10-liblockfile.patch
 11-double-bounce.patch
 17-mailname.patch
-20-parse-recipient.patch
-22-openfiles.patch
 23-dirent-d_type.patch
 24-random-message-id.patch
 25-unsupported-starttls.patch
+26-getprogname.patch
+27-int-size.patch

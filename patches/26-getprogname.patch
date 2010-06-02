@@ -1,0 +1,43 @@
+Description: Use program_invocation_short_name() instead of getprogname().
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: not-needed
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-02
+
+--- a/util.c
++++ b/util.c
+@@ -32,6 +32,8 @@
+  * SUCH DAMAGE.
+  */
+ 
++#define _GNU_SOURCE
++
+ #include <sys/param.h>
+ #include <errno.h>
+ #include <fcntl.h>
+@@ -120,10 +122,10 @@
+ 
+ 	if (outs != NULL) {
+ 		syslog(LOG_ERR, "%s: %m", outs);
+-		fprintf(stderr, "%s: %s: %s\n", getprogname(), outs, strerror(oerrno));
++		fprintf(stderr, "%s: %s: %s\n", program_invocation_short_name, outs, strerror(oerrno));
+ 	} else {
+ 		syslog(LOG_ERR, "%m");
+-		fprintf(stderr, "%s: %s\n", getprogname(), strerror(oerrno));
++		fprintf(stderr, "%s: %s\n", program_invocation_short_name, strerror(oerrno));
+ 	}
+ 
+ 	exit(exitcode);
+@@ -143,10 +145,10 @@
+ 
+ 	if (outs != NULL) {
+ 		syslog(LOG_ERR, "%s", outs);
+-		fprintf(stderr, "%s: %s\n", getprogname(), outs);
++		fprintf(stderr, "%s: %s\n", program_invocation_short_name, outs);
+ 	} else {
+ 		syslog(LOG_ERR, "Unknown error");
+-		fprintf(stderr, "%s: Unknown error\n", getprogname());
++		fprintf(stderr, "%s: Unknown error\n", program_invocation_short_name);
+ 	}
+ 
+ 	exit(exitcode);

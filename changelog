@@ -1,5 +1,18 @@
-dma (0.0.2009.07.17-4) UNRELEASED; urgency=low
+dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
 
+  TODO: hardening!
+  TODO: integrate dma-migrate
+
+  * New upstream version:
+    - remove the 20-parse-recipient patch, implemented upstream in
+      a different way
+    - remove the 22-openfiles.patch, overtaken by upstream changes
+    - add the 26-getprogname patch to use program_invocation_short_name()
+      instead of getprogname() on GNU systems
+    - add the 27-int-size patch to cast a variable to the correct type
+    - refresh 01-debian-build, 03-debian-locations, 04-debian-setgid,
+      09-typos, 10-liblockfile, 11-double-bounce, 17-mailname,
+      23-dirent-d_type, 24-random-message-id, and 25-unsupported-starttls
   * Bump Standards-Version to 3.8.4 with no changes.
   * Bring the copyright file up to the latest revision of the DEP 5
     proposed format and bump the year on my copyright notice.

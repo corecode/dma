@@ -4,7 +4,7 @@ Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/544475
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-09-01
+Last-Update: 2010-06-02
 
 --- a/Makefile
 +++ b/Makefile
@@ -18,28 +18,10 @@ Last-Update: 2009-09-01
  
 --- a/dma.c
 +++ b/dma.c
-@@ -786,8 +786,15 @@
- 				} else if (!had_messagid) {
- 					/* XXX better msgid, assign earlier and log? */
- 					had_messagid = 1;
--					snprintf(line, sizeof(line), "Message-Id: <%"PRIxMAX"@%s>\n",
--						 queue->id, hostname());
-+					snprintf(line, sizeof(line), "Message-Id: <%"PRIxMAX".%"PRIxMAX".%"PRIxMAX"@%s>\n",
-+						 (uintmax_t)time(NULL),
-+						 queue->id,
-+#ifdef HAVE_RANDOM
-+						 (uintmax_t)random(),
-+#else
-+						 (uintmax_t)rand(),
-+#endif
-+						 hostname());
- 				} else if (!had_from) {
- 					had_from = 1;
- 					snprintf(line, sizeof(line), "From: <%s>\n", sender);
-@@ -1589,6 +1596,15 @@
- 	atexit(deltmp);
+@@ -356,6 +356,15 @@
+ 
+ 	bzero(&queue, sizeof(queue));
  	LIST_INIT(&queue.queue);
- 	snprintf(tag, 254, "dma");
 +#ifdef HAVE_RANDOM
 +#ifdef HAVE_SRANDOMDEV
 +	srandomdev();
@@ -52,3 +34,31 @@ Last-Update: 2009-09-01
  
  	if (strcmp(argv[0], "mailq") == 0) {
  		argv++; argc--;
+--- a/mail.c
++++ b/mail.c
+@@ -37,6 +37,7 @@
+ 
+ #include <err.h>
+ #include <errno.h>
++#include <inttypes.h>
+ #include <signal.h>
+ #include <syslog.h>
+ #include <unistd.h>
+@@ -514,8 +515,15 @@
+ 				} else if (!had_messagid) {
+ 					/* XXX better msgid, assign earlier and log? */
+ 					had_messagid = 1;
+-					snprintf(line, sizeof(line), "Message-Id: <%s@%s>\n",
+-						 queue->id, hostname());
++					snprintf(line, sizeof(line), "Message-Id: <%"PRIxMAX".%s.%"PRIxMAX"@%s>\n",
++						 (uintmax_t)time(NULL),
++						 queue->id,
++#ifdef HAVE_RANDOM
++						 (uintmax_t)random(),
++#else
++						 (uintmax_t)rand(),
++#endif
++						 hostname());
+ 				} else if (!had_from) {
+ 					had_from = 1;
+ 					snprintf(line, sizeof(line), "From: <%s>\n", queue->sender);

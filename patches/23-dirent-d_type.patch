@@ -6,29 +6,27 @@ Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/544357
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-09-01
+Last-Update: 2010-06-02
 
---- a/dma.c
-+++ b/dma.c
-@@ -1416,10 +1416,20 @@
+--- a/spool.c
++++ b/spool.c
+@@ -287,7 +287,8 @@
+ 		mailfn = NULL;
  
  		/* ignore temp files */
- 		if (strncmp(de->d_name, "tmp_", 4) == 0 ||
--		    de->d_type != DT_REG)
+-		if (strncmp(de->d_name, "tmp_", 4) == 0 || de->d_type != DT_REG)
++		if (strncmp(de->d_name, "tmp_", 4) == 0 ||
 +		    (de->d_type != DT_REG && de->d_type != DT_UNKNOWN))
  			continue;
- 		if (asprintf(&queuefn, "%s/%s", config->spooldir, de->d_name) < 0)
+ 		if (de->d_name[0] != 'Q')
+ 			continue;
+@@ -296,6 +297,9 @@
+ 		if (asprintf(&mailfn, "%s/M%s", config->spooldir, de->d_name + 1) < 0)
  			goto fail;
-+		if (de->d_type == DT_UNKNOWN) {
-+			if (stat(queuefn, &st) == -1) {
-+				free(queuefn);
-+				goto fail;
-+			}
-+			if (!S_ISREG(st.st_mode)) {
-+				free(queuefn);
-+				continue;
-+			}
-+		}
- 		seenit = seen(de->d_name);
- 		if (inmore && seenit) {
- 			free(queuefn);
+ 
++		if (de->d_type == DT_UNKNOWN)
++			if (stat(queuefn, &sb) == -1 || !S_ISREG(sb.st_mode))
++				goto skip_item;
+ 		if (stat(mailfn, &sb) != 0)
+ 			goto skip_item;
+ 

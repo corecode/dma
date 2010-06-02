@@ -8,11 +8,11 @@ Description: Implement double-bounce handling via an external program.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug: http://bugs.dragonflybsd.org/issue1321
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-09-01
+Last-Update: 2010-06-02
 
 --- a/conf.c
 +++ b/conf.c
-@@ -238,6 +238,10 @@
+@@ -236,6 +236,10 @@
  				if (data != NULL)
  					config->certfile = strdup(data);
  			}
@@ -25,7 +25,7 @@ Last-Update: 2009-09-01
  					config->mailname = strdup(data);
 --- a/dma.8
 +++ b/dma.8
-@@ -217,6 +217,26 @@
+@@ -240,6 +240,26 @@
  .Fl q
  option.
  This option is handy if you are behind a dialup line.
@@ -52,11 +52,49 @@ Last-Update: 2009-09-01
  .It Ic FULLBOUNCE Xo
  (boolean, default=commented)
  .Xc
---- a/dma.c
-+++ b/dma.c
-@@ -595,14 +595,115 @@
+--- a/dma.h
++++ b/dma.h
+@@ -120,6 +120,7 @@
+ 	char *certfile;
+ 	int features;
+ 	SSL *ssl;
++	char *dbounceprog;
+ 	char *mailname;
+ 	char *mailnamefile;
+ };
+--- a/etc/dma.conf
++++ b/etc/dma.conf
+@@ -43,6 +43,12 @@
+ # behind a dialup line.  You have to submit your mails manually with dma -q
+ DEFER
+ 
++# The double-bounce handler program.  Leave this blank if you like dma's
++# default behavior of simply aborting the delivery, or specify the name or
++# full path to a program that will process the double-bounce message.
++# NOTE: on Debian systems this is handled via debconf!
++DBOUNCEPROG dbounce-simple-safecat
++
+ # Uncomment if you want the bounce message to include the complete original
+ # message, not just the headers.
+ #FULLBOUNCE
+--- a/mail.c
++++ b/mail.c
+@@ -32,7 +32,12 @@
+  * SUCH DAMAGE.
+  */
+ 
++#include <sys/types.h>
++#include <sys/wait.h>
++
++#include <err.h>
+ #include <errno.h>
++#include <signal.h>
+ #include <syslog.h>
+ #include <unistd.h>
+ 
+@@ -43,13 +48,115 @@
+ {
  	struct queue bounceq;
- 	struct qitem *bit;
  	char line[1000];
 -	size_t pos;
  	int error;
@@ -70,10 +108,10 @@ Last-Update: 2009-09-01
  
  	/* Don't bounce bounced mails */
  	if (it->sender[0] == 0) {
--		syslog(LOG_INFO, "%s: can not bounce a bounce message, discarding",
-+		syslog(LOG_INFO, "%s: bounce delivery failed, double-bouncing",
- 		       it->queueid);
+-		syslog(LOG_INFO, "can not bounce a bounce message, discarding");
 -		exit(1);
++		syslog(LOG_INFO, "%s: bounce delivery failed, double-bouncing",
++		       it->queueid);
 +		if (config->dbounceprog == NULL) {
 +			syslog(LOG_CRIT, "%s: delivery panic: can't bounce a bounce and no double-bounce program defined in the config file",
 +			       it->queueid);
@@ -172,29 +210,4 @@ Last-Update: 2009-09-01
 +		exit(0);
  	}
  
- 	syslog(LOG_ERR, "%s: delivery failed, bouncing",
---- a/dma.h
-+++ b/dma.h
-@@ -121,6 +121,7 @@
- 	char *certfile;
- 	int features;
- 	SSL *ssl;
-+	char *dbounceprog;
- 	char *mailname;
- 	char *mailnamefile;
- };
---- a/etc/dma.conf
-+++ b/etc/dma.conf
-@@ -43,6 +43,12 @@
- # behind a dialup line.  You have to submit your mails manually with dma -q
- DEFER
- 
-+# The double-bounce handler program.  Leave this blank if you like dma's
-+# default behavior of simply aborting the delivery, or specify the name or
-+# full path to a program that will process the double-bounce message.
-+# NOTE: on Debian systems this is handled via debconf!
-+DBOUNCEPROG dbounce-simple-safecat
-+
- # Uncomment if you want the bounce message to include the complete original
- # message, not just the headers.
- #FULLBOUNCE
+ 	bzero(&bounceq, sizeof(bounceq));

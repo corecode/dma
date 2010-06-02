@@ -6,11 +6,19 @@ Description: Several fixes to the mail name file parsing.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-09-01
+Last-Update: 2010-06-02
 
---- a/dma.c
-+++ b/dma.c
-@@ -82,8 +82,9 @@
+--- a/etc/dma.conf
++++ b/etc/dma.conf
+@@ -59,4 +59,4 @@
+ 
+ # The name of the file to read the MAILNAME from; if this file is not
+ # present, the result of "hostname" will be used.
+-#MAILNAMEFILE /etc/mailname
++MAILNAMEFILE /etc/mailname
+--- a/util.c
++++ b/util.c
+@@ -47,8 +47,9 @@
  hostname(void)
  {
  	static char name[MAXHOSTNAMELEN+1];
@@ -21,7 +29,7 @@ Last-Update: 2009-09-01
  	size_t len;
  
  	if (initialized)
-@@ -97,7 +98,9 @@
+@@ -62,7 +63,9 @@
  	if (config->mailnamefile != NULL && config->mailnamefile[0] != '\0') {
  		fp = fopen(config->mailnamefile, "r");
  		if (fp != NULL) {
@@ -32,7 +40,7 @@ Last-Update: 2009-09-01
  				len = strlen(name);
  				while (len > 0 &&
  				    (name[len - 1] == '\r' ||
-@@ -108,7 +111,6 @@
+@@ -73,7 +76,6 @@
  					return (name);
  				}
  			}
@@ -40,11 +48,3 @@ Last-Update: 2009-09-01
  		}
  	}
  	if (gethostname(name, sizeof(name)) != 0)
---- a/etc/dma.conf
-+++ b/etc/dma.conf
-@@ -59,4 +59,4 @@
- 
- # The name of the file to read the MAILNAME from; if this file is not
- # present, the result of "hostname" will be used.
--#MAILNAMEFILE /etc/mailname
-+MAILNAMEFILE /etc/mailname

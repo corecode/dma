@@ -6,11 +6,11 @@ Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/547594
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-12-09
+Last-Update: 2010-06-02
 
 --- a/net.c
 +++ b/net.c
-@@ -336,12 +336,12 @@
+@@ -329,12 +329,12 @@
  static void
  close_connection(int fd)
  {
@@ -28,12 +28,12 @@ Last-Update: 2009-12-09
  
  	close(fd);
  }
-@@ -390,7 +390,7 @@
+@@ -387,7 +387,7 @@
  
  	if ((config->features & SECURETRANS) != 0) {
- 		error = smtp_init_crypto(it, fd, config->features);
+ 		error = smtp_init_crypto(fd, config->features);
 -		if (error >= 0)
 +		if (error == 0)
- 			syslog(LOG_DEBUG, "%s: SSL initialization successful",
- 				it->queueid);
+ 			syslog(LOG_DEBUG, "SSL initialization successful");
  		else
+ 			goto out;

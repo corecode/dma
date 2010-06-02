@@ -2,7 +2,7 @@ Description: Dot-lock the user's mailbox with maillock(3) from liblockfile.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-09-01
+Last-Update: 2010-06-02
 
 --- a/Makefile
 +++ b/Makefile
@@ -19,26 +19,18 @@ Last-Update: 2009-09-01
 +LDADD=  -lssl -lcrypto -llockfile
  
  PROG=	dma
- SRCS=	base64.c conf.c crypto.c net.c dma.c aliases_scan.l aliases_parse.y
---- a/dma.c
-+++ b/dma.c
-@@ -56,9 +56,11 @@
+ SRCS=	aliases_parse.y aliases_scan.l base64.c conf.c crypto.c
+--- a/local.c
++++ b/local.c
+@@ -7,8 +7,53 @@
  #include <syslog.h>
  #include <unistd.h>
  
--#include "dma.h"
--
 +#ifdef HAVE_LIBLOCKFILE
 +#include <maillock.h>
 +#endif
- 
-+#include "dma.h"
- 
- static void deliver(struct qitem *);
- static int add_recp(struct queue *, const char *, const char *, int);
-@@ -689,6 +691,47 @@
- 	exit(1);
- }
++
+ #include "dma.h"
  
 +#ifdef HAVE_LIBLOCKFILE
 +static char *
@@ -81,11 +73,11 @@ Last-Update: 2009-09-01
 +}
 +#endif
 +
- static int
+ int
  deliver_local(struct qitem *it, const char **errmsg)
  {
-@@ -699,6 +742,10 @@
- 	int error;
+@@ -22,6 +67,10 @@
+ 	int hadnl = 0;
  	off_t mboxlen;
  	time_t now = time(NULL);
 +#ifdef HAVE_LIBLOCKFILE
@@ -95,23 +87,21 @@ Last-Update: 2009-09-01
  
  	error = snprintf(fn, sizeof(fn), "%s/%s", _PATH_MAILDIR, it->addr);
  	if (error < 0 || (size_t)error >= sizeof(fn)) {
-@@ -708,17 +755,42 @@
+@@ -30,11 +79,32 @@
  	}
  
  	/* mailx removes users mailspool file if empty, so open with O_CREAT */
--	mbox = open_locked(fn, O_WRONLY | O_APPEND | O_CREAT);
+-	mbox = open_locked(fn, O_WRONLY|O_APPEND|O_NONBLOCK|O_CREAT, 0660);
 -	if (mbox < 0) {
--		syslog(LOG_NOTICE, "%s: local delivery deferred: can not open `%s': %m",
--		       it->queueid, fn);
+-		syslog(LOG_NOTICE, "local delivery deferred: can not open `%s': %m", fn);
 -		return (1);
 +#ifdef HAVE_LIBLOCKFILE
 +	try = 0;
 +	for (;;) {
 +#endif
-+		mbox = open_locked(fn, O_WRONLY | O_APPEND | O_CREAT);
++		mbox = open_locked(fn, O_WRONLY|O_APPEND|O_NONBLOCK|O_CREAT, 0660);
 +		if (mbox < 0) {
-+			syslog(LOG_NOTICE, "%s: local delivery deferred: can not open `%s': %m",
-+			       it->queueid, fn);
++			syslog(LOG_NOTICE, "local delivery deferred: can not open `%s': %m", fn);
 +			return (1);
 +		}
 +#ifdef HAVE_LIBLOCKFILE
@@ -119,64 +109,64 @@ Last-Update: 2009-09-01
 +		if (res == L_SUCCESS)
 +			break;
 +		else
-+			syslog(LOG_NOTICE, "%s: could not dot-lock `%s': %s",
-+			       it->queueid, fn, liblockfile_strerror(res));
++			syslog(LOG_NOTICE, "could not dot-lock `%s': %s",
++			       fn, liblockfile_strerror(res));
 +		close(mbox);
 +		if (try++ >= 5) {
-+			syslog(LOG_NOTICE, "%s: local delivery deferred: can not dot-lock `%s'",
-+			       it->queueid, fn);
++			syslog(LOG_NOTICE, "local delivery deferred: can not dot-lock `%s'",
++			       fn);
 +			return (1);
 +		}
-+		syslog(LOG_NOTICE, "%s: sleeping to retry the dot-lock",
-+		       it->queueid);
++		syslog(LOG_NOTICE, "sleeping to retry the dot-lock");
 +		sleep(5 * try);
  	}
 +#endif
- 	mboxlen = lseek(mbox, 0, SEEK_CUR);
+ 	mboxlen = lseek(mbox, 0, SEEK_END);
  
- 	if (fseek(it->queuef, it->hdrlen, SEEK_SET) != 0) {
- 		syslog(LOG_NOTICE, "%s: local delivery deferred: can not seek: %m",
- 		       it->queueid);
+ 	/* New mails start with \nFrom ...., unless we're at the beginning of the mbox */
+@@ -48,12 +118,18 @@
+ 
+ 	if (fseek(it->mailf, 0, SEEK_SET) != 0) {
+ 		syslog(LOG_NOTICE, "local delivery deferred: can not seek: %m");
 +#ifdef HAVE_LIBLOCKFILE
 +		mailunlock();
 +#endif
  		return (1);
  	}
  
-@@ -726,6 +798,9 @@
+ 	error = snprintf(line, sizeof(line), "%sFrom %s\t%s", newline, sender, ctime(&now));
  	if (error < 0 || (size_t)error >= sizeof(line)) {
- 		syslog(LOG_NOTICE, "%s: local delivery deferred: can not write header: %m",
- 		       it->queueid);
+ 		syslog(LOG_NOTICE, "local delivery deferred: can not write header: %m");
 +#ifdef HAVE_LIBLOCKFILE
 +		mailunlock();
 +#endif
  		return (1);
  	}
  	if (write(mbox, line, error) != error)
-@@ -738,6 +813,9 @@
+@@ -65,6 +141,9 @@
+ 		linelen = strlen(line);
  		if (linelen == 0 || line[linelen - 1] != '\n') {
- 			syslog(LOG_CRIT, "%s: local delivery failed: corrupted queue file",
- 			       it->queueid);
+ 			syslog(LOG_CRIT, "local delivery failed: corrupted queue file");
 +#ifdef HAVE_LIBLOCKFILE
 +			mailunlock();
 +#endif
  			*errmsg = "corrupted queue file";
  			error = -1;
  			goto chop;
-@@ -755,6 +833,9 @@
- 	line[0] = '\n';
- 	if (write(mbox, line, 1) != 1)
- 		goto wrerror;
+@@ -84,6 +163,9 @@
+ 		if ((size_t)write(mbox, line, linelen) != linelen)
+ 			goto wrerror;
+ 	}
 +#ifdef HAVE_LIBLOCKFILE
 +	mailunlock();
 +#endif
  	close(mbox);
  	return (0);
  
-@@ -766,6 +847,9 @@
+@@ -93,6 +175,9 @@
+ chop:
  	if (ftruncate(mbox, mboxlen) != 0)
- 		syslog(LOG_WARNING, "%s: error recovering mbox `%s': %m",
- 		       it->queueid, fn);
+ 		syslog(LOG_WARNING, "error recovering mbox `%s': %m", fn);
 +#ifdef HAVE_LIBLOCKFILE
 +	mailunlock();
 +#endif

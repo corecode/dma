@@ -5,11 +5,11 @@ Description: Customize the /etc/dma configuration files for Debian.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-09-01
+Last-Update: 2010-06-02
 
 --- a/dma.8
 +++ b/dma.8
-@@ -143,7 +143,7 @@
+@@ -166,7 +166,7 @@
  .Pa dma.conf .
  .Bl -tag -width 4n
  .It Ic SMARTHOST Xo
@@ -18,7 +18,7 @@ Last-Update: 2009-09-01
  .Xc
  If you want to send outgoing mails via a smarthost, set this variable to
  your smarthosts address.
-@@ -158,7 +158,7 @@
+@@ -181,7 +181,7 @@
  will deliver all mails to this port, regardless of whether a smarthost is set
  or not.
  .It Ic ALIASES Xo

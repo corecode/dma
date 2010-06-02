@@ -6,11 +6,11 @@ Description: Install the dma binary with the correct permissions.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-11-04
+Last-Update: 2010-06-02
 
 --- a/Makefile
 +++ b/Makefile
-@@ -14,7 +14,7 @@
+@@ -15,7 +15,7 @@
  
  BINOWN= root
  BINGRP= mail

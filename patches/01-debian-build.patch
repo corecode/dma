@@ -2,12 +2,11 @@ Description: Several fixes to make dma build on Debian.
  - build and install the files in the etc/ subdirectory;
  - generate aliases_parse.h and let the others depend on it;
  - define the __DECONST macro;
- - prototype open_locked() in dma.c, just in case;
  - use mtime instead of mtimespec.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2009-09-01
+Last-Update: 2010-06-02
 
 --- a/Makefile
 +++ b/Makefile
@@ -20,7 +19,7 @@ Last-Update: 2009-09-01
  CFLAGS+= -I${.CURDIR}
  
  DPADD=  ${LIBSSL} ${LIBCRYPTO}
-@@ -15,4 +17,23 @@
+@@ -16,4 +18,23 @@
  BINMODE=2555
  WARNS?=	6
  
@@ -46,16 +45,7 @@ Last-Update: 2009-09-01
 +.include <bsd.subdir.mk>
 --- a/dma.c
 +++ b/dma.c
-@@ -74,6 +74,8 @@
- static struct strlist seenmsg[16][16];
- 
- 
-+static int open_locked(const char *, int);
-+
- char *
- hostname(void)
- {
-@@ -803,7 +805,7 @@
+@@ -276,7 +276,7 @@
  			exit(1);
  		}
  		if (gettimeofday(&now, NULL) == 0 &&
@@ -66,7 +56,7 @@ Last-Update: 2009-09-01
  				 MAX_TIMEOUT);
 --- a/dma.h
 +++ b/dma.h
-@@ -52,6 +52,10 @@
+@@ -48,6 +48,10 @@
  #endif  /* __GNUC__ */
  #endif
  
