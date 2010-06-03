@@ -1,6 +1,7 @@
 dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
 
   TODO: integrate dma-migrate
+  TODO: make sure the double-bounce program works with the new queue format
 
   * New upstream version:
     - remove the 20-parse-recipient patch, implemented upstream in
