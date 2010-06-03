@@ -6,7 +6,7 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
   * New upstream version:
     - remove the 20-parse-recipient patch, implemented upstream in
       a different way
-    - remove the 22-openfiles.patch, overtaken by upstream changes
+    - remove the 22-openfiles patch, overtaken by upstream changes
     - resurrect the 13-hardening patch, correcting a couple of
       unchecked asprintf(3) and vasprintf(3) invocations
     - add the 26-getprogname patch to use program_invocation_short_name()
