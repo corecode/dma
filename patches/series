@@ -4,6 +4,7 @@
 09-typos.patch
 10-liblockfile.patch
 11-double-bounce.patch
+13-hardening.patch
 17-mailname.patch
 23-dirent-d_type.patch
 24-random-message-id.patch

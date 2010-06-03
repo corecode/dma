@@ -1,0 +1,53 @@
+Description: Build hardening: check a few more return values.
+ I'll forward this patch as soon as I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-03
+
+--- a/util.c
++++ b/util.c
+@@ -92,9 +92,9 @@
+ 		char *sufx;
+ 
+ 		va_start(ap, fmt);
+-		vasprintf(&sufx, fmt, ap);
+-		if (sufx != NULL) {
+-			asprintf(&tag, "%s[%s]", logident_base, sufx);
++		if (vasprintf(&sufx, fmt, ap) != -1 && sufx != NULL) {
++			if (asprintf(&tag, "%s[%s]", logident_base, sufx) == -1)
++				tag = NULL;
+ 			free(sufx);
+ 		}
+ 		va_end(ap);
+@@ -112,7 +112,8 @@
+ 
+ 	if (fmt != NULL) {
+ 		va_start(ap, fmt);
+-		vasprintf(&outs, fmt, ap);
++		if (vasprintf(&outs, fmt, ap) == -1)
++			outs = NULL;
+ 		va_end(ap);
+ 	}
+ 
+@@ -135,7 +136,8 @@
+ 
+ 	if (fmt != NULL) {
+ 		va_start(ap, fmt);
+-		vasprintf(&outs, fmt, ap);
++		if (vasprintf(&outs, fmt, ap) == -1)
++			outs = NULL;
+ 		va_end(ap);
+ 	}
+ 
+@@ -189,8 +191,8 @@
+ 		else
+ 			free(u);
+ 	}
+-	asprintf(__DECONST(void *, &username), "%ld", (long)uid);
+-	if (username != NULL)
++	if (asprintf(__DECONST(void *, &username), "%ld", (long)uid) != -1 &&
++	    username != NULL)
+ 		return;
+ 	username = "unknown-or-invalid-username";
+ }

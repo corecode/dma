@@ -7,6 +7,8 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
     - remove the 20-parse-recipient patch, implemented upstream in
       a different way
     - remove the 22-openfiles.patch, overtaken by upstream changes
+    - resurrect the 13-hardening patch, correcting a couple of
+      unchecked asprintf(3) and vasprintf(3) invocations
     - add the 26-getprogname patch to use program_invocation_short_name()
       instead of getprogname() on GNU systems
     - add the 27-int-size patch to cast a variable to the correct type
