@@ -1,0 +1,20 @@
+Description: Check the parsed recipient address for validity.
+ I'll forward this patch when I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-15
+
+--- a/mail.c
++++ b/mail.c
+@@ -428,8 +428,8 @@
+ 	if (addr == NULL)
+ 		errlog(1, NULL);
+ 
+-	add_recp(queue, addr, 1);
+-	fprintf(stderr, "parsed `%s'\n", addr);
++	if (add_recp(queue, addr, 1) != 0)
++		errlogx(1, "invalid recipient `%s'", addr);
+ 	goto again;
+ }
+ 

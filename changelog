@@ -11,6 +11,8 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
     - add the 26-getprogname patch to use program_invocation_short_name()
       instead of getprogname() on GNU systems
     - add the 27-int-size patch to cast a variable to the correct type
+    - add the 28-valid-recipient patch to fix parsing recipients out of
+      the message body
     - refresh 01-debian-build, 03-debian-locations, 04-debian-setgid,
       09-typos, 10-liblockfile, 11-double-bounce, 17-mailname,
       23-dirent-d_type, 24-random-message-id, and 25-unsupported-starttls
