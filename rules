@@ -24,16 +24,23 @@ export CFLAGS CPPFLAGS LDFLAGS
 
 override_dh_auto_build:
 	pmake
+	cd debian/migrate && pmake
 
 override_dh_auto_clean:
 	pmake clean
+	cd debian/migrate && pmake clean
 
 override_dh_auto_install:
 	pmake DESTDIR=$(CURDIR)/debian/$(PACKAGE) BINDIR=/usr/sbin install
+	cd debian/migrate && pmake DESTDIR=$(CURDIR)/debian/dma-migrate BINDIR=/usr/sbin install
 	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
 
 override_dh_fixperms:
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma -Xetc/dma
+
+override_dh_installchangelogs:
+	dh_installchangelogs -p dma
+	dh_installchangelogs -p dma-migrate debian/migrate/NEWS
 
 %:
 	dh $@

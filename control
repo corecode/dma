@@ -14,7 +14,7 @@ Depends: liblockfile1 (>> 1.01), ${shlibs:Depends}, ${misc:Depends}
 Provides: mail-transport-agent
 Conflicts: mail-transport-agent
 Replaces: mail-transport-agent
-Recommends: safecat
+Recommends: dma-migrate, safecat
 Description: lightweight mail transport agent
  The DragonFly Mail Agent is a small Mail Transport Agent (MTA),
  designed for home and office use.  It accepts mails from local Mail
@@ -25,3 +25,12 @@ Description: lightweight mail transport agent
  dma is not intended as a replacement for full-featured MTAs like
  Sendmail, Postfix, or Exim.  Consequently, dma does not listen on
  port 25 for incoming connections.
+
+Package: dma-migrate
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Enhances: dma
+Description: migration utility for the DragonFly Mail Agent's spool files
+ The dma-migrate utility examines the DragonFly Mail Agent's mail queue
+ and performs any conversions from old message file formats to the most
+ recent one as needed.

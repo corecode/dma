@@ -1,6 +1,5 @@
 dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
 
-  TODO: integrate dma-migrate
   TODO: make sure the double-bounce program works with the new queue format
 
   * New upstream version:
@@ -23,6 +22,8 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
   * Use dpkg-buildflags from dpkg-dev >= 1.15.7~ to get the default
     values for CFLAGS, CPPFLAGS, and LDFLAGS; no longer rely on
     dpkg-buildpackage to set them by default.
+  * Add the dma-migrate utility (in a separate binary package) to convert
+    spool files to the new queue format (M* and Q* files for each message)
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 02 Jun 2010 14:10:05 +0300
 
