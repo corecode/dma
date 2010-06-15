@@ -24,6 +24,7 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
     dpkg-buildpackage to set them by default.
   * Add the dma-migrate utility (in a separate binary package) to convert
     spool files to the new queue format (M* and Q* files for each message)
+  * Add a dma-migrate invocation to dma.cron.d
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 02 Jun 2010 14:10:05 +0300
 
