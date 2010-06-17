@@ -1,0 +1,18 @@
+Description: Fix a double-free bug.
+ I'll forward this patch as soon as I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-17
+
+--- a/spool.c
++++ b/spool.c
+@@ -315,7 +315,7 @@
+ 		if (queuefn != NULL)
+ 			free(queuefn);
+ 		if (mailfn != NULL)
+-			free(queuefn);
++			free(mailfn);
+ 	}
+ 	closedir(spooldir);
+ 	return (0);
