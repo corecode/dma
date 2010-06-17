@@ -1,0 +1,22 @@
+Description: Allow an empty queue file field - only if it is the sender.
+ I'll forward this patch as soon as I catch up with the dma upstream.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-17
+
+--- a/spool.c
++++ b/spool.c
+@@ -171,9 +171,11 @@
+ 		s++;
+ 		while (isspace(*s))
+ 			s++;
++		if (s[0] == 0 && strcmp(line, "Sender") != 0)
++			goto malformed;
+ 
+ 		s = strdup(s);
+-		if (s == NULL || s[0] == 0)
++		if (s == NULL)
+ 			goto malformed;
+ 
+ 		if (strcmp(line, "ID") == 0) {

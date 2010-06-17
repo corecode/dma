@@ -14,6 +14,8 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
     - add the 28-valid-recipient patch to fix parsing recipients out of
       the message body
     - add the 29-double-free patch to fix a double-free error
+    - add the 30-empty-sender patch to allow an empty Sender field in
+      the Q* spool file
     - refresh 01-debian-build, 03-debian-locations, 04-debian-setgid,
       09-typos, 10-liblockfile, 11-double-bounce, 17-mailname,
       23-dirent-d_type, 24-random-message-id, and 25-unsupported-starttls
