@@ -16,6 +16,8 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
     - refresh 01-debian-build, 03-debian-locations, 04-debian-setgid,
       09-typos, 10-liblockfile, 11-double-bounce, 17-mailname,
       23-dirent-d_type, 24-random-message-id, and 25-unsupported-starttls
+    - in the 11-double-bounce patch, use dma's own delqueue() function
+      instead of a naive unlink() so all the queue files are cleaned up
   * Bump Standards-Version to 3.8.4 with no changes.
   * Bring the copyright file up to the latest revision of the DEP 5
     proposed format and bump the year on my copyright notice.
