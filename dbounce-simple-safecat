@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2009  Peter Pentchev
+# Copyright (c) 2009, 2010  Peter Pentchev
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,20 @@ if [ ! -r "$FILENAME" ]; then
 	exit 1
 fi
 
-F=`safecat "$BOUNCEDIR/tmp" "$BOUNCEDIR/new" < "$FILENAME"`
+bname=`basename "$FILENAME"`
+dname=`dirname "$FILENAME"`
+if expr "$bname" : 'M' > /dev/null; then
+	qname="Q${bname#M}"
+	qfile="$dname/$qname"
+	if [ ! -r "$qfile" ]; then
+		echo "Nonexistent or unreadable bounce queue file $qfile" 1>&2
+		exit 1
+	fi
+else
+	qfile=''
+fi
+
+F=`cat ${qfile:+"$qfile"} "$FILENAME" | safecat "$BOUNCEDIR/tmp" "$BOUNCEDIR/new"`
 OUTFILE="$BOUNCEDIR/new/$F"
 if [ ! -f "$OUTFILE" ]; then
 	echo "safecat indicated success, but '$OUTFILE' does not exist" 1>&2

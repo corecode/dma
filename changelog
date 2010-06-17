@@ -1,7 +1,5 @@
 dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
 
-  TODO: make sure the double-bounce program works with the new queue format
-
   * New upstream version:
     - remove the 20-parse-recipient patch, implemented upstream in
       a different way
@@ -21,6 +19,8 @@ dma (0.0.2009.08.29-1) UNRELEASED; urgency=low
     - refresh 01-debian-build, 03-debian-locations, 04-debian-setgid,
       09-typos, 10-liblockfile, 11-double-bounce, 17-mailname,
       23-dirent-d_type, 24-random-message-id, and 25-unsupported-starttls
+    - teach the dbounce-simple-safecat handler about the M*/Q* spool
+      files scheme
   * Bump Standards-Version to 3.8.4 with no changes.
   * Bring the copyright file up to the latest revision of the DEP 5
     proposed format and bump the year on my copyright notice.
