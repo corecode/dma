@@ -8,6 +8,8 @@ CFLAGS=		$(shell dpkg-buildflags --get CFLAGS)
 CPPFLAGS=	$(shell dpkg-buildflags --get CPPFLAGS)
 LDFLAGS=	$(shell dpkg-buildflags --get LDFLAGS)
 
+CFLAGS+=	-DNEED_GETPROGNAME -DNEED_REALLOCF -DNEED_STRLCPY
+
 ifneq (,$(filter werror,$(DEB_BUILD_OPTIONS)))
 	CFLAGS+=	-Werror
 endif
@@ -23,17 +25,17 @@ endif
 export CFLAGS CPPFLAGS LDFLAGS
 
 override_dh_auto_build:
-	pmake
-	cd debian/migrate && pmake
+	$(MAKE) -f Makefile.plain
 
 override_dh_auto_clean:
-	pmake clean
-	cd debian/migrate && pmake clean
+	$(MAKE) -f Makefile.plain clean
 
 override_dh_auto_install:
-	pmake DESTDIR=$(CURDIR)/debian/$(PACKAGE) BINDIR=/usr/sbin install
-	cd debian/migrate && pmake DESTDIR=$(CURDIR)/debian/dma-migrate BINDIR=/usr/sbin install
+	$(MAKE) -f Makefile.plain DESTDIR=$(CURDIR)/debian/$(PACKAGE) \
+	    PREFIX=/usr CONFDIR=/etc install
 	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
+	install -o root -g mail -m 640 auth.conf dma.conf virtusertable \
+	    $(CURDIR)/debian/$(PACKAGE)/etc/dma
 
 override_dh_fixperms:
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma -Xetc/dma
