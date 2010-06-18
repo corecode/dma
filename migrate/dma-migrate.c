@@ -101,10 +101,10 @@ main(int argc, char **argv)
 			case '?':
 				usage(1);
 		}
-	if (hflag)
-		usage(0);
 	if (Vflag)
 		version();
+	if (hflag)
+		usage(0);
 	if (hflag || Vflag)
 		exit(0);
 
