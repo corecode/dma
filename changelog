@@ -1,24 +1,30 @@
 dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
 
   * New upstream version:
+    - update the 01-debian-build patch:
+      - no longer patch the BSD Makefile, we use the GNU one now
+      - remove the compatibility shims implemented upstream in a different way
+    - in the 03-debian-locations patch, make the Debian defaults actual
+      defaults for the dma binary, not just in the dma.conf file
+    - remove the 04-debian-setgid patch, using the GNU Makefile now
+    - in the 10-liblockfile patch, change the GNU Makefile, not the BSD one
+    - enhance the 11-double-bounce patch a bit:
+      - use dma's own delqueue() function instead of a naive unlink() so
+        all the queue files are cleaned up
+      - document the Debian default for DBOUNCEPROG in the manual page
+    - resurrect the 13-hardening patch, correcting a couple of
+      unchecked asprintf(3) and vasprintf(3) invocations
     - remove the 20-parse-recipient patch, implemented upstream in
       a different way
     - remove the 22-openfiles patch, overtaken by upstream changes
-    - resurrect the 13-hardening patch, correcting a couple of
-      unchecked asprintf(3) and vasprintf(3) invocations
-    - add the 26-getprogname patch to use program_invocation_short_name()
-      instead of getprogname() on GNU systems
+    - in the 24-random-message-id patch, change the GNU Makefile,
+      not the BSD one
     - add the 27-int-size patch to cast a variable to the correct type
     - add the 28-valid-recipient patch to fix parsing recipients out of
       the message body
     - add the 29-double-free patch to fix a double-free error
-    - add the 30-empty-sender patch to allow an empty Sender field in
-      the Q* spool file
-    - in the 11-double-bounce patch, use dma's own delqueue() function
-      instead of a naive unlink() so all the queue files are cleaned up
-    - refresh 01-debian-build, 03-debian-locations, 04-debian-setgid,
-      09-typos, 10-liblockfile, 11-double-bounce, 17-mailname,
-      23-dirent-d_type, 24-random-message-id, and 25-unsupported-starttls
+    - refresh the 09-typos, 17-mailname, 23-dirent-d_type, and
+      25-unsupported-starttls patches
     - teach the dbounce-simple-safecat handler about the M*/Q* spool
       files scheme
   * Bump Standards-Version to 3.8.4 with no changes.
