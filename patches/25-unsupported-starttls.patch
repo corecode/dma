@@ -6,34 +6,34 @@ Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/547594
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
 --- a/net.c
 +++ b/net.c
-@@ -329,12 +329,12 @@
+@@ -304,12 +304,12 @@
  static void
  close_connection(int fd)
  {
--	if (((config->features & SECURETRANS) != 0) &&
--	    ((config->features & NOSSL) == 0))
--		SSL_shutdown(config->ssl);
+-	if (((config.features & SECURETRANS) != 0) &&
+-	    ((config.features & NOSSL) == 0))
+-		SSL_shutdown(config.ssl);
 -
--	if (config->ssl != NULL)
-+	if (config->ssl != NULL) {
-+		if (((config->features & SECURETRANS) != 0) &&
-+		    ((config->features & NOSSL) == 0))
-+			SSL_shutdown(config->ssl);
- 		SSL_free(config->ssl);
+-	if (config.ssl != NULL)
++	if (config.ssl != NULL) {
++		if (((config.features & SECURETRANS) != 0) &&
++		    ((config.features & NOSSL) == 0))
++			SSL_shutdown(config.ssl);
+ 		SSL_free(config.ssl);
 +	}
  
  	close(fd);
  }
-@@ -387,7 +387,7 @@
+@@ -353,7 +353,7 @@
  
- 	if ((config->features & SECURETRANS) != 0) {
- 		error = smtp_init_crypto(fd, config->features);
--		if (error >= 0)
-+		if (error == 0)
+ 	if ((config.features & SECURETRANS) != 0) {
+ 		error = smtp_init_crypto(fd, config.features);
+-		if (error == 0)
++		if (error >= 0)
  			syslog(LOG_DEBUG, "SSL initialization successful");
  		else
  			goto out;

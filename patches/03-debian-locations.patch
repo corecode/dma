@@ -5,7 +5,7 @@ Description: Customize the /etc/dma configuration files for Debian.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
 --- a/dma.8
 +++ b/dma.8
@@ -27,8 +27,8 @@ Last-Update: 2010-06-02
  .Xc
  Path to the local aliases file.
  Just stick with the default.
---- a/etc/dma.conf
-+++ b/etc/dma.conf
+--- a/dma.conf
++++ b/dma.conf
 @@ -2,13 +2,15 @@
  #
  # Your smarthost (also called relayhost).  Leave blank if you don't want
@@ -36,17 +36,17 @@ Last-Update: 2010-06-02
 -#SMARTHOST
 +# NOTE: on Debian systems this is handled via debconf!
 +# Please use dpkg-reconfigure dma to change this value.
-+SMARTHOST mail.example.com
++#SMARTHOST mail.example.com
  
  # Use this SMTP port.  Most users will be fine with the default (25)
- PORT 25
+ #PORT 25
  
  # Path to your alias file.  Just stay with the default.
--ALIASES /etc/mail/aliases
-+ALIASES /etc/aliases
+-#ALIASES /etc/mail/aliases
++#ALIASES /etc/aliases
  
  # Path to your spooldir.  Just stay with the default.
- SPOOLDIR /var/spool/dma
+ #SPOOLDIR /var/spool/dma
 @@ -39,7 +41,7 @@
  
  # Uncomment if you want to defer your mails.  This is useful if you are
@@ -56,3 +56,20 @@ Last-Update: 2010-06-02
  
  # Uncomment if you want the bounce message to include the complete original
  # message, not just the headers.
+--- a/dma.c
++++ b/dma.c
+@@ -70,12 +70,12 @@
+ struct config config = {
+ 	.smarthost	= NULL,
+ 	.port		= 25,
+-	.aliases	= "/var/mail/aliases",
++	.aliases	= "/etc/aliases",
+ 	.spooldir	= "/var/spool/dma",
+ 	.virtualpath	= NULL,
+ 	.authpath	= NULL,
+ 	.certfile	= NULL,
+-	.features	= 0,
++	.features	= DEFER,
+ 	.mailname	= NULL,
+ 	.mailnamefile	= NULL,
+ };

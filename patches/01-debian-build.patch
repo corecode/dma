@@ -1,69 +1,18 @@
 Description: Several fixes to make dma build on Debian.
- - build and install the files in the etc/ subdirectory;
- - generate aliases_parse.h and let the others depend on it;
- - define the __DECONST macro;
  - use mtime instead of mtimespec.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
---- a/Makefile
-+++ b/Makefile
-@@ -1,6 +1,8 @@
- # $DragonFly: src/libexec/dma/Makefile,v 1.5 2008/09/19 00:36:57 corecode Exp $
- #
- 
-+SUBDIR=	etc
-+
- CFLAGS+= -I${.CURDIR}
- 
- DPADD=  ${LIBSSL} ${LIBCRYPTO}
-@@ -16,4 +18,23 @@
- BINMODE=2555
- WARNS?=	6
- 
-+# The pmake Debian package does not seem to deal properly with y.tab.h
-+
-+DPSRCS+=	aliases_parse.h
-+CLEANFILES+=	aliases_parse.h
-+
-+YFLAGS+=	-d
-+
-+aliases_parse.c:	aliases_parse.y
-+	${YACC} ${YFLAGS} aliases_parse.y
-+	mv y.tab.c aliases_parse.c
-+
-+aliases_parse.h:	aliases_parse.c
-+	mv y.tab.h aliases_parse.h
-+
-+aliases_parse.o:	aliases_parse.h
-+aliases_scan.o:	aliases_parse.h
-+
- .include <bsd.prog.mk>
-+
-+.include <bsd.subdir.mk>
 --- a/dma.c
 +++ b/dma.c
-@@ -276,7 +276,7 @@
+@@ -295,7 +295,7 @@
  			exit(1);
  		}
  		if (gettimeofday(&now, NULL) == 0 &&
--		    (now.tv_sec - st.st_mtimespec.tv_sec > MAX_TIMEOUT)) {
+-		    (now.tv_sec - st.st_mtim.tv_sec > MAX_TIMEOUT)) {
 +		    (now.tv_sec - st.st_mtime > MAX_TIMEOUT)) {
  			asprintf(__DECONST(void *, &errmsg),
  				 "Could not deliver for the last %d seconds. Giving up.",
  				 MAX_TIMEOUT);
---- a/dma.h
-+++ b/dma.h
-@@ -48,6 +48,10 @@
- #endif  /* __GNUC__ */
- #endif
- 
-+#ifndef __DECONST
-+#define	__DECONST(type, var)	((type)(uintptr_t)(const void *)(var))
-+#endif  /* __DECONST */
-+
- #define VERSION	"DragonFly Mail Agent"
- 
- #define BUF_SIZE	2048

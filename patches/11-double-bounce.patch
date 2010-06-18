@@ -8,21 +8,19 @@ Description: Implement double-bounce handling via an external program.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug: http://bugs.dragonflybsd.org/issue1321
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-17
+Last-Update: 2010-06-18
 
 --- a/conf.c
 +++ b/conf.c
-@@ -236,6 +236,10 @@
- 				if (data != NULL)
- 					config->certfile = strdup(data);
- 			}
-+			else if (strcmp(word, "DBOUNCEPROG") == 0) {
-+				if (data != NULL)
-+					config->dbounceprog = strdup(data);
-+			}
- 			else if (strcmp(word, "MAILNAME") == 0) {
- 				if (data != NULL)
- 					config->mailname = strdup(data);
+@@ -256,6 +256,8 @@
+ 			config.authpath= data;
+ 		else if (strcmp(word, "CERTFILE") == 0 && data != NULL)
+ 			config.certfile = data;
++		else if (strcmp(word, "DBOUNCEPROG") == 0 && data != NULL)
++			config.dbounceprog = data;
+ 		else if (strcmp(word, "MAILNAME") == 0 && data != NULL)
+ 			config.mailname = data;
+ 		else if (strcmp(word, "MAILNAMEFILE") == 0 && data != NULL)
 --- a/dma.8
 +++ b/dma.8
 @@ -240,6 +240,26 @@
@@ -30,7 +28,7 @@ Last-Update: 2010-06-17
  option.
  This option is handy if you are behind a dialup line.
 +.It Ic DBOUNCEPROG Xo
-+(string, default=commented)
++(string, default=dbounce-simple-safecat)
 +.Xc
 +Comment if you want the default behavior of
 +.Nm
@@ -52,18 +50,26 @@ Last-Update: 2010-06-17
  .It Ic FULLBOUNCE Xo
  (boolean, default=commented)
  .Xc
+@@ -270,6 +290,7 @@
+ (e.g.\& user@localhost) so you have to rewrite your outgoing email
+ address to a valid address.
+ .Sh SEE ALSO
++.Xr dbounce-simple-safecat 1 ,
+ .Xr mailaddr 7 ,
+ .Xr mailwrapper 8 ,
+ .Xr sendmail 8
 --- a/dma.h
 +++ b/dma.h
-@@ -120,6 +120,7 @@
- 	char *certfile;
+@@ -111,6 +111,7 @@
+ 	const char *authpath;
+ 	const char *certfile;
  	int features;
- 	SSL *ssl;
-+	char *dbounceprog;
- 	char *mailname;
- 	char *mailnamefile;
- };
---- a/etc/dma.conf
-+++ b/etc/dma.conf
++	const char *dbounceprog;
+ 	const char *mailname;
+ 	const char *mailnamefile;
+ 
+--- a/dma.conf
++++ b/dma.conf
 @@ -43,6 +43,12 @@
  # behind a dialup line.  You have to submit your mails manually with dma -q
  DEFER
@@ -112,7 +118,7 @@ Last-Update: 2010-06-17
 -		exit(1);
 +		syslog(LOG_INFO, "%s: bounce delivery failed, double-bouncing",
 +		       it->queueid);
-+		if (config->dbounceprog == NULL) {
++		if (config.dbounceprog == NULL) {
 +			syslog(LOG_CRIT, "%s: delivery panic: can't bounce a bounce and no double-bounce program defined in the config file",
 +			       it->queueid);
 +			exit(1);
@@ -140,10 +146,10 @@ Last-Update: 2010-06-17
 +			dup2(pipefd[1], STDIN_FILENO);
 +			dup2(pipefd[1], STDOUT_FILENO);
 +			dup2(pipefd[1], STDERR_FILENO);
-+			execlp(config->dbounceprog, config->dbounceprog,
++			execlp(config.dbounceprog, config.dbounceprog,
 +			    "-t", "dma", "-a", it->addr, "-i", it->queueid,
 +			    "-f", it->queuefn, NULL);
-+			err(1, "Could not execute %s", config->dbounceprog);
++			err(1, "Could not execute %s", config.dbounceprog);
 +			/* NOTREACHED */
 +		}
 +
@@ -204,7 +210,7 @@ Last-Update: 2010-06-17
 +			exit(1);
 +		}
 +		syslog(LOG_ERR, "%s: double-bounce succeeded, message passed to handler `%s': %s",
-+		       it->queueid, config->dbounceprog, buf);
++		       it->queueid, config.dbounceprog, buf);
 +		delqueue(it);
 +		exit(0);
  	}

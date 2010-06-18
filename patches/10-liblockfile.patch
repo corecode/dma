@@ -2,24 +2,8 @@ Description: Dot-lock the user's mailbox with maillock(3) from liblockfile.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
---- a/Makefile
-+++ b/Makefile
-@@ -3,10 +3,11 @@
- 
- SUBDIR=	etc
- 
-+CFLAGS+= -DHAVE_LIBLOCKFILE
- CFLAGS+= -I${.CURDIR}
- 
--DPADD=  ${LIBSSL} ${LIBCRYPTO}
--LDADD=  -lssl -lcrypto
-+DPADD=  ${LIBSSL} ${LIBCRYPTO} /usr/lib/liblockfile.a
-+LDADD=  -lssl -lcrypto -llockfile
- 
- PROG=	dma
- SRCS=	aliases_parse.y aliases_scan.l base64.c conf.c crypto.c
 --- a/local.c
 +++ b/local.c
 @@ -7,8 +7,53 @@
@@ -173,3 +157,16 @@ Last-Update: 2010-06-02
  	close(mbox);
  	return (error);
  }
+--- a/Makefile.plain
++++ b/Makefile.plain
+@@ -6,7 +6,9 @@
+ 
+ CC?=		gcc
+ CFLAGS?=	-O -pipe
+-LDADD?=		-lssl -lcrypto -lresolv
++LDADD?=		-lssl -lcrypto -lresolv -llockfile
++
++CFLAGS+=	-DHAVE_LIBLOCKFILE
+ 
+ INSTALL?=	install -p
+ PREFIX?=	/usr/local

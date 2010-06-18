@@ -4,21 +4,11 @@ Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/544475
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
---- a/Makefile
-+++ b/Makefile
-@@ -3,6 +3,7 @@
- 
- SUBDIR=	etc
- 
-+CFLAGS+= -DHAVE_RANDOM
- CFLAGS+= -DHAVE_LIBLOCKFILE
- CFLAGS+= -I${.CURDIR}
- 
 --- a/dma.c
 +++ b/dma.c
-@@ -356,6 +356,15 @@
+@@ -375,6 +375,15 @@
  
  	bzero(&queue, sizeof(queue));
  	LIST_INIT(&queue.queue);
@@ -44,7 +34,7 @@ Last-Update: 2010-06-02
  #include <signal.h>
  #include <syslog.h>
  #include <unistd.h>
-@@ -514,8 +515,15 @@
+@@ -513,8 +514,15 @@
  				} else if (!had_messagid) {
  					/* XXX better msgid, assign earlier and log? */
  					had_messagid = 1;
@@ -62,3 +52,13 @@ Last-Update: 2010-06-02
  				} else if (!had_from) {
  					had_from = 1;
  					snprintf(line, sizeof(line), "From: <%s>\n", queue->sender);
+--- a/Makefile.plain
++++ b/Makefile.plain
+@@ -8,6 +8,7 @@
+ CFLAGS?=	-O -pipe
+ LDADD?=		-lssl -lcrypto -lresolv -llockfile
+ 
++CFLAGS+=	-DHAVE_RANDOM -DHAVE_SRANDOM
+ CFLAGS+=	-DHAVE_LIBLOCKFILE
+ 
+ INSTALL?=	install -p

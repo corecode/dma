@@ -1,6 +1,5 @@
 01-debian-build.patch
 03-debian-locations.patch
-04-debian-setgid.patch
 09-typos.patch
 10-liblockfile.patch
 11-double-bounce.patch
@@ -9,8 +8,6 @@
 23-dirent-d_type.patch
 24-random-message-id.patch
 25-unsupported-starttls.patch
-26-getprogname.patch
 27-int-size.patch
 28-valid-recipient.patch
 29-double-free.patch
-30-empty-sender.patch

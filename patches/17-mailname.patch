@@ -8,8 +8,8 @@ Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
 Last-Update: 2010-06-02
 
---- a/etc/dma.conf
-+++ b/etc/dma.conf
+--- a/dma.conf
++++ b/dma.conf
 @@ -59,4 +59,4 @@
  
  # The name of the file to read the MAILNAME from; if this file is not
