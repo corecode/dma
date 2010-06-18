@@ -2,13 +2,16 @@
 # -*- makefile -*-
 # Debian build rules for dma, the DragonFly mail agent
 
-PACKAGE=	dma
+DDIR=		$(CURDIR)/debian
+D=		$(DDIR)/dma
 
 CFLAGS=		$(shell dpkg-buildflags --get CFLAGS)
 CPPFLAGS=	$(shell dpkg-buildflags --get CPPFLAGS)
 LDFLAGS=	$(shell dpkg-buildflags --get LDFLAGS)
 
 CFLAGS+=	-DNEED_GETPROGNAME -DNEED_REALLOCF -DNEED_STRLCPY
+
+CONFFILES=	auth.conf dma.conf virtusertable
 
 ifneq (,$(filter werror,$(DEB_BUILD_OPTIONS)))
 	CFLAGS+=	-Werror
@@ -26,18 +29,16 @@ export CFLAGS CPPFLAGS LDFLAGS
 
 override_dh_auto_build:
 	$(MAKE) -f Makefile.plain
-	$(MAKE) -C $(CURDIR)/debian/migrate
+	$(MAKE) -C $(DDIR)/migrate
 
 override_dh_auto_clean:
 	$(MAKE) -f Makefile.plain clean
-	$(MAKE) -C $(CURDIR)/debian/migrate clean
+	$(MAKE) -C $(DDIR)/migrate clean
 
 override_dh_auto_install:
-	$(MAKE) -f Makefile.plain DESTDIR=$(CURDIR)/debian/$(PACKAGE) \
-	    PREFIX=/usr CONFDIR=/etc install
-	install -d -o root -g mail -m 770 $(CURDIR)/debian/$(PACKAGE)/var/spool/dma
-	install -o root -g mail -m 640 auth.conf dma.conf virtusertable \
-	    $(CURDIR)/debian/$(PACKAGE)/etc/dma
+	$(MAKE) -f Makefile.plain DESTDIR=$D PREFIX=/usr CONFDIR=/etc install
+	install -d -o root -g mail -m 770 $D/var/spool/dma
+	install -o root -g mail -m 640 $(CONFFILES) $D/etc/dma
 
 override_dh_fixperms:
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma -Xetc/dma
