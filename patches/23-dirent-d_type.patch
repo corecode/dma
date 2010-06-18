@@ -6,11 +6,11 @@ Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/544357
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
 --- a/spool.c
 +++ b/spool.c
-@@ -287,7 +287,8 @@
+@@ -291,7 +291,8 @@
  		mailfn = NULL;
  
  		/* ignore temp files */
@@ -20,8 +20,8 @@ Last-Update: 2010-06-02
  			continue;
  		if (de->d_name[0] != 'Q')
  			continue;
-@@ -296,6 +297,9 @@
- 		if (asprintf(&mailfn, "%s/M%s", config->spooldir, de->d_name + 1) < 0)
+@@ -300,6 +301,9 @@
+ 		if (asprintf(&mailfn, "%s/M%s", config.spooldir, de->d_name + 1) < 0)
  			goto fail;
  
 +		if (de->d_type == DT_UNKNOWN)

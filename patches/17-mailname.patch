@@ -6,7 +6,7 @@ Description: Several fixes to the mail name file parsing.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
 --- a/dma.conf
 +++ b/dma.conf
@@ -30,8 +30,8 @@ Last-Update: 2010-06-02
  
  	if (initialized)
 @@ -62,7 +63,9 @@
- 	if (config->mailnamefile != NULL && config->mailnamefile[0] != '\0') {
- 		fp = fopen(config->mailnamefile, "r");
+ 	if (config.mailnamefile != NULL && config.mailnamefile[0] != '\0') {
+ 		fp = fopen(config.mailnamefile, "r");
  		if (fp != NULL) {
 -			if (fgets(name, sizeof(name), fp) != NULL) {
 +			res = fgets(name, sizeof(name), fp);

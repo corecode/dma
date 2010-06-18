@@ -3,11 +3,11 @@ Description: Fix a typo in an error message.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
 --- a/crypto.c
 +++ b/crypto.c
-@@ -262,7 +262,7 @@
+@@ -261,7 +261,7 @@
  	/* Send AUTH command according to RFC 2554 */
  	send_remote_command(fd, "AUTH CRAM-MD5");
  	if (read_remote(fd, sizeof(buffer), buffer) != 3) {

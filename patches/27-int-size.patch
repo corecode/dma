@@ -3,11 +3,11 @@ Description: Cast correctly to uintmax_t when using %PRIxMAX.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-02
+Last-Update: 2010-06-18
 
 --- a/spool.c
 +++ b/spool.c
-@@ -89,7 +89,7 @@
+@@ -92,7 +92,7 @@
  	 */
  	if (fstat(fd, &st) != 0)
  		goto fail;

@@ -3,11 +3,11 @@ Description: Check the parsed recipient address for validity.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-15
+Last-Update: 2010-06-18
 
 --- a/mail.c
 +++ b/mail.c
-@@ -428,8 +428,8 @@
+@@ -427,8 +427,8 @@
  	if (addr == NULL)
  		errlog(1, NULL);
  

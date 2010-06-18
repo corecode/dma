@@ -3,11 +3,11 @@ Description: Fix a double-free bug.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-17
+Last-Update: 2010-06-18
 
 --- a/spool.c
 +++ b/spool.c
-@@ -315,7 +315,7 @@
+@@ -319,7 +319,7 @@
  		if (queuefn != NULL)
  			free(queuefn);
  		if (mailfn != NULL)
