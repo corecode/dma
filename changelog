@@ -6,7 +6,7 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
       - remove the compatibility shims implemented upstream in a different way
     - in the 03-debian-locations patch, make the Debian defaults actual
       defaults for the dma binary, not just in the dma.conf file
-    - remove the 04-debian-setgid patch, using the GNU Makefile now
+    - adapt the 04-debian-setgid patch for the GNU Makefile
     - in the 10-liblockfile patch, change the GNU Makefile, not the BSD one
     - enhance the 11-double-bounce patch a bit:
       - use dma's own delqueue() function instead of a naive unlink() so
