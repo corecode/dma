@@ -26,9 +26,11 @@ export CFLAGS CPPFLAGS LDFLAGS
 
 override_dh_auto_build:
 	$(MAKE) -f Makefile.plain
+	$(MAKE) -C $(CURDIR)/debian/migrate
 
 override_dh_auto_clean:
 	$(MAKE) -f Makefile.plain clean
+	$(MAKE) -C $(CURDIR)/debian/migrate clean
 
 override_dh_auto_install:
 	$(MAKE) -f Makefile.plain DESTDIR=$(CURDIR)/debian/$(PACKAGE) \

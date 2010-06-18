@@ -1,7 +1,4 @@
-PROG=	dma-migrate
-SRCS=	dma-migrate.c
-MAN=	dma-migrate.8
+all:	dma-migrate
 
-WARNS?=	6
-
-.include <bsd.prog.mk>
+clean:
+	rm -f dma-migrate dma-migrate.o
