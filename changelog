@@ -1,4 +1,4 @@
-dma (0.0.2010.07.16-1) UNRELEASED; urgency=low
+dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
 
   * New upstream version:
     - remove the 20-parse-recipient patch, implemented upstream in
