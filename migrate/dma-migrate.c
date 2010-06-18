@@ -364,7 +364,7 @@ usage(int ferr)
 static void
 version(void)
 {
-	printf("dma-migrate 0.01\n");
+	printf("dma-migrate 0.01 (dma 0.0.2010.06.17)\n");
 }
 
 static void
