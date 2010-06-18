@@ -24,6 +24,7 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
     - add the 28-valid-recipient patch to fix parsing recipients out of
       the message body
     - add the 29-double-free patch to fix a double-free error
+    - add the 30-ldflags patch to honor LDFLAGS if specified
     - refresh the 09-typos, 17-mailname, 23-dirent-d_type, and
       25-unsupported-starttls patches
     - teach the dbounce-simple-safecat handler about the M*/Q* spool
