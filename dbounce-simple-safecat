@@ -71,8 +71,8 @@ fi
 
 bname=`basename "$FILENAME"`
 dname=`dirname "$FILENAME"`
-if expr "$bname" : 'M' > /dev/null; then
-	qname="Q${bname#M}"
+if expr "$bname" : 'Q' > /dev/null; then
+	qname="M${bname#Q}"
 	qfile="$dname/$qname"
 	if [ ! -r "$qfile" ]; then
 		echo "Nonexistent or unreadable bounce queue file $qfile" 1>&2
@@ -82,7 +82,7 @@ else
 	qfile=''
 fi
 
-F=`cat ${qfile:+"$qfile"} "$FILENAME" | safecat "$BOUNCEDIR/tmp" "$BOUNCEDIR/new"`
+F=`cat "$FILENAME" ${qfile:+"$qfile"} | safecat "$BOUNCEDIR/tmp" "$BOUNCEDIR/new"`
 OUTFILE="$BOUNCEDIR/new/$F"
 if [ ! -f "$OUTFILE" ]; then
 	echo "safecat indicated success, but '$OUTFILE' does not exist" 1>&2
