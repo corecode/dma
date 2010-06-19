@@ -1,14 +1,14 @@
 # debconf translation for dma, the DragonFly Mail Agent
-# Copyright (C) 2009  Peter Pentchev
+# Copyright (C) 2009, 2010  Peter Pentchev
 # This file is distributed under the same license as the dma package.
 # Peter Pentchev <roam@ringlet.net>, 2009
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: dma-dfly 2009-02-11\n"
+"Project-Id-Version: dma 2010.06.17-1\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
 "POT-Creation-Date: 2010-06-19 16:02+0300\n"
-"PO-Revision-Date: 2009-03-30 16:51+0300\n"
+"PO-Revision-Date: 2010-06-19 16:06+0300\n"
 "Last-Translator: Peter Pentchev <roam@ringlet.net>\n"
 "Language-Team: Bulgaria <dict@fsa-bg.org>n\n"
 "MIME-Version: 1.0\n"
@@ -58,12 +58,6 @@ msgstr "Smarthost:"
 #. Type: string
 #. Description
 #: ../templates:2001
-#, fuzzy
-#| msgid ""
-#| "Please enter the IP address or the host name of a mail server that this "
-#| "system should use as outgoing smarthost. If no smarthost is specified, "
-#| "dma will try to deliver all messages by itself; however, for the present "
-#| "it cannot handle MX record lookups."
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
 "system should use as outgoing smarthost. If no smarthost is specified, dma "
@@ -71,8 +65,7 @@ msgid ""
 msgstr ""
 "Въведете IP адрес или име на пощенски сървър (smarthost), който да се "
 "използва за изпращане на изходящата поща.  Ако това поле е празно, dma ще се "
-"опита да достави съобщенията направо до получателите им; за момента обаче "
-"dma не може да прави DNS MX заявки."
+"опита да достави съобщенията направо до получателите им."
 
 #. Type: string
 #. Description
