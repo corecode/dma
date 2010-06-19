@@ -50,6 +50,8 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
     an invalid dma.conf file.
   * Remove the smarthost default; dma does MX lookups now, so it doesn't
     really *need* one anymore.
+  * Reword the debconf relayhost question - dma does not really need
+    a smarthost anymore.
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 02 Jun 2010 14:10:05 +0300
 
