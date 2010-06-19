@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dma 0.0.2009.02.11-1\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-17 14:29+0300\n"
+"POT-Creation-Date: 2010-06-19 16:02+0300\n"
 "PO-Revision-Date: 2009-06-17 21:27+0400\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <debian-l10n-russian@lists.debian.org>\n"
@@ -17,7 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. Type: string
 #. Description
@@ -42,8 +43,8 @@ msgid ""
 "This name will also be used by other programs. It should be the single, "
 "fully qualified domain name (FQDN)."
 msgstr ""
-"Также это имя будет использовано другими программами. "
-"Нужно указать одно, полностью определённое имя домена (FQDN)."
+"Также это имя будет использовано другими программами. Нужно указать одно, "
+"полностью определённое имя домена (FQDN)."
 
 #. Type: string
 #. Description
@@ -64,16 +65,21 @@ msgstr "Отправляющий сервер (smarthost):"
 #. Type: string
 #. Description
 #: ../templates:2001
+#, fuzzy
+#| msgid ""
+#| "Please enter the IP address or the host name of a mail server that this "
+#| "system should use as outgoing smarthost. If no smarthost is specified, "
+#| "dma will try to deliver all messages by itself; however, for the present "
+#| "it cannot handle MX record lookups."
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
 "system should use as outgoing smarthost. If no smarthost is specified, dma "
-"will try to deliver all messages by itself; however, for the present it "
-"cannot handle MX record lookups."
+"will try to deliver all messages by itself."
 msgstr ""
 "Введите IP-адрес или имя хоста почтового сервера, через который эта система "
-"должна отправлять всю почту. Если ничего не указано, то dma "
-"будет пытаться отправить все сообщения самостоятельно; однако, в настоящее "
-"время, она не выполняет поиск записей MX."
+"должна отправлять всю почту. Если ничего не указано, то dma будет пытаться "
+"отправить все сообщения самостоятельно; однако, в настоящее время, она не "
+"выполняет поиск записей MX."
 
 #. Type: string
 #. Description
@@ -90,10 +96,8 @@ msgid ""
 "behavior of simply aborting the delivery, or specify the name or full path "
 "to a program that will process the double-bounce message."
 msgstr ""
-"Введите имя программы, которую будет запускать dma, когда "
-"сообщение об ошибке доставки также не может быть доставлено. "
-"Оставьте это поле пустым, чтобы использовать действие dma "
-"по умолчанию -- отмену доставки, или укажите имя или полный "
-"путь к программе, которая будет обрабатывать возвращённые "
+"Введите имя программы, которую будет запускать dma, когда сообщение об "
+"ошибке доставки также не может быть доставлено. Оставьте это поле пустым, "
+"чтобы использовать действие dma по умолчанию -- отмену доставки, или укажите "
+"имя или полный путь к программе, которая будет обрабатывать возвращённые "
 "сообщения об ошибках доставки."
-

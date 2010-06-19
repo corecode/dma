@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dma 0.0.2009.07.17-2\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
-"POT-Creation-Date: 2009-06-17 14:29+0300\n"
+"POT-Creation-Date: 2010-06-19 16:02+0300\n"
 "PO-Revision-Date: 2009-10-27 20:36+0100\n"
 "Last-Translator: Helge Kreutzmann <debian@helgefjell.de>\n"
 "Language-Team: de <debian-l10n-german@lists.debian.org>\n"
@@ -29,8 +29,8 @@ msgid ""
 "The 'mail name' is the domain name used to 'qualify' mail addresses without "
 "a domain name."
 msgstr ""
-"Der »E-Mail-Name« ist der Domainname, der für die »Vervollständigung« von "
-"E-Mail-Adressen ohne Domainnamen verwandt wird."
+"Der »E-Mail-Name« ist der Domainname, der für die »Vervollständigung« von E-"
+"Mail-Adressen ohne Domainnamen verwandt wird."
 
 #. Type: string
 #. Description
@@ -61,11 +61,16 @@ msgstr "Smarthost:"
 #. Type: string
 #. Description
 #: ../templates:2001
+#, fuzzy
+#| msgid ""
+#| "Please enter the IP address or the host name of a mail server that this "
+#| "system should use as outgoing smarthost. If no smarthost is specified, "
+#| "dma will try to deliver all messages by itself; however, for the present "
+#| "it cannot handle MX record lookups."
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
 "system should use as outgoing smarthost. If no smarthost is specified, dma "
-"will try to deliver all messages by itself; however, for the present it "
-"cannot handle MX record lookups."
+"will try to deliver all messages by itself."
 msgstr ""
 "Bitte geben Sie die IP-Adresse oder den Rechnernamen des E-Mailservers an, "
 "den dieses System als ausgehenden Smarthost verwenden soll. Falls kein "

@@ -1,14 +1,14 @@
-# debconf translation for dma, the DragonFly Mail Agent
-# Copyright (C) 2009  Peter Pentchev
-# This file is distributed under the same license as the dma package.
-# Peter Pentchev <roam@ringlet.net>, 2009
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
-"POT-Creation-Date: 2009-12-09 19:54+0200\n"
+"POT-Creation-Date: 2010-06-19 16:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,8 +58,7 @@ msgstr ""
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
 "system should use as outgoing smarthost. If no smarthost is specified, dma "
-"will try to deliver all messages by itself; however, for the present it "
-"cannot handle MX record lookups."
+"will try to deliver all messages by itself."
 msgstr ""
 
 #. Type: string
