@@ -44,6 +44,7 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
     spool files to the new queue format (M* and Q* files for each message)
   * Add a dma-migrate invocation to dma.cron.d
   * Shorten the Vcs-Browser URL.
+  * Add the 31-sigalrm-backoff patch to force a delivery attempt on SIGALRM.
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 02 Jun 2010 14:10:05 +0300
 
