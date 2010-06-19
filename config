@@ -15,10 +15,6 @@ else
 	fi
 fi
 
-db_get dma/relayhost || true
-if [ -z "$RET" ]; then
-	db_set dma/relayhost "mail.`hostname --domain`" || true
-fi
 db_get dma/dbounceprog || true
 if [ -z "$RET" ]; then
 	db_set dma/dbounceprog 'dbounce-simple-safecat' || true
