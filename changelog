@@ -54,7 +54,7 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
     a smarthost anymore.
   * Update the Bulgarian debconf translation accordingly.
 
- -- Peter Pentchev <roam@ringlet.net>  Wed, 02 Jun 2010 14:10:05 +0300
+ -- Peter Pentchev <roam@ringlet.net>  Sat, 19 Jun 2010 16:14:43 +0300
 
 dma (0.0.2009.07.17-3) unstable; urgency=low
 
