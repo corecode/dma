@@ -2,6 +2,7 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
 
   * New upstream version:
     - adapt the rules file to use the GNU Makefile instead of the BSD one
+    - drop pmake from Build-Depends
     - update the 01-debian-build patch:
       - no longer patch the BSD Makefile, we use the GNU one now
       - remove the compatibility shims implemented upstream in a different way
