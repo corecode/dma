@@ -56,8 +56,8 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     a smarthost anymore.
   * Update the debconf translations:
     - Bulgarian
-    - Portuguese by Américo Monteiro <a_monteiro@netcabo.pt>
-    - German by Helge Kreutzmann <debian@helgefjell.de>; Closes: #586531
+    - Portuguese by Américo Monteiro
+    - German by Helge Kreutzmann; Closes: #586531
 
  -- Peter Pentchev <roam@ringlet.net>  Sat, 19 Jun 2010 16:19:25 +0300
 
