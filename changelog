@@ -54,7 +54,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     really *need* one anymore.
   * Reword the debconf relayhost question - dma does not really need
     a smarthost anymore.
-  * Update the Bulgarian debconf translation accordingly.
+  * Update the Bulgarian and Portuguese debconf translations accordingly.
 
  -- Peter Pentchev <roam@ringlet.net>  Sat, 19 Jun 2010 16:19:25 +0300
 

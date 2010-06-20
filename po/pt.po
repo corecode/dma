@@ -4,19 +4,20 @@
 # This file is distributed under the same license as the dma package.
 #
 # Peter Pentchev <roam@ringlet.net>, 2009.
-# Américo Monteiro <a_monteiro@netcabo.pt>, 2009.
+# Américo Monteiro <a_monteiro@netcabo.pt>, 2009, 2010.
 msgid ""
 msgstr ""
-"Project-Id-Version: dma 0.0.2009.02.11-1\n"
+"Project-Id-Version: dma 0.0.2010.06.17-1\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
 "POT-Creation-Date: 2010-06-19 16:02+0300\n"
-"PO-Revision-Date: 2009-06-21 17:27+0100\n"
+"PO-Revision-Date: 2010-06-20 11:19+0100\n"
 "Last-Translator: Américo Monteiro <a_monteiro@netcabo.pt>\n"
 "Language-Team: Portuguese <traduz@debianpt.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
+"X-Generator: Lokalize 1.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Type: string
 #. Description
@@ -63,7 +64,6 @@ msgstr "Smarthost:"
 #. Type: string
 #. Description
 #: ../templates:2001
-#, fuzzy
 #| msgid ""
 #| "Please enter the IP address or the host name of a mail server that this "
 #| "system should use as outgoing smarthost. If no smarthost is specified, "
@@ -76,8 +76,7 @@ msgid ""
 msgstr ""
 "Por favor indique o endereço IP ou o nome de máquina dum servidor de mail "
 "que este sistema deverá usar como o smarthost de saída. Se nenhum smarthost "
-"for especificado, o dma irá ele próprio tentar entregar todas as mensagens; "
-"no entanto, presentemente não pode lidar com consultas de 'MX record'."
+"for especificado, o dma irá ele próprio tentar entregar todas as mensagens."
 
 #. Type: string
 #. Description
@@ -99,3 +98,4 @@ msgstr ""
 "o comportamento predefinido do dma para simplesmente abortar a entrega, ou "
 "especifique o nome ou caminho completo para um programa que irá processar a "
 "mensagem de retorno duplo."
+
