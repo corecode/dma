@@ -2,14 +2,14 @@
 # Copyright (C) 2009  Peter Pentchev
 # This file is distributed under the same license as the dma package.
 # Peter Pentchev <roam@ringlet.net>, 2009
-# Copyright (C) Helge Kreutzmann <debian@helgefjell.de>, 2009.
+# Copyright (C) Helge Kreutzmann <debian@helgefjell.de>, 2009, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: dma 0.0.2009.07.17-2\n"
+"Project-Id-Version: dma 0.0.2010.06.17-1\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
 "POT-Creation-Date: 2010-06-19 16:02+0300\n"
-"PO-Revision-Date: 2009-10-27 20:36+0100\n"
+"PO-Revision-Date: 2010-06-20 13:28+0200\n"
 "Last-Translator: Helge Kreutzmann <debian@helgefjell.de>\n"
 "Language-Team: de <debian-l10n-german@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -61,12 +61,6 @@ msgstr "Smarthost:"
 #. Type: string
 #. Description
 #: ../templates:2001
-#, fuzzy
-#| msgid ""
-#| "Please enter the IP address or the host name of a mail server that this "
-#| "system should use as outgoing smarthost. If no smarthost is specified, "
-#| "dma will try to deliver all messages by itself; however, for the present "
-#| "it cannot handle MX record lookups."
 msgid ""
 "Please enter the IP address or the host name of a mail server that this "
 "system should use as outgoing smarthost. If no smarthost is specified, dma "
@@ -75,8 +69,7 @@ msgstr ""
 "Bitte geben Sie die IP-Adresse oder den Rechnernamen des E-Mailservers an, "
 "den dieses System als ausgehenden Smarthost verwenden soll. Falls kein "
 "Smarthost angegeben ist, wird Dma versuchen, alle Nachrichten selbst "
-"auszuliefern; allerdings kann es derzeit noch nicht MX-Datensätze "
-"nachschlagen."
+"auszuliefern."
 
 #. Type: string
 #. Description
