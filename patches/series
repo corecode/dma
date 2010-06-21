@@ -13,3 +13,4 @@
 29-double-free.patch
 30-ldflags.patch
 31-sigalrm-backoff.patch
+32-comment-uncomment.patch

@@ -57,6 +57,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     - German by Helge Kreutzmann; Closes: #586531
     - Russian by Yuri Kozlov; Closes: #586579
   * Update the smarthost configuration information in README.Debian.
+  * Add the 32-comment-uncomment patch to correct the manual page wording.
 
  -- Peter Pentchev <roam@ringlet.net>  Sat, 19 Jun 2010 16:19:25 +0300
 
