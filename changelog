@@ -9,7 +9,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     - in the 03-debian-locations patch, make the Debian defaults actual
       defaults for the dma binary, not just in the dma.conf file
     - adapt the 04-debian-setgid patch for the GNU Makefile
-    - in the 10-liblockfile patch, change the GNU Makefile, not the BSD one
+    - in the 10-liblockfile patch, change the GNU Makefile, too
     - enhance the 11-double-bounce patch a bit:
       - use dma's own delqueue() function instead of a naive unlink() so
         all the queue files are cleaned up
@@ -19,8 +19,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     - remove the 20-parse-recipient patch, implemented upstream in
       a different way
     - remove the 22-openfiles patch, overtaken by upstream changes
-    - in the 24-random-message-id patch, change the GNU Makefile,
-      not the BSD one
+    - in the 24-random-message-id patch, change the GNU Makefile, too
     - add the 27-int-size patch to cast a variable to the correct type
     - add the 28-valid-recipient patch to fix parsing recipients out of
       the message body

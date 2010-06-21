@@ -4,7 +4,7 @@ Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/544475
 Forwarded: no
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-18
+Last-Update: 2010-06-21
 
 --- a/dma.c
 +++ b/dma.c
@@ -62,3 +62,14 @@ Last-Update: 2010-06-18
  CFLAGS+=	-DHAVE_LIBLOCKFILE
  
  INSTALL?=	install -p
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ # $DragonFly: src/libexec/dma/Makefile,v 1.5 2008/09/19 00:36:57 corecode Exp $
+ #
+ 
+-CFLAGS+= -DHAVE_LIBLOCKFILE
++CFLAGS+= -DHAVE_RANDOM -DHAVE_SRANDOM -DHAVE_LIBLOCKFILE
+ CFLAGS+= -I${.CURDIR}
+ 
+ DPADD=  ${LIBSSL} ${LIBCRYPTO} /usr/lib/liblockfile.a
