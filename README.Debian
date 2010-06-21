@@ -26,10 +26,11 @@ delivery problems.
 
 2. Smarthost operation by default - needs to be configured!
 
-For the present, the dma mail transfer agent cannot handle direct
-MX lookups.  It is highly recommended that you only use it with
-a smarthost configured via the SMARTHOST directive in
-the /etc/dma/dma.conf file.
+After first installing dma, you need to configure it for proper operation -
+whether it should deliver all outgoing e-mail messages through a single
+smarthost or attempt to contact the remote mail servers directly.  This should
+be configured through the debconf questions, but you may change the setting
+using the SMARTHOST directive in the /etc/dma/dma.conf file.
 
 3. Double-bounce handling
 
@@ -46,4 +47,4 @@ copy the bounce message into a Maildir-structured storage,
 still has the dma internal format, which is plain text, but is not really
 a mailbox :)
 
- -- Peter Pentchev <roam@ringlet.net>  Wed, 17 Jun 2009 15:07:05 +0300
+ -- Peter Pentchev <roam@ringlet.net>  Mon, 21 Jun 2010 11:31:02 +0300
