@@ -1,0 +1,93 @@
+Description: Add the "opportunistic TLS" option.
+ Add a new configuration option to allow remote connections to proceed in
+ unencrypted mode if the STARTTLS negotiation fails.
+ I'll forward this patch real soon now.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-21
+
+--- a/conf.c
++++ b/conf.c
+@@ -266,6 +266,9 @@
+ 			config.features |= VIRTUAL;
+ 		else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
+ 			config.features |= STARTTLS;
++		else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 &&
++		    data == NULL)
++			config.features |= TLS_OPP;
+ 		else if (strcmp(word, "SECURETRANSFER") == 0 && data == NULL)
+ 			config.features |= SECURETRANS;
+ 		else if (strcmp(word, "DEFER") == 0 && data == NULL)
+--- a/crypto.c
++++ b/crypto.c
+@@ -118,9 +118,19 @@
+ 		if (read_remote(fd, 0, NULL) == 2) {
+ 			send_remote_command(fd, "STARTTLS");
+ 			if (read_remote(fd, 0, NULL) != 2) {
+-				syslog(LOG_ERR, "remote delivery deferred:"
+-				  " STARTTLS not available: %s", neterr);
+-				return (1);
++				if ((feature & TLS_OPP) == 0) {
++					syslog(LOG_ERR,
++					  "remote delivery deferred:"
++					  " STARTTLS not available: %s",
++					  neterr);
++					return (1);
++				} else {
++					syslog(LOG_ERR,
++					  "in opportunistic TLS mode,"
++					  " STARTTLS not available: %s",
++					  neterr);
++					return (0);
++				}
+ 			}
+ 		}
+ 		/* End of TLS init phase, enable SSL_write/read */
+--- a/dma.8
++++ b/dma.8
+@@ -218,6 +218,20 @@
+ Uncomment if you want to use STARTTLS.
+ Only useful together with
+ .Sq SECURETRANS .
++.It Ic OPPORTUNISTIC_TLS Xo
++(boolean, default=commented)
++.Xc
++Uncomment if you want to allow the STARTTLS negotiation to fail.
++Most useful when
++.Nm
++is used without a smarthost, delivering remote messages directly to
++the outside mail exchangers; in opportunistic TLS mode, the connection will
++be encrypted if the remote server supports STARTTLS, but an unencrypted
++delivery will still be made if the negotiation fails.
++Only useful together with
++.Sq SECURETRANS
++and
++.Sq STARTTLS .
+ .It Ic CERTFILE Xo
+ (string, default=empty)
+ .Xc
+--- a/dma.conf
++++ b/dma.conf
+@@ -31,6 +31,11 @@
+ # SECURETRANSFER)
+ #STARTTLS
+ 
++# Uncomment if you have specified STARTTLS above and it should be allowed
++# to fail ("opportunistic TLS", use an encrypted connection when available
++# but allow an unencrypted one to servers that do not support it)
++#OPPORTUNISTIC_TLS
++
+ # Path to your local SSL certificate
+ #CERTFILE
+ 
+--- a/dma.h
++++ b/dma.h
+@@ -63,6 +63,7 @@
+ #define DEFER		0x010		/* Defer mails */
+ #define INSECURE	0x020		/* Allow plain login w/o encryption */
+ #define FULLBOUNCE	0x040		/* Bounce the full message */
++#define TLS_OPP		0x080		/* Opportunistic STARTTLS */
+ 
+ #ifndef CONF_PATH
+ #define CONF_PATH	"/etc/dma/dma.conf"	/* Default path to dma.conf */
