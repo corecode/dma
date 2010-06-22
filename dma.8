@@ -208,6 +208,20 @@ Uncomment if you want TLS/SSL secured transfer.
 Uncomment if you want to use STARTTLS.
 Only useful together with
 .Sq SECURETRANS .
+.It Ic OPPORTUNISTIC_TLS Xo
+(boolean, default=commented)
+.Xc
+Uncomment if you want to allow the STARTTLS negotiation to fail.
+Most useful when
+.Nm
+is used without a smarthost, delivering remote messages directly to
+the outside mail exchangers; in opportunistic TLS mode, the connection will
+be encrypted if the remote server supports STARTTLS, but an unencrypted
+delivery will still be made if the negotiation fails.
+Only useful together with
+.Sq SECURETRANS
+and
+.Sq STARTTLS .
 .It Ic CERTFILE Xo
 (string, default=empty)
 .Xc

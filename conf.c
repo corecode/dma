@@ -207,6 +207,8 @@ parse_conf(const char *config_path)
 			config.mailnamefile = data;
 		else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
 			config.features |= STARTTLS;
+		else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 && data == NULL)
+			config.features |= TLS_OPP;
 		else if (strcmp(word, "SECURETRANSFER") == 0 && data == NULL)
 			config.features |= SECURETRANS;
 		else if (strcmp(word, "DEFER") == 0 && data == NULL)

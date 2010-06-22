@@ -118,9 +118,13 @@ smtp_init_crypto(int fd, int feature)
 		if (read_remote(fd, 0, NULL) == 2) {
 			send_remote_command(fd, "STARTTLS");
 			if (read_remote(fd, 0, NULL) != 2) {
-				syslog(LOG_ERR, "remote delivery deferred:"
-				  " STARTTLS not available: %s", neterr);
-				return (1);
+				if ((feature & TLS_OPP) == 0) {
+					syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available: %s", neterr);
+					return (1);
+				} else {
+					syslog(LOG_INFO, "in opportunistic TLS mode, STARTTLS not available: %s", neterr);
+					return (0);
+				}
 			}
 		}
 		/* End of TLS init phase, enable SSL_write/read */
