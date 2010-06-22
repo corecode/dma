@@ -94,9 +94,9 @@ setlogident(const char *fmt, ...)
 		char *sufx;
 
 		va_start(ap, fmt);
-		vasprintf(&sufx, fmt, ap);
-		if (sufx != NULL) {
-			asprintf(&tag, "%s[%s]", logident_base, sufx);
+		if (vasprintf(&sufx, fmt, ap) != -1 && sufx != NULL) {
+			if (asprintf(&tag, "%s[%s]", logident_base, sufx) == -1)
+				tag = NULL;
 			free(sufx);
 		}
 		va_end(ap);
@@ -114,7 +114,8 @@ errlog(int exitcode, const char *fmt, ...)
 
 	if (fmt != NULL) {
 		va_start(ap, fmt);
-		vasprintf(&outs, fmt, ap);
+		if (vasprintf(&outs, fmt, ap) == -1)
+			outs = NULL;
 		va_end(ap);
 	}
 
@@ -137,7 +138,8 @@ errlogx(int exitcode, const char *fmt, ...)
 
 	if (fmt != NULL) {
 		va_start(ap, fmt);
-		vasprintf(&outs, fmt, ap);
+		if (vasprintf(&outs, fmt, ap) == -1)
+			outs = NULL;
 		va_end(ap);
 	}
 
@@ -191,8 +193,8 @@ set_username(void)
 		else
 			free(u);
 	}
-	asprintf(__DECONST(void *, &username), "%ld", (long)uid);
-	if (username != NULL)
+	if (asprintf(__DECONST(void *, &username), "%ld", (long)uid) != -1 &&
+	    username != NULL)
 		return;
 	username = "unknown-or-invalid-username";
 }
