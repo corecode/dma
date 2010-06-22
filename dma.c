@@ -111,7 +111,6 @@ set_from(struct queue *queue, const char *osender)
 		return (NULL);
 	}
 
-out:
 	queue->sender = sender;
 	return (sender);
 }
