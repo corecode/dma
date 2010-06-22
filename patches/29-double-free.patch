@@ -1,9 +1,8 @@
 Description: Fix a double-free bug.
- I'll forward this patch as soon as I catch up with the dma upstream.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
-Forwarded: no
+Forwarded: yes
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-18
+Last-Update: 2010-06-21
 
 --- a/spool.c
 +++ b/spool.c

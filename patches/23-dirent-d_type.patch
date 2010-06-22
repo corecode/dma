@@ -1,12 +1,11 @@
 Description: Allow the spool to be on a filesystem that does not set d_type.
  Some filesystems (notably XFS) do not set the d_type field in the dirent
  structure.  This prevents dma from delivering any of the queued messages.
- I'll forward this patch when I catch up with the dma upstream.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/544357
-Forwarded: no
+Forwarded: yes
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-18
+Last-Update: 2010-06-21
 
 --- a/spool.c
 +++ b/spool.c

@@ -1,9 +1,8 @@
 Description: Build hardening: check a few more return values.
- I'll forward this patch as soon as I catch up with the dma upstream.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
-Forwarded: no
+Forwarded: yes
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-03
+Last-Update: 2010-06-21
 
 --- a/util.c
 +++ b/util.c

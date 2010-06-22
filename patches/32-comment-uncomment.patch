@@ -1,7 +1,6 @@
 Description: Correct the comment/uncomment logic of the manual page wording.
- I'll forward this patch real soon now.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
-Forwarded: no
+Forwarded: yes
 Author: Peter Pentchev <roam@ringlet.net>
 Last-Update: 2010-06-21
 

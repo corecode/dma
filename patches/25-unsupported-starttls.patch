@@ -1,8 +1,7 @@
 Description: Fix a crash when the SMTP server does not support STARTTLS.
- I'll forward this patch when I catch up with the dma upstream.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug-Debian: http://bugs.debian.org/547594
-Forwarded: no
+Forwarded: yes
 Author: Peter Pentchev <roam@ringlet.net>
 Last-Update: 2010-06-21
 

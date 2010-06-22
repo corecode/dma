@@ -62,6 +62,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     even if the STARTTLS negotiation fails.
   * Fix the 25-unsupported-starttls patch to actually error out if the SSL
     negotiation fails.
+  * Forward all the non-Debian-specific patches upstream to Simon Schubert.
 
  -- Peter Pentchev <roam@ringlet.net>  Sat, 19 Jun 2010 16:19:25 +0300
 

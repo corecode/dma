@@ -1,9 +1,8 @@
 Description: Add the "opportunistic TLS" option.
  Add a new configuration option to allow remote connections to proceed in
  unencrypted mode if the STARTTLS negotiation fails.
- I'll forward this patch real soon now.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
-Forwarded: no
+Forwarded: yes
 Author: Peter Pentchev <roam@ringlet.net>
 Last-Update: 2010-06-21
 
