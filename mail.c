@@ -324,7 +324,9 @@ newaddr:
 	if (addr == NULL)
 		errlog(1, NULL);
 
-	add_recp(queue, addr, 1);
+	if (add_recp(queue, addr, 1) != 0)
+		errlogx(1, "invalid recipient `%s'", addr);
+
 	goto again;
 }
 
