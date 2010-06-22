@@ -12,6 +12,8 @@ CC?=		gcc
 CFLAGS?=	-O -pipe
 LDADD?=		-lssl -lcrypto -lresolv
 
+CFLAGS+=	-Wall
+
 INSTALL?=	install -p
 CHGRP?=		chgrp
 CHMOD?=		chmod
