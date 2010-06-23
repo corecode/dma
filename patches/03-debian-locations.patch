@@ -5,7 +5,7 @@ Description: Customize the /etc/dma configuration files for Debian.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-18
+Last-Update: 2010-06-23
 
 --- a/dma.8
 +++ b/dma.8
@@ -27,6 +27,15 @@ Last-Update: 2010-06-18
  .Xc
  Path to the local aliases file.
  Just stick with the default.
+@@ -231,7 +231,7 @@
+ You have to rename this variable manually to prevent that you send your
+ password accidentally over an insecure connection.
+ .It Ic DEFER Xo
+-(boolean, default=commented)
++(boolean, default=set)
+ .Xc
+ Comment if you want that
+ .Nm
 --- a/dma.conf
 +++ b/dma.conf
 @@ -2,13 +2,15 @@
