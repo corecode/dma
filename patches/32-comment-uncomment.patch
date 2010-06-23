@@ -2,7 +2,7 @@ Description: Correct the comment/uncomment logic of the manual page wording.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: yes
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-21
+Last-Update: 2010-06-23
 
 --- a/dma.8
 +++ b/dma.8
@@ -36,7 +36,7 @@ Last-Update: 2010-06-21
  You have to rename this variable manually to prevent that you send your
 @@ -233,7 +233,7 @@
  .It Ic DEFER Xo
- (boolean, default=commented)
+ (boolean, default=set)
  .Xc
 -Comment if you want that
 +Uncomment if you want that
