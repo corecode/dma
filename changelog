@@ -66,6 +66,9 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
   * Fix the 25-unsupported-starttls patch to actually error out if the SSL
     negotiation fails.
   * Forward all the non-Debian-specific patches upstream to Simon Schubert.
+  * Add the 34-manpage-defaults patch to properly document what dma will use
+    as default values if not specified in the config file instead of what
+    the default config file specifies.  Closes: #544748
 
  -- Peter Pentchev <roam@ringlet.net>  Tue, 22 Jun 2010 10:46:53 +0300
 
