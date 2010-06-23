@@ -3,6 +3,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
   TODO: wait for debconf translations; DO NOT UPLOAD YET :)
 
   * New upstream version:
+    - no longer reports the remote port number; Closes: #544820
     - adapt the rules file to use the GNU Makefile instead of the BSD one
     - drop pmake from Build-Depends
     - remove the 01-debian-build patch, overtaken by upstream changes
