@@ -1,13 +1,13 @@
 # Czech debconf template translation of dma
-# Copyright (C) 2009 Michal Simunek <michal.simunek@gmail.com>
+# Copyright (C) 2009 - 2010 Michal Simunek <michal.simunek@gmail.com>
 # This file is distributed under the same license as the dma package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: dma 0.0.2009.02.11-1\n"
+"Project-Id-Version: dma 0.0.2010.06.17-1\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
 "POT-Creation-Date: 2010-06-19 16:02+0300\n"
-"PO-Revision-Date: 2009-06-18 14:13+0200\n"
+"PO-Revision-Date: 2010-06-22 17:13+0200\n"
 "Last-Translator: Michal Simunek <michal.simunek@gmail.com>\n"
 "Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
@@ -47,7 +47,7 @@ msgid ""
 "Thus, if a mail address on the local host is foo@example.org, the correct "
 "value for this option would be example.org."
 msgstr ""
-"Takže, jestliže je mailová adresa lokálního hosta foo@example.org, správná "
+"Takže, jestliže je mailová adresa lokálního hosta foo@example.org správná, "
 "hodnota pro toto nastavení by byla example.org."
 
 #. Type: string
@@ -59,7 +59,6 @@ msgstr "Smarthost:"
 #. Type: string
 #. Description
 #: ../templates:2001
-#, fuzzy
 #| msgid ""
 #| "Please enter the IP address or the host name of a mail server that this "
 #| "system should use as outgoing smarthost. If no smarthost is specified, "
@@ -70,10 +69,9 @@ msgid ""
 "system should use as outgoing smarthost. If no smarthost is specified, dma "
 "will try to deliver all messages by itself."
 msgstr ""
-"Vložte prosím IP adresu nebo název hosta poštovního serveru, které má tento "
+"Vložte prosím IP adresu nebo název hostitele poštovního serveru, které má tento "
 "systém použít jako odchozího smarthosta. Není-li zvolen smarthost, dma se "
-"pokusí doručit všechny zprávy sám; ale současně s tím nemůže pracovat s MX "
-"záznamy."
+"pokusí doručit všechny zprávy sám."
 
 #. Type: string
 #. Description

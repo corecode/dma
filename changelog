@@ -56,6 +56,8 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     - Portuguese by Américo Monteiro
     - German by Helge Kreutzmann; Closes: #586531
     - Russian by Yuri Kozlov; Closes: #586579
+    - Czech by Michal Simunek; Closes: #586791
+    - Swedish by Martin Bagge; Closes: #586825
   * Update the smarthost configuration information in README.Debian.
   * Add the 32-comment-uncomment patch to correct the manual page wording.
   * Add the 33-opportunistic-tls patch to allow remote connections to proceed
