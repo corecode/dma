@@ -4,6 +4,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
 
   * New upstream version:
     - no longer reports the remote port number; Closes: #544820
+    - fixes some queue locking problems; Closes: #582593
     - adapt the rules file to use the GNU Makefile instead of the BSD one
     - drop pmake from Build-Depends
     - remove the 01-debian-build patch, overtaken by upstream changes
@@ -70,7 +71,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     as default values if not specified in the config file instead of what
     the default config file specifies.  Closes: #544748
 
- -- Peter Pentchev <roam@ringlet.net>  Wed, 23 Jun 2010 13:15:48 +0300
+ -- Peter Pentchev <roam@ringlet.net>  Thu, 24 Jun 2010 17:55:47 +0300
 
 dma (0.0.2009.07.17-3) unstable; urgency=low
 
