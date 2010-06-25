@@ -60,6 +60,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     - Russian by Yuri Kozlov; Closes: #586579
     - Czech by Michal Simunek; Closes: #586791
     - Swedish by Martin Bagge; Closes: #586825
+    - Spanish by Francisco Javier Cuadrado; Closes: #587088
   * Update the smarthost configuration information in README.Debian.
   * Add the 32-comment-uncomment patch to correct the manual page wording.
   * Add the 33-opportunistic-tls patch to allow remote connections to proceed
@@ -71,7 +72,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
     as default values if not specified in the config file instead of what
     the default config file specifies.  Closes: #544748
 
- -- Peter Pentchev <roam@ringlet.net>  Thu, 24 Jun 2010 17:55:47 +0300
+ -- Peter Pentchev <roam@ringlet.net>  Fri, 25 Jun 2010 12:02:22 +0300
 
 dma (0.0.2009.07.17-3) unstable; urgency=low
 

@@ -1,10 +1,13 @@
 # dma po-debconf translation to Spanish
-# Copyright (C) 2009 Software in the Public Interest
+# Copyright (C) 2009, 2010 Software in the Public Interest
 # This file is distributed under the same license as the dma package.
 #
 # Changes:
 #   - Initial translation
 #       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2009
+#
+#   - Updates
+#       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2010
 #
 # Traductores, si no conocen el formato PO, merece la pena leer la
 # documentación de gettext, especialmente las secciones dedicadas a este
@@ -12,12 +15,12 @@
 #       info -n '(gettext)PO Files'
 #       info -n '(gettext)Header Entry'
 #
-# Equipo de traducción al español, por favor, lean antes de traducir
+# Equipo de traducción al español, por favor lean antes de traducir
 # los siguientes documentos:
 #
 #   - El proyecto de traducción de Debian al español
 #     http://www.debian.org/intl/spanish/
-#     especialmente las notas de traducción en
+#     especialmente las notas y normas de traducción en
 #     http://www.debian.org/intl/spanish/notas
 #
 #   - La guía de traducción de po's de debconf:
@@ -26,12 +29,12 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: dma 0.0.2009.02.11-1\n"
+"Project-Id-Version: dma 0.0.2010.06.17-1\n"
 "Report-Msgid-Bugs-To: dma@packages.debian.org\n"
 "POT-Creation-Date: 2010-06-19 16:02+0300\n"
-"PO-Revision-Date: \n"
+"PO-Revision-Date: 2010-06-20 13:40+0100\n"
 "Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
-"Language-Team: Debian l10n Spanish\n"
+"Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -45,32 +48,20 @@ msgstr "Nombre del sistema de correo:"
 #. Type: string
 #. Description
 #: ../templates:1001
-msgid ""
-"The 'mail name' is the domain name used to 'qualify' mail addresses without "
-"a domain name."
-msgstr ""
-"El «nombre del correo» es el nombre del dominio utilizado para «calificar» las "
-"direcciones de correo sin un nombre de dominio."
+msgid "The 'mail name' is the domain name used to 'qualify' mail addresses without a domain name."
+msgstr "El «nombre del sistema de correo» es el nombre del dominio utilizado para «habilitar» las direcciones de correo sin un nombre de dominio."
 
 #. Type: string
 #. Description
 #: ../templates:1001
-msgid ""
-"This name will also be used by other programs. It should be the single, "
-"fully qualified domain name (FQDN)."
-msgstr ""
-"Este nombre también lo utilizarán otros programas. Debería ser el único, "
-"nombre de dominio completamente calificado (FQDN)."
+msgid "This name will also be used by other programs. It should be the single, fully qualified domain name (FQDN)."
+msgstr "Este nombre también lo utilizarán otros programas. Debería ser el único nombre de dominio completamente calificado (FQDN)."
 
 #. Type: string
 #. Description
 #: ../templates:1001
-msgid ""
-"Thus, if a mail address on the local host is foo@example.org, the correct "
-"value for this option would be example.org."
-msgstr ""
-"Incluso, cuando una dirección de correo de la máquina local es «algo@ejemplo."
-"org», el valor correcto de esta opción será «ejemplo.org»."
+msgid "Thus, if a mail address on the local host is foo@example.org, the correct value for this option would be example.org."
+msgstr "Así, cuando una dirección de correo de la máquina local sea «algo@ejemplo.org», el valor correcto de esta opción será «ejemplo.org»."
 
 #. Type: string
 #. Description
@@ -81,39 +72,23 @@ msgstr "«Smarthost»:"
 #. Type: string
 #. Description
 #: ../templates:2001
-#, fuzzy
 #| msgid ""
 #| "Please enter the IP address or the host name of a mail server that this "
 #| "system should use as outgoing smarthost. If no smarthost is specified, "
 #| "dma will try to deliver all messages by itself; however, for the present "
 #| "it cannot handle MX record lookups."
-msgid ""
-"Please enter the IP address or the host name of a mail server that this "
-"system should use as outgoing smarthost. If no smarthost is specified, dma "
-"will try to deliver all messages by itself."
-msgstr ""
-"Introduzca la dirección IP o el nombre de la máquina del servidor de correo "
-"que este sistema debería utilizar como «smarthost» saliente. Si no se "
-"especifica ningún «smarthost», dma intentará entregar los mensajes por su "
-"cuenta, por ahora no puede gestionar las búsquedas de registros MX."
+msgid "Please enter the IP address or the host name of a mail server that this system should use as outgoing smarthost. If no smarthost is specified, dma will try to deliver all messages by itself."
+msgstr "Introduzca la dirección IP o el nombre de la máquina del servidor de correo que este sistema debería utilizar como «smarthost» saliente. Si no se especifica ningún «smarthost», dma intentará entregar los mensajes por su cuenta."
 
 #. Type: string
 #. Description
 #: ../templates:3001
 msgid "A program to handle double-bounces:"
-msgstr "Un programa para gestionar los saltos dobles:"
+msgstr "Un programa para gestionar los «rebotes dobles»:"
 
 #. Type: string
 #. Description
 #: ../templates:3001
-msgid ""
-"Please enter the name of a program that dma will invoke when a bounced "
-"message bounces in its own right.  Leave this blank to keep dma's default "
-"behavior of simply aborting the delivery, or specify the name or full path "
-"to a program that will process the double-bounce message."
-msgstr ""
-"Introduzca el nombre del programa que dma ejecutará cuando un mensaje "
-"saltador salte en su dirección. Deje esto en blanco para mantener el "
-"comportamiento predeterminado de dma, que será abortar la entrega, o "
-"especifique el nombre o la ruta completa del programa que procesará el "
-"mensaje con salto doble."
+msgid "Please enter the name of a program that dma will invoke when a bounced message bounces in its own right.  Leave this blank to keep dma's default behavior of simply aborting the delivery, or specify the name or full path to a program that will process the double-bounce message."
+msgstr "Introduzca el nombre del programa que dma ejecutará cuando un mensaje rebotado rebote en su dirección. Deje esto en blanco para mantener el comportamiento predeterminado de dma, que será abortar la entrega, o especifique el nombre o la ruta completa del programa que procesará el mensaje de «rebote doble»."
+
