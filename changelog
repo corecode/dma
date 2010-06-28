@@ -72,7 +72,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
   * Add the 35-delivery-retry patch to try local deliveries a bit more often
     and to randomize the delivery timeout to avoid locking issues.
 
- -- Peter Pentchev <roam@ringlet.net>  Mon, 28 Jun 2010 17:31:08 +0300
+ -- Peter Pentchev <roam@ringlet.net>  Mon, 28 Jun 2010 23:26:36 +0300
 
 dma (0.0.2009.07.17-3) unstable; urgency=low
 
