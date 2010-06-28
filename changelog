@@ -31,7 +31,7 @@ dma (0.0.2010.06.17-1) unstable; urgency=low
       25-unsupported-starttls patches
     - teach the dbounce-simple-safecat handler about the M*/Q* spool
       files scheme
-  * Bump Standards-Version to 3.8.4 with no changes.
+  * Bump Standards-Version to 3.9.0 with no changes.
   * Update the copyright file:
     - bring it up to the latest revision of the DEP 5
     - update the upstream copyright notices
