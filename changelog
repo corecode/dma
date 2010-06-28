@@ -1,6 +1,4 @@
-dma (0.0.2010.06.17-1) unstable; urgency=low
-
-  TODO: wait for debconf translations; DO NOT UPLOAD YET :)
+dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
 
   * New upstream version:
     - no longer reports the remote port number; Closes: #544820
