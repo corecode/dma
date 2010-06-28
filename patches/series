@@ -5,6 +5,7 @@
 11-double-bounce.patch
 13-hardening.patch
 17-mailname.patch
+20-parse-recipient.patch
 23-dirent-d_type.patch
 24-random-message-id.patch
 25-unsupported-starttls.patch

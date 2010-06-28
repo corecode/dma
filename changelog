@@ -16,8 +16,8 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
       - document the Debian default for DBOUNCEPROG in the manual page
     - resurrect the 13-hardening patch, correcting a couple of
       unchecked asprintf(3) and vasprintf(3) invocations
-    - remove the 20-parse-recipient patch, implemented upstream in
-      a different way
+    - the functionality of the 20-parse-recipient patch was implemented
+      upstream in a different way, so replace it with a small bugfix
     - remove the 22-openfiles patch, overtaken by upstream changes
     - in the 24-random-message-id patch, change the GNU Makefile, too
     - add the 27-int-size patch to cast a variable to the correct type
