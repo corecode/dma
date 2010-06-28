@@ -1,6 +1,6 @@
 Description: Randomize the retry timeouts a bit.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
-Forwarded: no
+Forwarded: http://bugs.launchpad.net/dma/+bug/599542
 Author: Peter Pentchev <roam@ringlet.net>
 Last-Update: 2010-06-28
 

@@ -1,6 +1,6 @@
 Description: Fix the parsing of recipient addresses.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
-Forwarded: no
+Forwarded: http://bugs.launchpad.net/dma/+bug/599536
 Author: Peter Pentchev <roam@ringlet.net>
 Last-Update: 2010-06-28
 
