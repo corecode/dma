@@ -201,5 +201,6 @@ void deltmp(void);
 int open_locked(const char *, int, ...);
 char *rfc822date(void);
 int strprefixcmp(const char *, const char *);
+void init_random(void);
 
 #endif

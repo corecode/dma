@@ -33,6 +33,8 @@
  */
 
 #include <errno.h>
+#include <inttypes.h>
+#include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
 
@@ -406,10 +408,13 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 					had_date = 1;
 					snprintf(line, sizeof(line), "Date: %s\n", rfc822date());
 				} else if (!had_messagid) {
-					/* XXX better msgid, assign earlier and log? */
+					/* XXX msgid, assign earlier and log? */
 					had_messagid = 1;
-					snprintf(line, sizeof(line), "Message-Id: <%s@%s>\n",
-						 queue->id, hostname());
+					snprintf(line, sizeof(line), "Message-Id: <%"PRIxMAX".%s.%"PRIxMAX"@%s>\n",
+						 (uintmax_t)time(NULL),
+						 queue->id,
+						 random(),
+						 hostname());
 				} else if (!had_from) {
 					had_from = 1;
 					snprintf(line, sizeof(line), "From: <%s>\n", queue->sender);

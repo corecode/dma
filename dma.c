@@ -365,6 +365,7 @@ main(int argc, char **argv)
 	int recp_from_header = 0;
 
 	atexit(deltmp);
+	init_random();
 
 	bzero(&queue, sizeof(queue));
 	LIST_INIT(&queue.queue);

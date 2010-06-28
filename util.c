@@ -262,3 +262,21 @@ strprefixcmp(const char *str, const char *prefix)
 	return (strncasecmp(str, prefix, strlen(prefix)));
 }
 
+void
+init_random(void)
+{
+	unsigned int seed;
+	int rf;
+
+	rf = open("/dev/urandom", O_RDONLY);
+	if (rf == -1)
+		rf = open("/dev/random", O_RDONLY);
+
+	if (!(rf != -1 && read(rf, &seed, sizeof(seed)) == sizeof(seed)))
+		seed = (time(NULL) ^ getpid()) + (uintptr_t)&seed;
+
+	srandom(seed);
+
+	if (rf != -1)
+		close(rf);
+}
