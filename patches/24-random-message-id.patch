@@ -33,7 +33,7 @@ Last-Update: 2010-06-21
  #include <signal.h>
  #include <syslog.h>
  #include <unistd.h>
-@@ -513,8 +514,15 @@
+@@ -514,8 +515,15 @@
  				} else if (!had_messagid) {
  					/* XXX better msgid, assign earlier and log? */
  					had_messagid = 1;

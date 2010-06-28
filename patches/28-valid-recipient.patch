@@ -6,7 +6,7 @@ Last-Update: 2010-06-21
 
 --- a/mail.c
 +++ b/mail.c
-@@ -427,8 +427,8 @@
+@@ -428,8 +428,8 @@
  	if (addr == NULL)
  		errlog(1, NULL);
  
