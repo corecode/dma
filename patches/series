@@ -17,3 +17,4 @@
 32-comment-uncomment.patch
 33-opportunistic-tls.patch
 34-manpage-defaults.patch
+35-delivery-retry.patch

@@ -69,6 +69,8 @@ dma (0.0.2010.06.17-1) UNRELEASED; urgency=low
   * Add the 34-manpage-defaults patch to properly document what dma will use
     as default values if not specified in the config file instead of what
     the default config file specifies.  Closes: #544748
+  * Add the 35-delivery-retry patch to try local deliveries a bit more often
+    and to randomize the delivery timeout to avoid locking issues.
 
  -- Peter Pentchev <roam@ringlet.net>  Fri, 25 Jun 2010 12:02:22 +0300
 
