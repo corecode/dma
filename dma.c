@@ -82,6 +82,12 @@ struct config config = {
 };
 
 
+static void
+sighup_handler(int signo)
+{
+	(void)signo;	/* so that gcc doesn't complain */
+}
+
 static char *
 set_from(struct queue *queue, const char *osender)
 {
@@ -294,8 +300,8 @@ retry:
 				 MAX_TIMEOUT);
 			goto bounce;
 		}
-		sleep(backoff);
-		backoff *= 2;
+		if (sleep(backoff) == 0)
+			backoff *= 2;
 		if (backoff > MAX_RETRY)
 			backoff = MAX_RETRY;
 		goto retry;
@@ -358,6 +364,7 @@ show_queue(struct queue *queue)
 int
 main(int argc, char **argv)
 {
+	struct sigaction act;
 	char *sender = NULL;
 	struct queue queue;
 	int i, ch;
@@ -471,6 +478,12 @@ skipopts:
 	set_username();
 
 	/* XXX fork root here */
+
+	act.sa_handler = sighup_handler;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	if (sigaction(SIGHUP, &act, NULL) != 0)
+		syslog(LOG_WARNING, "can not set signal handler: %m");
 
 	parse_conf(CONF_PATH);
 
