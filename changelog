@@ -1,3 +1,10 @@
+dma (0.0.2010.06.17-2) UNRELEASED; urgency=low
+
+  * Update the debconf translations:
+    - Japanese by Hideki Yamane; Closes: #587543
+
+ -- Peter Pentchev <roam@ringlet.net>  Tue, 29 Jun 2010 22:45:40 +0300
+
 dma (0.0.2010.06.17-1) unstable; urgency=low
 
   * New upstream version:
