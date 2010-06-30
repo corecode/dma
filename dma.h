@@ -54,7 +54,7 @@
 #define PATH_MAX	1024		/* Max path len */
 #endif
 #define	SMTP_PORT	25		/* Default SMTP port */
-#define CON_TIMEOUT	120		/* Connection timeout */
+#define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
 
 #define STARTTLS	0x002		/* StartTLS support */
 #define SECURETRANS	0x004		/* SSL/TLS in general */
