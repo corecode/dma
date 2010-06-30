@@ -199,6 +199,7 @@ void errlog(int, const char *, ...);
 void errlogx(int, const char *, ...);
 void set_username(void);
 void deltmp(void);
+int do_timeout(int, int);
 int open_locked(const char *, int, ...);
 char *rfc822date(void);
 int strprefixcmp(const char *, const char *);
