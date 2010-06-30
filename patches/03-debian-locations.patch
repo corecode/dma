@@ -1,11 +1,10 @@
 Description: Customize the /etc/dma configuration files for Debian.
  On Debian, the aliases file lives in /etc, not /etc/mail.
  Define a smarthost by default, albeit an invalid one.
- Use deferred delivery - the package includes a cron job running the queue.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-23
+Last-Update: 2010-06-30
 
 --- a/dma.8
 +++ b/dma.8
@@ -27,15 +26,6 @@ Last-Update: 2010-06-23
  .Xc
  Path to the local aliases file.
  Just stick with the default.
-@@ -231,7 +231,7 @@
- You have to rename this variable manually to prevent that you send your
- password accidentally over an insecure connection.
- .It Ic DEFER Xo
--(boolean, default=commented)
-+(boolean, default=set)
- .Xc
- Comment if you want that
- .Nm
 --- a/dma.conf
 +++ b/dma.conf
 @@ -2,13 +2,15 @@
@@ -67,7 +57,7 @@ Last-Update: 2010-06-23
  # message, not just the headers.
 --- a/dma.c
 +++ b/dma.c
-@@ -70,12 +70,12 @@
+@@ -70,7 +70,7 @@
  struct config config = {
  	.smarthost	= NULL,
  	.port		= 25,
@@ -76,9 +66,3 @@ Last-Update: 2010-06-23
  	.spooldir	= "/var/spool/dma",
  	.virtualpath	= NULL,
  	.authpath	= NULL,
- 	.certfile	= NULL,
--	.features	= 0,
-+	.features	= DEFER,
- 	.mailname	= NULL,
- 	.mailnamefile	= NULL,
- };
