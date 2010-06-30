@@ -1,12 +1,13 @@
-dma (0.0.2010.06.17-2) UNRELEASED; urgency=low
+dma (0.0.2010.06.17-2) unstable; urgency=low
 
-  * Update the debconf translations:
-    - Japanese by Hideki Yamane; Closes: #587543
-  * In the 03-debian-locations patch, revert part of the 0.0.2010.06.17-1
+  * Quick on the heels of -1 to fix a momentary lapse of reason on my part:
+    in the 03-debian-locations patch, revert part of the 0.0.2010.06.17-1
     change: do not set a un-overrideable default for the deferred delivery!
     Closes: #587593
+  * Update the debconf translations:
+    - Japanese by Hideki Yamane; Closes: #587543
 
- -- Peter Pentchev <roam@ringlet.net>  Tue, 29 Jun 2010 22:45:40 +0300
+ -- Peter Pentchev <roam@ringlet.net>  Wed, 30 Jun 2010 11:59:46 +0300
 
 dma (0.0.2010.06.17-1) unstable; urgency=low
 
