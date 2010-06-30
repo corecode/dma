@@ -268,15 +268,10 @@ static void
 deliver(struct qitem *it)
 {
 	int error;
-	unsigned int backoff;
+	unsigned int backoff = MIN_RETRY;
 	const char *errmsg = "unknown bounce reason";
 	struct timeval now;
 	struct stat st;
-
-	if (it->remote)
-		backoff = MIN_RETRY;
-	else
-		backoff = 1;	/* one second for local deliveries */
 
 retry:
 	syslog(LOG_INFO, "trying delivery");

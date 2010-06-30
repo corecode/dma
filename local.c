@@ -29,12 +29,23 @@ deliver_local(struct qitem *it, const char **errmsg)
 		return (1);
 	}
 
+	/* wait for a maximum of 100s to get the lock to the file */
+	do_timeout(100, 0);
+
 	/* mailx removes users mailspool file if empty, so open with O_CREAT */
-	mbox = open_locked(fn, O_WRONLY|O_APPEND|O_NONBLOCK|O_CREAT, 0660);
+	mbox = open_locked(fn, O_WRONLY|O_APPEND|O_CREAT, 0660);
 	if (mbox < 0) {
-		syslog(LOG_NOTICE, "local delivery deferred: can not open `%s': %m", fn);
+		int e = errno;
+
+		do_timeout(0, 0);
+		if (e == EINTR)
+			syslog(LOG_NOTICE, "local delivery deferred: can not lock `%s'", fn);
+		else
+			syslog(LOG_NOTICE, "local delivery deferred: can not open `%s': %m", fn);
 		return (1);
 	}
+	do_timeout(0, 0);
+
 	mboxlen = lseek(mbox, 0, SEEK_END);
 
 	/* New mails start with \nFrom ...., unless we're at the beginning of the mbox */
@@ -48,13 +59,13 @@ deliver_local(struct qitem *it, const char **errmsg)
 
 	if (fseek(it->mailf, 0, SEEK_SET) != 0) {
 		syslog(LOG_NOTICE, "local delivery deferred: can not seek: %m");
-		return (1);
+		goto out;
 	}
 
 	error = snprintf(line, sizeof(line), "%sFrom %s\t%s", newline, sender, ctime(&now));
 	if (error < 0 || (size_t)error >= sizeof(line)) {
 		syslog(LOG_NOTICE, "local delivery deferred: can not write header: %m");
-		return (1);
+		goto out;
 	}
 	if (write(mbox, line, error) != error)
 		goto wrerror;
@@ -93,6 +104,7 @@ wrerror:
 chop:
 	if (ftruncate(mbox, mboxlen) != 0)
 		syslog(LOG_WARNING, "error recovering mbox `%s': %m", fn);
+out:
 	close(mbox);
 	return (error);
 }
