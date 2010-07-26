@@ -1,8 +1,8 @@
 # Translation of dma debconf screen to French
 # This file is distributed under the same license as the dma package.
-# Copyright (C) 2006-2009 Debian French l10n team <deblian-l10n-french@lists.debian.org>
+# Copyright (C) 2006-2010 Debian French l10n team <debian-l10n-french@lists.debian.org>
 # Translator:
-# Steve Petruzzello <dlist@bluewin.ch>, 2009
+# Steve Petruzzello <dlist@bluewin.ch>, 2009, 2010
 msgid ""
 msgstr ""
 "Project-Id-Version: dma\n"
@@ -48,8 +48,8 @@ msgid ""
 "Thus, if a mail address on the local host is foo@example.org, the correct "
 "value for this option would be example.org."
 msgstr ""
-"Par exemple, si une adresse électronique locale est foo@exemple.org, la "
-"valeur appropriée pour cette option sera « exemple.org »."
+"Par exemple, si une adresse électronique locale est foo@example.org, la "
+"valeur appropriée pour cette option sera « example.org »."
 
 #. Type: string
 #. Description
@@ -60,7 +60,6 @@ msgstr "Nom réseau ou adresse IP du système smarthost :"
 #. Type: string
 #. Description
 #: ../templates:2001
-#, fuzzy
 #| msgid ""
 #| "Please enter the IP address or the host name of a mail server that this "
 #| "system should use as outgoing smarthost. If no smarthost is specified, "
@@ -71,10 +70,9 @@ msgid ""
 "system should use as outgoing smarthost. If no smarthost is specified, dma "
 "will try to deliver all messages by itself."
 msgstr ""
-"Veuillez entrer l'adresse IP ou le nom d'hôte du serveur qui sera le serveur "
-"de courriels sortant pour ce système. Si aucun nom n'est indiqué, dma "
-"essaiera de livrer tous les messages lui-même ; toutefois, il ne peut pas "
-"(encore) utiliser les enregistrements MX."
+"Veuillez indiquer l'adresse IP ou le nom d'hôte du serveur qui sera le "
+"serveur de courriels sortant pour ce système. Si aucun nom n'est indiqué, "
+"dma essaiera de livrer tous les messages lui-même."
 
 #. Type: string
 #. Description

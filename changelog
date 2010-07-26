@@ -1,3 +1,10 @@
+dma (0.0.2010.06.17-3) UNRELEASED; urgency=low
+
+  * Update the debconf translations:
+    - French by Steve Petruzzello; Closes: #587883
+
+ -- Peter Pentchev <roam@ringlet.net>  Fri, 02 Jul 2010 11:36:44 +0300
+
 dma (0.0.2010.06.17-2) unstable; urgency=low
 
   * Quick on the heels of -1 to fix a momentary lapse of reason on my part:
