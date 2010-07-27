@@ -8,7 +8,7 @@ Description: Implement double-bounce handling via an external program.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Bug: http://bugs.dragonflybsd.org/issue1321
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-18
+Last-Update: 2010-07-27
 
 --- a/conf.c
 +++ b/conf.c
@@ -72,7 +72,7 @@ Last-Update: 2010-06-18
 +++ b/dma.conf
 @@ -43,6 +43,12 @@
  # behind a dialup line.  You have to submit your mails manually with dma -q
- DEFER
+ #DEFER
  
 +# The double-bounce handler program.  Leave this blank if you like dma's
 +# default behavior of simply aborting the delivery, or specify the name or

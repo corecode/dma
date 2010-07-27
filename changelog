@@ -3,6 +3,12 @@ dma (0.0.2010.06.17-3) UNRELEASED; urgency=low
   * Update the debconf translations:
     - French by Steve Petruzzello; Closes: #587883
   * Bump Standards-Version to 3.9.1 with no changes.
+  * Disable deferred delivery by default, as in the upstream version:
+    - in the 03-debian-locations patch, comment the DEFER keyword in dma.conf,
+      as it is upstream
+    - refresh the 11-double-bounce.patch
+    - reword the README.Debian section on deferred delivery a bit
+    - add a news blurb
 
  -- Peter Pentchev <roam@ringlet.net>  Tue, 27 Jul 2010 13:12:34 +0300
 

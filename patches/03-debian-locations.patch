@@ -4,7 +4,7 @@ Description: Customize the /etc/dma configuration files for Debian.
 Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
 Forwarded: not-needed
 Author: Peter Pentchev <roam@ringlet.net>
-Last-Update: 2010-06-30
+Last-Update: 2010-07-27
 
 --- a/dma.8
 +++ b/dma.8
@@ -46,15 +46,6 @@ Last-Update: 2010-06-30
  
  # Path to your spooldir.  Just stay with the default.
  #SPOOLDIR /var/spool/dma
-@@ -39,7 +41,7 @@
- 
- # Uncomment if you want to defer your mails.  This is useful if you are
- # behind a dialup line.  You have to submit your mails manually with dma -q
--#DEFER
-+DEFER
- 
- # Uncomment if you want the bounce message to include the complete original
- # message, not just the headers.
 --- a/dma.c
 +++ b/dma.c
 @@ -70,7 +70,7 @@
