@@ -71,7 +71,7 @@ main(int argc, char **argv)
 {
 	const char *spooldir;
 	int hflag, Vflag, errs, fd, res;
-	char ch;
+	int ch;
 	DIR *d;
 	struct dirent *e;
 	struct stat sb;
@@ -99,7 +99,9 @@ main(int argc, char **argv)
 				break;
 
 			case '?':
+			default:
 				usage(1);
+				/* NOTREACHED */
 		}
 	if (Vflag)
 		version();

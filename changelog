@@ -1,3 +1,10 @@
+dma (0.0.2010.06.17-4) UNRELEASED; urgency=low
+
+  * Fix an infinite loop in dma-migrate if char is unsigned.
+    Closes: #599172
+
+ -- Peter Pentchev <roam@ringlet.net>  Wed, 06 Oct 2010 17:07:12 +0300
+
 dma (0.0.2010.06.17-3) unstable; urgency=low
 
   * Update the debconf translations:
