@@ -2,6 +2,7 @@ dma (0.0.2010.06.17-4) UNRELEASED; urgency=low
 
   * Fix an infinite loop in dma-migrate if char is unsigned.
     Closes: #599172
+  * Switch to Git and point the Vcs-* fields to Gitorious.
 
  -- Peter Pentchev <roam@ringlet.net>  Wed, 06 Oct 2010 17:07:12 +0300
 
