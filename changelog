@@ -1,3 +1,9 @@
+dma (0.0.2010.06.17-5) UNRELEASED; urgency=low
+
+  * Only use SA_NOCLDWAIT if available to fix the Hurd FTBFS.
+
+ -- Peter Pentchev <roam@ringlet.net>  Thu, 07 Oct 2010 11:27:01 +0300
+
 dma (0.0.2010.06.17-4) unstable; urgency=low
 
   * Fix an infinite loop in dma-migrate if char is unsigned.

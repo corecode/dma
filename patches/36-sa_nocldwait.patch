@@ -1,0 +1,17 @@
+Description: Do not use SA_NOCLDWAIT on platforms like the GNU Hurd.
+Forwarded: no
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-10-07
+
+--- a/dma.c
++++ b/dma.c
+@@ -218,7 +218,9 @@
+ 	daemonize = 0;
+ 
+ 	bzero(&sa, sizeof(sa));
++#ifdef SA_NOCLDWAIT
+ 	sa.sa_flags = SA_NOCLDWAIT;
++#endif
+ 	sa.sa_handler = SIG_IGN;
+ 	sigaction(SIGCHLD, &sa, NULL);
+ 
