@@ -216,7 +216,9 @@ go_background(struct queue *queue)
 	daemonize = 0;
 
 	bzero(&sa, sizeof(sa));
+#ifdef SA_NOCLDWAIT
 	sa.sa_flags = SA_NOCLDWAIT;
+#endif
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGCHLD, &sa, NULL);
 
