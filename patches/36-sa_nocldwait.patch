@@ -1,5 +1,5 @@
 Description: Do not use SA_NOCLDWAIT on platforms like the GNU Hurd.
-Forwarded: no
+Forwarded: http://gitorious.org/dma/dma/merge_requests/1
 Author: Peter Pentchev <roam@ringlet.net>
 Last-Update: 2010-10-07
 
