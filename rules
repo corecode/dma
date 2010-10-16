@@ -5,9 +5,9 @@
 DDIR=		$(CURDIR)/debian
 D=		$(DDIR)/dma
 
-CFLAGS=		$(shell dpkg-buildflags --get CFLAGS)
-CPPFLAGS=	$(shell dpkg-buildflags --get CPPFLAGS)
-LDFLAGS=	$(shell dpkg-buildflags --get LDFLAGS)
+CFLAGS:=	$(shell dpkg-buildflags --get CFLAGS)
+CPPFLAGS:=	$(shell dpkg-buildflags --get CPPFLAGS)
+LDFLAGS:=	$(shell dpkg-buildflags --get LDFLAGS)
 
 CFLAGS+=	-DNEED_GETPROGNAME -DNEED_REALLOCF -DNEED_STRLCPY
 
