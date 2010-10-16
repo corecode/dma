@@ -2,6 +2,7 @@ dma (0.0.2010.06.17-6) UNRELEASED; urgency=low
 
   * Add the 37-gnu-hurd patch to really fix the FTBFS on GNU/Hurd.
   * Convert several shell output assignments from = to :=
+  * Switch to bzip2 compression for the Debian tarball.
 
  -- Peter Pentchev <roam@ringlet.net>  Sat, 16 Oct 2010 18:54:54 +0300
 
