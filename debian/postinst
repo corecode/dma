@@ -10,9 +10,6 @@ umask 022
 
 case "$1" in
     configure)
-    	db_get dma/mailname
-	echo "$RET" > /etc/mailname
-
 	db_get dma/relayhost
 	if [ -n "$RET" ]; then
 		sed -i -re 's@^[[:space:]]*(#+[[:space:]]*)?SMARTHOST([[:space:]]+.*)?$@SMARTHOST '"$RET@" /etc/dma/dma.conf

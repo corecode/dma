@@ -9,9 +9,7 @@ CFLAGS:=	$(shell dpkg-buildflags --get CFLAGS)
 CPPFLAGS:=	$(shell dpkg-buildflags --get CPPFLAGS)
 LDFLAGS:=	$(shell dpkg-buildflags --get LDFLAGS)
 
-CFLAGS+=	-DNEED_GETPROGNAME -DNEED_REALLOCF -DNEED_STRLCPY
-
-CONFFILES=	auth.conf dma.conf virtusertable
+CONFFILES=	dma.conf auth.conf
 
 ifneq (,$(filter werror,$(DEB_BUILD_OPTIONS)))
 	CFLAGS+=	-Werror
@@ -28,17 +26,17 @@ endif
 export CFLAGS CPPFLAGS LDFLAGS
 
 override_dh_auto_build:
-	$(MAKE) -f Makefile.plain
+	$(MAKE) -f Makefile
 	$(MAKE) -C $(DDIR)/migrate
 
 override_dh_auto_clean:
-	$(MAKE) -f Makefile.plain clean
+	$(MAKE) -f Makefile clean
 	$(MAKE) -C $(DDIR)/migrate clean
 
 override_dh_auto_install:
-	$(MAKE) -f Makefile.plain DESTDIR=$D PREFIX=/usr CONFDIR=/etc install
-	install -d -o root -g mail -m 770 $D/var/spool/dma
-	install -o root -g mail -m 640 $(CONFFILES) $D/etc/dma
+	$(MAKE) -f Makefile DESTDIR=$D PREFIX=/usr CONFDIR=/etc install
+	install -o root -g mail -m 644 dma.conf $D/etc/dma
+	install -o root -g mail -m 640 auth.conf $D/etc/dma
 
 override_dh_fixperms:
 	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma -Xetc/dma
