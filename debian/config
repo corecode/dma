@@ -15,19 +15,12 @@ else
 	fi
 fi
 
-db_get dma/dbounceprog || true
-if [ -z "$RET" ]; then
-	db_set dma/dbounceprog 'dbounce-simple-safecat' || true
-fi
-
 state=1
 while [ "$state" -ge 1 -a "$state" -le 3 ]; do
 	case "$state" in
 	1)	db_input high dma/mailname || true
 		;;
 	2)	db_input high dma/relayhost || true
-		;;
-	3)	db_input medium dma/dbounceprog || true
 		;;
 	esac
 	if db_go; then

@@ -15,7 +15,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Provides: mail-transport-agent
 Conflicts: mail-transport-agent
 Replaces: mail-transport-agent
-Recommends: dma-migrate, safecat
+Recommends: dma-migrate
 Description: lightweight mail transport agent
  The DragonFly Mail Agent is a small Mail Transport Agent (MTA),
  designed for home and office use.  It accepts mails from local Mail

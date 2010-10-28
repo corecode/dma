@@ -16,11 +16,3 @@ _Description: Smarthost:
  Please enter the IP address or the host name of a mail server that
  this system should use as outgoing smarthost. If no smarthost is
  specified, dma will try to deliver all messages by itself.
-
-Template: dma/dbounceprog
-Type: string
-_Description: A program to handle double-bounces:
- Please enter the name of a program that dma will invoke when a bounced
- message bounces in its own right.  Leave this blank to keep dma's
- default behavior of simply aborting the delivery, or specify the name
- or full path to a program that will process the double-bounce message.

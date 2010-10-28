@@ -40,19 +40,4 @@ that handles the delivery should die for some reason, or the system should be
 restarted, the cron job will ensure that a new delivery process is spawned in
 due time and the message is not just left in the queue.
 
-3. Double-bounce handling
-
-By default, the dma mail transfer agent does not attempt to handle double
-bounces - it aborts the delivery with a critical syslog message.
-This, combined with the Debian package's default of "flush the queue
-every five minutes", may pose something of a strain on the mail server :)
-Thus, the Debian version of dma adds a new feature - you may specify
-an external program to handle double bounces with the DBOUNCEPROG 
-directive in the /etc/dma/dma.conf file.  Also included is a sample
-program, dbounce-simple-safecat, which uses the safecat utility to
-copy the bounce message into a Maildir-structured storage,
-/var/spool/mail/dma-bounces by default.  For the present, the copied file
-still has the dma internal format, which is plain text, but is not really
-a mailbox :)
-
  -- Peter Pentchev <roam@ringlet.net>  Tue, 27 Jul 2010 13:26:48 +0300
