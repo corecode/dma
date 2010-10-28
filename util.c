@@ -51,7 +51,7 @@
 const char *
 hostname(void)
 {
-	static char name[MAXHOSTNAMELEN+1];
+	static char name[HOST_NAME_MAX+1];
 	static int initialized = 0;
 
 	if (initialized)
@@ -95,6 +95,11 @@ hostname(void)
 local:
 	if (gethostname(name, sizeof(name)) != 0)
 		strcpy(name, "(unknown hostname)");
+	/*
+	 * gethostname() is allowed to truncate name without NUL-termination
+	 * and at the same time not return an error.
+	 */
+	name[sizeof(name) - 1] = 0;
 	initialized = 1;
 	return (name);
 }
