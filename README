@@ -1,0 +1,12 @@
+Installation
+============
+
+chown root:mail /usr/libexec/dma
+chmod 2555 /usr/libexec/dma
+mkdir /var/spool/dma
+chown root:mail /var/spool/dma
+chmod 2775 /var/spool/dma
+chown root:mail /var/mail
+chmod 2775 /var/mail
+chgrp mail /var/mail/*
+chmod 620 /var/mail/*
