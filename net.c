@@ -57,7 +57,7 @@
 
 #include "dma.h"
 
-char neterr[BUF_SIZE];
+char neterr[ERRMSG_SIZE];
 
 char *
 ssl_errstr(void)
@@ -348,7 +348,7 @@ close_connection(int fd)
 }
 
 static int
-deliver_to_host(struct qitem *it, struct mx_hostentry *host, void *errmsgc)
+deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
 	struct authuser *a;
 	char line[1000];
@@ -356,7 +356,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host, void *errmsgc)
 	int fd, error = 0, do_auth = 0, res = 0;
 
 	if (fseek(it->mailf, 0, SEEK_SET) != 0) {
-		asprintf(errmsgc, "can not seek: %s", strerror(errno));
+		snprintf(errmsg, sizeof(errmsg), "can not seek: %s", strerror(errno));
 		return (-1);
 	}
 
@@ -369,7 +369,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host, void *errmsgc)
 	if (res == 5) { \
 		syslog(LOG_ERR, "remote delivery to %s [%s] failed after %s: %s", \
 		       host->host, host->addr, c, neterr); \
-		asprintf(errmsgc, "%s [%s] did not like our %s:\n%s", \
+		snprintf(errmsg, sizeof(errmsg), "%s [%s] did not like our %s:\n%s", \
 			 host->host, host->addr, c, neterr); \
 		return (-1); \
 	} else if (res != exp) { \
@@ -418,7 +418,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host, void *errmsgc)
 		if (error < 0) {
 			syslog(LOG_ERR, "remote delivery failed:"
 					" SMTP login failed: %m");
-			asprintf(errmsgc, "SMTP login to %s failed", host->host);
+			snprintf(errmsg, sizeof(errmsg), "SMTP login to %s failed", host->host);
 			return (-1);
 		}
 		/* SMTP login is not available, so try without */
@@ -445,7 +445,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host, void *errmsgc)
 		linelen = strlen(line);
 		if (linelen == 0 || line[linelen - 1] != '\n') {
 			syslog(LOG_CRIT, "remote delivery failed: corrupted queue file");
-			*(const char **)errmsgc = "corrupted queue file";
+			snprintf(errmsg, sizeof(errmsg), "corrupted queue file");
 			error = -1;
 			goto out;
 		}
@@ -480,10 +480,8 @@ out:
 }
 
 int
-deliver_remote(struct qitem *it, const char **errmsg)
+deliver_remote(struct qitem *it)
 {
-	/* asprintf can't take const */
-	void *errmsgc = __DECONST(char **, errmsg);
 	struct mx_hostentry *hosts, *h;
 	const char *host;
 	int port;
@@ -492,7 +490,7 @@ deliver_remote(struct qitem *it, const char **errmsg)
 	host = strrchr(it->addr, '@');
 	/* Should not happen */
 	if (host == NULL) {
-		asprintf(errmsgc, "Internal error: badly formed address %s",
+		snprintf(errmsg, sizeof(errmsg), "Internal error: badly formed address %s",
 		    it->addr);
 		return(-1);
 	} else {
@@ -519,7 +517,7 @@ deliver_remote(struct qitem *it, const char **errmsg)
 	}
 
 	for (h = hosts; *h->host != 0; h++) {
-		switch (deliver_to_host(it, h, errmsgc)) {
+		switch (deliver_to_host(it, h)) {
 		case 0:
 			/* success */
 			error = 0;

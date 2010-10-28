@@ -64,8 +64,9 @@ static void deliver(struct qitem *);
 struct aliases aliases = LIST_HEAD_INITIALIZER(aliases);
 struct strlist tmpfs = SLIST_HEAD_INITIALIZER(tmpfs);
 struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
-const char *username;
+char username[USERNAME_SIZE];
 const char *logident_base;
+char errmsg[ERRMSG_SIZE];
 
 static int daemonize = 1;
 
@@ -271,17 +272,18 @@ deliver(struct qitem *it)
 {
 	int error;
 	unsigned int backoff = MIN_RETRY;
-	const char *errmsg = "unknown bounce reason";
 	struct timeval now;
 	struct stat st;
+
+	snprintf(errmsg, sizeof(errmsg), "unknown bounce reason");
 
 retry:
 	syslog(LOG_INFO, "trying delivery");
 
 	if (it->remote)
-		error = deliver_remote(it, &errmsg);
+		error = deliver_remote(it);
 	else
-		error = deliver_local(it, &errmsg);
+		error = deliver_local(it);
 
 	switch (error) {
 	case 0:
@@ -296,7 +298,7 @@ retry:
 		}
 		if (gettimeofday(&now, NULL) == 0 &&
 		    (now.tv_sec - st.st_mtim.tv_sec > MAX_TIMEOUT)) {
-			asprintf(__DECONST(void *, &errmsg),
+			snprintf(errmsg, sizeof(errmsg),
 				 "Could not deliver for the last %d seconds. Giving up.",
 				 MAX_TIMEOUT);
 			goto bounce;

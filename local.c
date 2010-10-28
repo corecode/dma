@@ -10,7 +10,7 @@
 #include "dma.h"
 
 int
-deliver_local(struct qitem *it, const char **errmsg)
+deliver_local(struct qitem *it)
 {
 	char fn[PATH_MAX+1];
 	char line[1000];
@@ -76,7 +76,7 @@ deliver_local(struct qitem *it, const char **errmsg)
 		linelen = strlen(line);
 		if (linelen == 0 || line[linelen - 1] != '\n') {
 			syslog(LOG_CRIT, "local delivery failed: corrupted queue file");
-			*errmsg = "corrupted queue file";
+			snprintf(errmsg, sizeof(errmsg), "corrupted queue file");
 			error = -1;
 			goto chop;
 		}

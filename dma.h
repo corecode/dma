@@ -47,6 +47,8 @@
 #define VERSION	"DragonFly Mail Agent " DMA_VERSION
 
 #define BUF_SIZE	2048
+#define ERRMSG_SIZE	200
+#define USERNAME_SIZE	50
 #define MIN_RETRY	300		/* 5 minutes */
 #define MAX_RETRY	(3*60*60)	/* retry at least every 3 hours */
 #define MAX_TIMEOUT	(5*24*60*60)	/* give up after 5 days */
@@ -141,10 +143,11 @@ extern struct aliases aliases;
 extern struct config config;
 extern struct strlist tmpfs;
 extern struct authusers authusers;
-extern const char *username;
+extern char username[USERNAME_SIZE];
 extern const char *logident_base;
 
-extern char neterr[BUF_SIZE];
+extern char neterr[ERRMSG_SIZE];
+extern char errmsg[ERRMSG_SIZE];
 
 /* aliases_parse.y */
 int yyparse(void);
@@ -167,7 +170,7 @@ int dns_get_mx_list(const char *, int, struct mx_hostentry **, int);
 char *ssl_errstr(void);
 int read_remote(int, int, char *);
 ssize_t send_remote_command(int, const char*, ...);
-int deliver_remote(struct qitem *, const char **);
+int deliver_remote(struct qitem *);
 
 /* base64.c */
 int base64_encode(const void *, int, char **);
@@ -186,7 +189,7 @@ int acquirespool(struct qitem *);
 void dropspool(struct queue *, struct qitem *);
 
 /* local.c */
-int deliver_local(struct qitem *, const char **errmsg);
+int deliver_local(struct qitem *);
 
 /* mail.c */
 void bounce(struct qitem *, const char *);

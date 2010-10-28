@@ -91,22 +91,20 @@ hostname(void)
 void
 setlogident(const char *fmt, ...)
 {
-	char *tag = NULL;
+	char tag[50];
 
+	snprintf(tag, sizeof(tag), "%s", logident_base);
 	if (fmt != NULL) {
 		va_list ap;
-		char *sufx;
+		char sufx[50];
 
 		va_start(ap, fmt);
-		if (vasprintf(&sufx, fmt, ap) != -1 && sufx != NULL) {
-			if (asprintf(&tag, "%s[%s]", logident_base, sufx) == -1)
-				tag = NULL;
-			free(sufx);
-		}
+		vsnprintf(sufx, sizeof(sufx), fmt, ap);
 		va_end(ap);
+		snprintf(tag, sizeof(tag), "%s[%s]", logident_base, sufx);
 	}
 	closelog();
-	openlog(tag != NULL ? tag : logident_base, 0, LOG_MAIL);
+	openlog(tag, 0, LOG_MAIL);
 }
 
 void
@@ -114,16 +112,16 @@ errlog(int exitcode, const char *fmt, ...)
 {
 	int oerrno = errno;
 	va_list ap;
-	char *outs = NULL;
+	char outs[ERRMSG_SIZE];
 
+	outs[0] = 0;
 	if (fmt != NULL) {
 		va_start(ap, fmt);
-		if (vasprintf(&outs, fmt, ap) == -1)
-			outs = NULL;
+		vsnprintf(outs, sizeof(outs), fmt, ap);
 		va_end(ap);
 	}
 
-	if (outs != NULL) {
+	if (*outs != 0) {
 		syslog(LOG_ERR, "%s: %m", outs);
 		fprintf(stderr, "%s: %s: %s\n", getprogname(), outs, strerror(oerrno));
 	} else {
@@ -138,16 +136,16 @@ void
 errlogx(int exitcode, const char *fmt, ...)
 {
 	va_list ap;
-	char *outs = NULL;
+	char outs[ERRMSG_SIZE];
 
+	outs[0] = 0;
 	if (fmt != NULL) {
 		va_start(ap, fmt);
-		if (vasprintf(&outs, fmt, ap) == -1)
-			outs = NULL;
+		vsnprintf(outs, sizeof(outs), fmt, ap);
 		va_end(ap);
 	}
 
-	if (outs != NULL) {
+	if (*outs != 0) {
 		syslog(LOG_ERR, "%s", outs);
 		fprintf(stderr, "%s: %s\n", getprogname(), outs);
 	} else {
@@ -158,49 +156,39 @@ errlogx(int exitcode, const char *fmt, ...)
 	exit(exitcode);
 }
 
-static const char *
+static int
 check_username(const char *name, uid_t ckuid)
 {
 	struct passwd *pwd;
 
 	if (name == NULL)
-		return (NULL);
+		return (0);
 	pwd = getpwnam(name);
 	if (pwd == NULL || pwd->pw_uid != ckuid)
-		return (NULL);
-	return (name);
+		return (0);
+	snprintf(username, sizeof(username), "%s", name);
+	return (1);
 }
 
 void
 set_username(void)
 {
 	struct passwd *pwd;
-	char *u = NULL;
 	uid_t uid;
 
 	uid = getuid();
-	username = check_username(getlogin(), uid);
-	if (username != NULL)
+	if (check_username(getlogin(), uid))
 		return;
-	username = check_username(getenv("LOGNAME"), uid);
-	if (username != NULL)
+	if (check_username(getenv("LOGNAME"), uid))
 		return;
-	username = check_username(getenv("USER"), uid);
-	if (username != NULL)
+	if (check_username(getenv("USER"), uid))
 		return;
 	pwd = getpwuid(uid);
-	if (pwd != NULL && pwd->pw_name != NULL && pwd->pw_name[0] != '\0' &&
-	    (u = strdup(pwd->pw_name)) != NULL) {
-		username = check_username(u, uid);
-		if (username != NULL)
+	if (pwd != NULL && pwd->pw_name != NULL && pwd->pw_name[0] != '\0') {
+		if (check_username(pwd->pw_name, uid))
 			return;
-		else
-			free(u);
 	}
-	if (asprintf(__DECONST(void *, &username), "%ld", (long)uid) != -1 &&
-	    username != NULL)
-		return;
-	username = "unknown-or-invalid-username";
+	snprintf(username, sizeof(username), "uid=%ld", (long)uid);
 }
 
 void
