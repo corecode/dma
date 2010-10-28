@@ -48,6 +48,8 @@ install: all
 	${INSTALL} -m 0644 dma.8 ${DESTDIR}${MAN}/man8/
 	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${DMASPOOL}
 	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${VARMAIL}
+
+permissions:
 	-${CHGRP} mail ${DESTDIR}${VARMAIL}/*
 	-${CHMOD} g+w ${DESTDIR}${VARMAIL}/*
 
