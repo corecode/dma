@@ -1,0 +1,94 @@
+# Czech debconf template translation of dma
+# Copyright (C) 2009 - 2010 Michal Simunek <michal.simunek@gmail.com>
+# This file is distributed under the same license as the dma package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: dma 0.0.2010.06.17-1\n"
+"Report-Msgid-Bugs-To: dma@packages.debian.org\n"
+"POT-Creation-Date: 2010-06-19 16:02+0300\n"
+"PO-Revision-Date: 2010-06-22 17:13+0200\n"
+"Last-Translator: Michal Simunek <michal.simunek@gmail.com>\n"
+"Language-Team: Czech <debian-l10n-czech@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid "System mail name:"
+msgstr "Název mailového systému:"
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"The 'mail name' is the domain name used to 'qualify' mail addresses without "
+"a domain name."
+msgstr ""
+"'název mailu' je doménové jméno použité k 'označení' mailových adres bez "
+"doménového jména."
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"This name will also be used by other programs. It should be the single, "
+"fully qualified domain name (FQDN)."
+msgstr ""
+"Toto jméno budou také používat ostatní programy. Jednoduše to má být fully "
+"qualified domain name (FQDN)."
+
+#. Type: string
+#. Description
+#: ../templates:1001
+msgid ""
+"Thus, if a mail address on the local host is foo@example.org, the correct "
+"value for this option would be example.org."
+msgstr ""
+"Takže, jestliže je mailová adresa lokálního hosta foo@example.org správná, "
+"hodnota pro toto nastavení by byla example.org."
+
+#. Type: string
+#. Description
+#: ../templates:2001
+msgid "Smarthost:"
+msgstr "Smarthost:"
+
+#. Type: string
+#. Description
+#: ../templates:2001
+#| msgid ""
+#| "Please enter the IP address or the host name of a mail server that this "
+#| "system should use as outgoing smarthost. If no smarthost is specified, "
+#| "dma will try to deliver all messages by itself; however, for the present "
+#| "it cannot handle MX record lookups."
+msgid ""
+"Please enter the IP address or the host name of a mail server that this "
+"system should use as outgoing smarthost. If no smarthost is specified, dma "
+"will try to deliver all messages by itself."
+msgstr ""
+"Vložte prosím IP adresu nebo název hostitele poštovního serveru, které má tento "
+"systém použít jako odchozího smarthosta. Není-li zvolen smarthost, dma se "
+"pokusí doručit všechny zprávy sám."
+
+#. Type: string
+#. Description
+#: ../templates:3001
+msgid "A program to handle double-bounces:"
+msgstr "Program pro manipulaci double-bounces:"
+
+#. Type: string
+#. Description
+#: ../templates:3001
+msgid ""
+"Please enter the name of a program that dma will invoke when a bounced "
+"message bounces in its own right.  Leave this blank to keep dma's default "
+"behavior of simply aborting the delivery, or specify the name or full path "
+"to a program that will process the double-bounce message."
+msgstr ""
+"Vložte prosím název programu, který dma použije když se zprávu o nedoručení "
+"nepodaří doručit. Ponechte prázdné, pokud chcete ponechat výchozí chování, "
+"kdy dma jednoduše ukončí doručování, nebo zadejte název nebo úplnou cestu k "
+"programu, který bude zpracovávat double-bounce zprávy."

@@ -1,0 +1,188 @@
+Description: Dot-lock the user's mailbox with maillock(3) from liblockfile.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: not-needed
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-21
+
+--- a/local.c
++++ b/local.c
+@@ -7,8 +7,53 @@
+ #include <syslog.h>
+ #include <unistd.h>
+ 
++#ifdef HAVE_LIBLOCKFILE
++#include <maillock.h>
++#endif
++
+ #include "dma.h"
+ 
++#ifdef HAVE_LIBLOCKFILE
++static char *
++liblockfile_strerror(int res)
++{
++	static char buf[512];
++
++	switch (res) {
++		case L_SUCCESS:
++			snprintf(buf, sizeof(buf), "No error");
++			break;
++
++		case L_NAMELEN:
++			snprintf(buf, sizeof(buf), "Recipient name too long");
++			break;
++
++		case L_TMPLOCK:
++			snprintf(buf, sizeof(buf), "Error creating the temporary lockfile");
++			break;
++
++		case L_TMPWRITE:
++			snprintf(buf, sizeof(buf), "Error writing the process ID to the temporary lockfile");
++			break;
++
++		case L_MAXTRYS:
++			snprintf(buf, sizeof(buf), "Failed after the max number of attempts");
++			break;
++
++		case L_ERROR:
++			snprintf(buf, sizeof(buf), "Unknown error: %s",
++			  strerror(errno));
++			break;
++
++		default:
++			snprintf(buf, sizeof(buf),
++			  "Unexpected liblockfile error %d, errno is %d: %s",
++			  res, errno, strerror(errno));
++	}
++	return (buf);
++}
++#endif
++
+ int
+ deliver_local(struct qitem *it, const char **errmsg)
+ {
+@@ -22,6 +67,10 @@
+ 	int hadnl = 0;
+ 	off_t mboxlen;
+ 	time_t now = time(NULL);
++#ifdef HAVE_LIBLOCKFILE
++	int try;
++	int res;
++#endif
+ 
+ 	error = snprintf(fn, sizeof(fn), "%s/%s", _PATH_MAILDIR, it->addr);
+ 	if (error < 0 || (size_t)error >= sizeof(fn)) {
+@@ -30,11 +79,32 @@
+ 	}
+ 
+ 	/* mailx removes users mailspool file if empty, so open with O_CREAT */
+-	mbox = open_locked(fn, O_WRONLY|O_APPEND|O_NONBLOCK|O_CREAT, 0660);
+-	if (mbox < 0) {
+-		syslog(LOG_NOTICE, "local delivery deferred: can not open `%s': %m", fn);
+-		return (1);
++#ifdef HAVE_LIBLOCKFILE
++	try = 0;
++	for (;;) {
++#endif
++		mbox = open_locked(fn, O_WRONLY|O_APPEND|O_NONBLOCK|O_CREAT, 0660);
++		if (mbox < 0) {
++			syslog(LOG_NOTICE, "local delivery deferred: can not open `%s': %m", fn);
++			return (1);
++		}
++#ifdef HAVE_LIBLOCKFILE
++		res = maillock(it->addr, 0);
++		if (res == L_SUCCESS)
++			break;
++		else
++			syslog(LOG_NOTICE, "could not dot-lock `%s': %s",
++			       fn, liblockfile_strerror(res));
++		close(mbox);
++		if (try++ >= 5) {
++			syslog(LOG_NOTICE, "local delivery deferred: can not dot-lock `%s'",
++			       fn);
++			return (1);
++		}
++		syslog(LOG_NOTICE, "sleeping to retry the dot-lock");
++		sleep(5 * try);
+ 	}
++#endif
+ 	mboxlen = lseek(mbox, 0, SEEK_END);
+ 
+ 	/* New mails start with \nFrom ...., unless we're at the beginning of the mbox */
+@@ -48,12 +118,18 @@
+ 
+ 	if (fseek(it->mailf, 0, SEEK_SET) != 0) {
+ 		syslog(LOG_NOTICE, "local delivery deferred: can not seek: %m");
++#ifdef HAVE_LIBLOCKFILE
++		mailunlock();
++#endif
+ 		return (1);
+ 	}
+ 
+ 	error = snprintf(line, sizeof(line), "%sFrom %s\t%s", newline, sender, ctime(&now));
+ 	if (error < 0 || (size_t)error >= sizeof(line)) {
+ 		syslog(LOG_NOTICE, "local delivery deferred: can not write header: %m");
++#ifdef HAVE_LIBLOCKFILE
++		mailunlock();
++#endif
+ 		return (1);
+ 	}
+ 	if (write(mbox, line, error) != error)
+@@ -65,6 +141,9 @@
+ 		linelen = strlen(line);
+ 		if (linelen == 0 || line[linelen - 1] != '\n') {
+ 			syslog(LOG_CRIT, "local delivery failed: corrupted queue file");
++#ifdef HAVE_LIBLOCKFILE
++			mailunlock();
++#endif
+ 			*errmsg = "corrupted queue file";
+ 			error = -1;
+ 			goto chop;
+@@ -84,6 +163,9 @@
+ 		if ((size_t)write(mbox, line, linelen) != linelen)
+ 			goto wrerror;
+ 	}
++#ifdef HAVE_LIBLOCKFILE
++	mailunlock();
++#endif
+ 	close(mbox);
+ 	return (0);
+ 
+@@ -93,6 +175,9 @@
+ chop:
+ 	if (ftruncate(mbox, mboxlen) != 0)
+ 		syslog(LOG_WARNING, "error recovering mbox `%s': %m", fn);
++#ifdef HAVE_LIBLOCKFILE
++	mailunlock();
++#endif
+ 	close(mbox);
+ 	return (error);
+ }
+--- a/Makefile.plain
++++ b/Makefile.plain
+@@ -6,7 +6,9 @@
+ 
+ CC?=		gcc
+ CFLAGS?=	-O -pipe
+-LDADD?=		-lssl -lcrypto -lresolv
++LDADD?=		-lssl -lcrypto -lresolv -llockfile
++
++CFLAGS+=	-DHAVE_LIBLOCKFILE
+ 
+ INSTALL?=	install -p
+ PREFIX?=	/usr/local
+--- a/Makefile
++++ b/Makefile
+@@ -1,10 +1,11 @@
+ # $DragonFly: src/libexec/dma/Makefile,v 1.5 2008/09/19 00:36:57 corecode Exp $
+ #
+ 
++CFLAGS+= -DHAVE_LIBLOCKFILE
+ CFLAGS+= -I${.CURDIR}
+ 
+-DPADD=  ${LIBSSL} ${LIBCRYPTO}
+-LDADD=  -lssl -lcrypto
++DPADD=  ${LIBSSL} ${LIBCRYPTO} /usr/lib/liblockfile.a
++LDADD=  -lssl -lcrypto -llockfile
+ 
+ PROG=	dma
+ SRCS=	aliases_parse.y aliases_scan.l base64.c conf.c crypto.c

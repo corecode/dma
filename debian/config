@@ -1,0 +1,41 @@
+#!/bin/sh
+
+set -e
+
+. /usr/share/debconf/confmodule
+db_version 2.0
+db_capb backup
+
+if [ -e /etc/mailname ]; then
+	db_set dma/mailname "`cat /etc/mailname`" || true
+else
+	db_get dma/mailname || true
+	if [ -z "$RET" ]; then
+		db_set dma/mailname "`hostname --fqdn`" || true
+	fi
+fi
+
+db_get dma/dbounceprog || true
+if [ -z "$RET" ]; then
+	db_set dma/dbounceprog 'dbounce-simple-safecat' || true
+fi
+
+state=1
+while [ "$state" -ge 1 -a "$state" -le 3 ]; do
+	case "$state" in
+	1)	db_input high dma/mailname || true
+		;;
+	2)	db_input high dma/relayhost || true
+		;;
+	3)	db_input medium dma/dbounceprog || true
+		;;
+	esac
+	if db_go; then
+		state=$(($state + 1))
+	else
+		state=$(($state - 1))
+	fi
+done
+
+db_stop || true
+exit 0

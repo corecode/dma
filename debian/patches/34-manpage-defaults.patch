@@ -1,0 +1,27 @@
+Description: Let the manpage document the real dma(8) defaults.
+ Correct the VIRTUSERTABLE and AUTHPATH default settings to reflect what
+ dma(8) will consider as defaults if not specified in the config file
+ instead of what the default config file specifies.
+Forwarded: no
+Bug-Debian: http://bugs.debian.org/544748
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-23
+
+--- a/dma.8
++++ b/dma.8
+@@ -193,13 +193,13 @@
+ spool directory.
+ Just stick with the default.
+ .It Ic VIRTPATH Xo
+-(string, default=/etc/dma/virtusertable)
++(string, default=commented)
+ .Xc
+ Path to the
+ .Sq virtusertable
+ file.
+ .It Ic AUTHPATH Xo
+-(string, default=/etc/dma/auth.conf)
++(string, default=commented)
+ .Xc
+ Path to the
+ .Sq auth.conf

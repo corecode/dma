@@ -1,0 +1,58 @@
+dma for Debian
+--------------
+
+1. Smarthost operation by default - needs to be configured!
+
+After first installing dma, you need to configure it for proper operation -
+whether it should deliver all outgoing e-mail messages through a single
+smarthost or attempt to contact the remote mail servers directly.  This should
+be configured through the debconf questions, but you may change the setting
+using the SMARTHOST directive in the /etc/dma/dma.conf file.
+
+2. Deferred delivery possible via a cron job
+
+The dma mail transfer agent may operate in two modes - immediate and
+deferred.  In both cases, a new dma process is spawned for the delivery
+of each outgoing message, and this process lives on until the message is
+either successfully delivered or it times out after five days.
+
+In immediate delivery mode, which is the default, the new dma process is
+spawned as soon as the message is submitted to the queue.  In deferred mode,
+the message is left in the queue and will only be processed when dma is invoked
+separately with the "-q" command-line option.  This used to be the preferred
+delivery mode for the Debian package - even though there may be slight delays,
+the queue must still be processed periodically anyway (if an immediate delivery
+is deferred, the message is still left on the queue), so there's no harm done
+in always doing it that way.
+
+Hence, the Debian package of dma installs a cron job that attempts to
+flush the queue every five minutes.  Note that this does NOT mean that
+message delivery will be attempted every five minutes!  Once the queue
+is flushed, a separate dma instance is spawned for each still-unhandled
+message, and it takes care of reasonable exponential back-off in case of
+delivery problems.
+
+This cron job has no ill effect if dma has been configured for immediate
+delivery - if a message is submitted, a dma process shall be spawned to handle
+its delivery at once, and the cron job will not spawn any additional processes
+or in any way interfere with the running ones.  However, if the dma process
+that handles the delivery should die for some reason, or the system should be
+restarted, the cron job will ensure that a new delivery process is spawned in
+due time and the message is not just left in the queue.
+
+3. Double-bounce handling
+
+By default, the dma mail transfer agent does not attempt to handle double
+bounces - it aborts the delivery with a critical syslog message.
+This, combined with the Debian package's default of "flush the queue
+every five minutes", may pose something of a strain on the mail server :)
+Thus, the Debian version of dma adds a new feature - you may specify
+an external program to handle double bounces with the DBOUNCEPROG 
+directive in the /etc/dma/dma.conf file.  Also included is a sample
+program, dbounce-simple-safecat, which uses the safecat utility to
+copy the bounce message into a Maildir-structured storage,
+/var/spool/mail/dma-bounces by default.  For the present, the copied file
+still has the dma internal format, which is plain text, but is not really
+a mailbox :)
+
+ -- Peter Pentchev <roam@ringlet.net>  Tue, 27 Jul 2010 13:26:48 +0300

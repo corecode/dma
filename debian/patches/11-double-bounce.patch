@@ -1,0 +1,218 @@
+Description: Implement double-bounce handling via an external program.
+ Implement double-bounce handling via an external program, controlled
+ by the DBOUNCEPROG config parameter.
+ Enable this handling by default, using the dbounce-simple-safecat
+ helper installed by the package.
+ Unfortunately, Simon Schubert <corecode@dragonflybsd.org> did not
+ accept this part of my changes to dma in issue 1321.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Bug: http://bugs.dragonflybsd.org/issue1321
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-07-27
+
+--- a/conf.c
++++ b/conf.c
+@@ -256,6 +256,8 @@
+ 			config.authpath= data;
+ 		else if (strcmp(word, "CERTFILE") == 0 && data != NULL)
+ 			config.certfile = data;
++		else if (strcmp(word, "DBOUNCEPROG") == 0 && data != NULL)
++			config.dbounceprog = data;
+ 		else if (strcmp(word, "MAILNAME") == 0 && data != NULL)
+ 			config.mailname = data;
+ 		else if (strcmp(word, "MAILNAMEFILE") == 0 && data != NULL)
+--- a/dma.8
++++ b/dma.8
+@@ -240,6 +240,26 @@
+ .Fl q
+ option.
+ This option is handy if you are behind a dialup line.
++.It Ic DBOUNCEPROG Xo
++(string, default=dbounce-simple-safecat)
++.Xc
++Comment if you want the default behavior of
++.Nm
++upon double bounces - just abort the delivery.
++Otherwise, specify the name or full path to a program that will process
++the bounced bounce message.
++.Pp
++The program will be invoked with several command-line options:
++.Pp
++.Nm dbounce
++.Fl t
++.Ar dma
++.Fl a
++.Ar bounced@email.address
++.Fl i
++.Ar queueid
++.Fl f
++.Ar messagefile
+ .It Ic FULLBOUNCE Xo
+ (boolean, default=commented)
+ .Xc
+@@ -270,6 +290,7 @@
+ (e.g.\& user@localhost) so you have to rewrite your outgoing email
+ address to a valid address.
+ .Sh SEE ALSO
++.Xr dbounce-simple-safecat 1 ,
+ .Xr mailaddr 7 ,
+ .Xr mailwrapper 8 ,
+ .Xr sendmail 8
+--- a/dma.h
++++ b/dma.h
+@@ -111,6 +111,7 @@
+ 	const char *authpath;
+ 	const char *certfile;
+ 	int features;
++	const char *dbounceprog;
+ 	const char *mailname;
+ 	const char *mailnamefile;
+ 
+--- a/dma.conf
++++ b/dma.conf
+@@ -43,6 +43,12 @@
+ # behind a dialup line.  You have to submit your mails manually with dma -q
+ #DEFER
+ 
++# The double-bounce handler program.  Leave this blank if you like dma's
++# default behavior of simply aborting the delivery, or specify the name or
++# full path to a program that will process the double-bounce message.
++# NOTE: on Debian systems this is handled via debconf!
++DBOUNCEPROG dbounce-simple-safecat
++
+ # Uncomment if you want the bounce message to include the complete original
+ # message, not just the headers.
+ #FULLBOUNCE
+--- a/mail.c
++++ b/mail.c
+@@ -32,7 +32,12 @@
+  * SUCH DAMAGE.
+  */
+ 
++#include <sys/types.h>
++#include <sys/wait.h>
++
++#include <err.h>
+ #include <errno.h>
++#include <signal.h>
+ #include <syslog.h>
+ #include <unistd.h>
+ 
+@@ -43,13 +48,114 @@
+ {
+ 	struct queue bounceq;
+ 	char line[1000];
+-	size_t pos;
+ 	int error;
++	int pipefd[2];
++	pid_t child;
++	char *buf;
++	size_t i, pos, bufsize;
++	ssize_t n;
++	int status;
++	struct sigaction sa;
+ 
+ 	/* Don't bounce bounced mails */
+ 	if (it->sender[0] == 0) {
+-		syslog(LOG_INFO, "can not bounce a bounce message, discarding");
+-		exit(1);
++		syslog(LOG_INFO, "%s: bounce delivery failed, double-bouncing",
++		       it->queueid);
++		if (config.dbounceprog == NULL) {
++			syslog(LOG_CRIT, "%s: delivery panic: can't bounce a bounce and no double-bounce program defined in the config file",
++			       it->queueid);
++			exit(1);
++		}
++		if (pipe(pipefd) == -1) {
++			syslog(LOG_ERR, "%s: double-bounce: cannot pipe for the double-bounce program: %m",
++			       it->queueid);
++			exit(1);
++		}
++		bzero(&sa, sizeof(sa));
++		sa.sa_flags = SA_NOCLDSTOP;
++		sa.sa_handler = SIG_DFL;
++		if (sigaction(SIGCHLD, &sa, NULL) == -1) {
++			syslog(LOG_ERR, "%s: double-bounce: cannot set signal action: %m",
++			       it->queueid);
++			exit(1);
++		}
++		child = fork();
++		if (child == -1) {
++			syslog(LOG_ERR, "%s: double-bounce: cannot fork for the double-bounce program: %m",
++			       it->queueid);
++			exit(1);
++		} else if (child == 0) {
++			close(pipefd[0]);
++			dup2(pipefd[1], STDIN_FILENO);
++			dup2(pipefd[1], STDOUT_FILENO);
++			dup2(pipefd[1], STDERR_FILENO);
++			execlp(config.dbounceprog, config.dbounceprog,
++			    "-t", "dma", "-a", it->addr, "-i", it->queueid,
++			    "-f", it->queuefn, NULL);
++			err(1, "Could not execute %s", config.dbounceprog);
++			/* NOTREACHED */
++		}
++
++		close(pipefd[1]);
++		buf = NULL;
++		pos = bufsize = 0;
++		while (1) {
++			if (pos == bufsize) {
++				char *nbuf;
++				size_t nsize;
++
++				nsize = bufsize + BUF_SIZE;
++				nbuf = realloc(buf, nsize);
++				if (nbuf == NULL) {
++					free(buf);
++					syslog(LOG_ERR, "%s: double-bounce failed: could not allocate %lu bytes of memory: %m", it->queueid, (unsigned long)nsize);
++					exit(1);
++				}
++				buf = nbuf;
++				bufsize = nsize;
++			}
++			n = read(pipefd[0], buf + pos, bufsize - pos);
++			if (n < 0) {
++				free(buf);
++				syslog(LOG_ERR, "%s: double-bounce failed: could not read the output of the double-bounce program: %m", it->queueid);
++				exit(1);
++			} else if (n == 0) {
++				break;
++			} else {
++				pos += n;
++			}
++		}
++		for (i = 0; i < pos; i++)
++			if (buf[i] < 32)
++				buf[i] = '_';
++		/*
++		 * The order of the reallocation and reading above
++		 * guarantees that we have at least one more byte available
++		 * in buf[] after pos.
++		 */
++		buf[pos] = '\0';
++
++		if (waitpid(child, &status, 0) == -1) {
++			syslog(LOG_ERR, "%s: double-bounce deferred: could not fetch the result from child process %ld: %m; child process output: %s",
++			       it->queueid, (long)child, buf);
++			exit(1);
++		} else if (WIFSIGNALED(status)) {
++			syslog(LOG_ERR, "%s: double-bounce deferred: child process %ld died from signal %d; child process output: %s",
++			       it->queueid, (long)child, WTERMSIG(status), buf);
++			exit(1);
++		} else if (!WIFEXITED(status)) {
++			syslog(LOG_ERR, "%s: double-bounce deferred: child process %ld got an unexpected waitpid code of %d; child process output: %s",
++			       it->queueid, (long)child, status, buf);
++			exit(1);
++		} else if (WEXITSTATUS(status) != 0) {
++			syslog(LOG_ERR, "%s: double-bounce deferred: child process %ld exited with code %d; child process output: %s",
++			       it->queueid, (long)child, (int)WEXITSTATUS(status), buf);
++			exit(1);
++		}
++		syslog(LOG_ERR, "%s: double-bounce succeeded, message passed to handler `%s': %s",
++		       it->queueid, config.dbounceprog, buf);
++		delqueue(it);
++		exit(0);
+ 	}
+ 
+ 	bzero(&bounceq, sizeof(bounceq));

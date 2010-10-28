@@ -1,0 +1,27 @@
+Description: Fix a crash when the SMTP server does not support STARTTLS.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Bug-Debian: http://bugs.debian.org/547594
+Forwarded: yes
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-21
+
+--- a/net.c
++++ b/net.c
+@@ -304,12 +304,12 @@
+ static void
+ close_connection(int fd)
+ {
+-	if (((config.features & SECURETRANS) != 0) &&
+-	    ((config.features & NOSSL) == 0))
+-		SSL_shutdown(config.ssl);
+-
+-	if (config.ssl != NULL)
++	if (config.ssl != NULL) {
++		if (((config.features & SECURETRANS) != 0) &&
++		    ((config.features & NOSSL) == 0))
++			SSL_shutdown(config.ssl);
+ 		SSL_free(config.ssl);
++	}
+ 
+ 	close(fd);
+ }

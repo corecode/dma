@@ -1,0 +1,17 @@
+Description: Fix a typo in an error message.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: yes
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-21
+
+--- a/crypto.c
++++ b/crypto.c
+@@ -261,7 +261,7 @@
+ 	/* Send AUTH command according to RFC 2554 */
+ 	send_remote_command(fd, "AUTH CRAM-MD5");
+ 	if (read_remote(fd, sizeof(buffer), buffer) != 3) {
+-		syslog(LOG_DEBUG, "smarthost authentification:"
++		syslog(LOG_DEBUG, "smarthost authentication:"
+ 		       " AUTH cram-md5 not available: %s", neterr);
+ 		/* if cram-md5 is not available */
+ 		return (-1);

@@ -1,0 +1,60 @@
+Description: Correct the comment/uncomment logic of the manual page wording.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: yes
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-23
+
+--- a/dma.8
++++ b/dma.8
+@@ -207,15 +207,15 @@
+ .It Ic VIRTUAL Xo
+ (boolean, default=commented)
+ .Xc
+-Comment if you want virtual user support.
++Uncomment if you want virtual user support.
+ .It Ic SECURETRANS Xo
+ (boolean, default=commented)
+ .Xc
+-Comment if you want TLS/SSL secured transfer.
++Uncomment if you want TLS/SSL secured transfer.
+ .It Ic STARTTLS Xo
+ (boolean, default=commented)
+ .Xc
+-Comment if you want to use STARTTLS.
++Uncomment if you want to use STARTTLS.
+ Only useful together with
+ .Sq SECURETRANS .
+ .It Ic CERTFILE Xo
+@@ -225,7 +225,7 @@
+ .It Ic SECURE Xo
+ (boolean, default=commented)
+ .Xc
+-Change this entry to
++Uncomment this entry and change it to
+ .Sq INSECURE
+ to use plain text SMTP login over an insecure connection.
+ You have to rename this variable manually to prevent that you send your
+@@ -233,7 +233,7 @@
+ .It Ic DEFER Xo
+ (boolean, default=commented)
+ .Xc
+-Comment if you want that
++Uncomment if you want that
+ .Nm
+ defers your mail.
+ You have to flush your mail queue manually with the
+@@ -243,11 +243,11 @@
+ .It Ic DBOUNCEPROG Xo
+ (string, default=dbounce-simple-safecat)
+ .Xc
+-Comment if you want the default behavior of
++Leave this entry commented if you want the default behavior of
+ .Nm
+ upon double bounces - just abort the delivery.
+-Otherwise, specify the name or full path to a program that will process
+-the bounced bounce message.
++Otherwise, uncomment it and specify the name or full path to a program that
++will process the bounced bounce message.
+ .Pp
+ The program will be invoked with several command-line options:
+ .Pp

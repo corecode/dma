@@ -1,0 +1,14 @@
+Description: Honor LDFLAGS if specified in the environment.
+Origin: other: http://svn.ringlet.net/svn/ringlet/mail/dma/
+Forwarded: yes
+Author: Peter Pentchev <roam@ringlet.net>
+Last-Update: 2010-06-21
+
+--- a/Makefile.plain
++++ b/Makefile.plain
+@@ -48,4 +48,4 @@
+ 	${CC} ${CFLAGS} ${CPPFLAGS} -include dfcompat.h -o $@ -c $<
+ 
+ dma: ${OBJS}
+-	${CC} ${LDADD} -o $@ ${OBJS}
++	${CC} ${LDFLAGS} ${LDADD} -o $@ ${OBJS}
