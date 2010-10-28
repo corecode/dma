@@ -44,7 +44,7 @@
 #include <openssl/ssl.h>
 #include <netdb.h>
 
-#define VERSION	"DragonFly Mail Agent"
+#define VERSION	"DragonFly Mail Agent " DMA_VERSION
 
 #define BUF_SIZE	2048
 #define MIN_RETRY	300		/* 5 minutes */

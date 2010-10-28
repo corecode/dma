@@ -8,11 +8,13 @@
 #   getprogname
 #
 
+version=	$(shell sh get-version.sh)
+
 CC?=		gcc
 CFLAGS?=	-O -pipe
 LDADD?=		-lssl -lcrypto -lresolv
 
-CFLAGS+=	-Wall
+CFLAGS+=	-Wall -DDMA_VERSION='"${version}"'
 
 INSTALL?=	install -p
 CHGRP?=		chgrp
