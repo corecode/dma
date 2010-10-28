@@ -3,7 +3,7 @@ Section: mail
 Priority: optional
 Maintainer: Peter Pentchev <roam@ringlet.net>
 DM-Upload-Allowed: yes
-Build-Depends: debhelper (>= 7.0.50), byacc, dpkg-dev (>= 1.15.7~), flex, hardening-wrapper, liblockfile-dev, libssl-dev, po-debconf
+Build-Depends: debhelper (>= 7.0.50), byacc, dpkg-dev (>= 1.15.7~), flex, hardening-wrapper, libssl-dev, po-debconf
 Standards-Version: 3.9.1
 Homepage: http://devel.ringlet.net/mail/dma/
 Vcs-Git: git://gitorious.org/dma-roam/pkg-debian.git
@@ -11,7 +11,7 @@ Vcs-Browser: http://gitorious.org/dma-roam/pkg-debian
 
 Package: dma
 Architecture: any
-Depends: liblockfile1 (>> 1.01), ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Provides: mail-transport-agent
 Conflicts: mail-transport-agent
 Replaces: mail-transport-agent
