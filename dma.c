@@ -79,7 +79,6 @@ struct config config = {
 	.certfile	= NULL,
 	.features	= 0,
 	.mailname	= NULL,
-	.mailnamefile	= NULL,
 };
 
 

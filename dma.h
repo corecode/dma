@@ -113,7 +113,6 @@ struct config {
 	const char *certfile;
 	int features;
 	const char *mailname;
-	const char *mailnamefile;
 
 	/* XXX does not belong into config */
 	SSL *ssl;

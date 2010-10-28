@@ -35,6 +35,7 @@
 #include <sys/param.h>
 #include <sys/file.h>
 
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -52,40 +53,50 @@ hostname(void)
 {
 	static char name[MAXHOSTNAMELEN+1];
 	static int initialized = 0;
-	FILE *fp;
-	char *res;
-	size_t len;
 
 	if (initialized)
 		return (name);
 
-	if (config.mailname != NULL && config.mailname[0] != '\0') {
+	if (config.mailname == NULL || !*config.mailname)
+		goto local;
+
+	if (config.mailname[0] == '/') {
+		/*
+		 * If the mailname looks like an absolute path,
+		 * treat it as a file.
+		 */
+		FILE *fp;
+		char *res;
+
+		fp = fopen(config.mailname, "r");
+		if (fp == NULL)
+			goto local;
+
+		res = fgets(name, sizeof(name), fp);
+		fclose(fp);
+		if (res == NULL)
+			goto local;
+
+		while (*res != 0 && !isspace(*res))
+			++res;
+		*res = 0;
+
+		if (!*name)
+			goto local;
+
+		initialized = 1;
+		return (name);
+	} else {
 		snprintf(name, sizeof(name), "%s", config.mailname);
 		initialized = 1;
 		return (name);
 	}
-	if (config.mailnamefile != NULL && config.mailnamefile[0] != '\0') {
-		fp = fopen(config.mailnamefile, "r");
-		if (fp != NULL) {
-			res = fgets(name, sizeof(name), fp);
-			fclose(fp);
-			if (res != NULL) {
-				len = strlen(name);
-				while (len > 0 &&
-				    (name[len - 1] == '\r' ||
-				     name[len - 1] == '\n'))
-					name[--len] = '\0';
-				if (name[0] != '\0') {
-					initialized = 1;
-					return (name);
-				}
-			}
-		}
-	}
+
+local:
 	if (gethostname(name, sizeof(name)) != 0)
 		strcpy(name, "(unknown hostname)");
 	initialized = 1;
-	return name;
+	return (name);
 }
 
 void

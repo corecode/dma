@@ -203,8 +203,6 @@ parse_conf(const char *config_path)
 			config.certfile = data;
 		else if (strcmp(word, "MAILNAME") == 0 && data != NULL)
 			config.mailname = data;
-		else if (strcmp(word, "MAILNAMEFILE") == 0 && data != NULL)
-			config.mailnamefile = data;
 		else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
 			config.features |= STARTTLS;
 		else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 && data == NULL)
