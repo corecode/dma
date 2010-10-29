@@ -3,3 +3,4 @@
 - handle/use ESMTP extensions
 - .forward support
 - create mbox files with correct user/permissions
+- suggest way to run a queue flush on boot
