@@ -53,6 +53,7 @@ hostname(void)
 {
 	static char name[HOST_NAME_MAX+1];
 	static int initialized = 0;
+	char *s;
 
 	if (initialized)
 		return (name);
@@ -66,20 +67,19 @@ hostname(void)
 		 * treat it as a file.
 		 */
 		FILE *fp;
-		char *res;
 
 		fp = fopen(config.mailname, "r");
 		if (fp == NULL)
 			goto local;
 
-		res = fgets(name, sizeof(name), fp);
+		s = fgets(name, sizeof(name), fp);
 		fclose(fp);
-		if (res == NULL)
+		if (s == NULL)
 			goto local;
 
-		while (*res != 0 && !isspace(*res))
-			++res;
-		*res = 0;
+		for (s = name; *s != 0 && (isalnum(*s) || strchr("_.-", *s)); ++s)
+			/* NOTHING */;
+		*s = 0;
 
 		if (!*name)
 			goto local;
@@ -94,12 +94,20 @@ hostname(void)
 
 local:
 	if (gethostname(name, sizeof(name)) != 0)
-		strcpy(name, "(unknown hostname)");
+		*name = 0;
 	/*
 	 * gethostname() is allowed to truncate name without NUL-termination
 	 * and at the same time not return an error.
 	 */
 	name[sizeof(name) - 1] = 0;
+
+	for (s = name; *s != 0 && (isalnum(*s) || strchr("_.-", *s)); ++s)
+		/* NOTHING */;
+	*s = 0;
+
+	if (!*name)
+		snprintf(name, sizeof(name), "unknown-hostname");
+
 	initialized = 1;
 	return (name);
 }
