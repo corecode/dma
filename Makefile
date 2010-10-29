@@ -66,3 +66,12 @@ aliases_scan.c: aliases_scan.l
 
 dma: ${OBJS}
 	${CC} ${LDFLAGS} ${LDADD} -o $@ ${OBJS}
+
+
+ppa:
+	@if [ -z '${DEB_DIST}' ]; then echo "please set DEB_DIST to build"; exit 1; fi
+	ver=$$(sh get-version.sh | sed -Ee 's/^v//;s/[.]([[:digit:]]+)[.](g[[:xdigit:]]+)$$/+\1-\2/'); \
+	dch -v "$$ver~${DEB_DIST}" -D ${DEB_DIST} "${DEB_DIST} build"
+	debuild -S -sa
+	ver=$$(dpkg-parsechangelog -n1 | awk '$$1 == "Version:" { print $$2 }'); \
+	dput ppa:corecode/dma ../$${ver}_source.changes
