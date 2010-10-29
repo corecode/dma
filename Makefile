@@ -22,7 +22,7 @@ CHMOD?=		chmod
 
 PREFIX?=	/usr/local
 SBIN?=		${PREFIX}/sbin
-CONFDIR?=	${PREFIX}/etc
+CONFDIR?=	/etc
 MAN?=		${PREFIX}/share/man
 VAR?=		/var
 DMASPOOL?=	${VAR}/spool/dma
