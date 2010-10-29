@@ -1,3 +1,9 @@
+dma (0.1) unstable; urgency=low
+
+  * Update dma to 0.1
+
+ -- Simon Schubert <2@0x2c.org>  Fri, 29 Oct 2010 00:57:26 +0200
+
 dma (0.0.2010.06.17-6) unstable; urgency=low
 
   * Add the 37-gnu-hurd patch to really fix the FTBFS on GNU/Hurd.
