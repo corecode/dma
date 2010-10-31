@@ -1,3 +1,0 @@
-# watch control file for dma, the DragonFly mail agent
-version=3
-http://devel.ringlet.net/mail/dma/ dma-(\d.*)\.tar\.gz
