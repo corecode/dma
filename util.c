@@ -115,7 +115,7 @@ local:
 void
 setlogident(const char *fmt, ...)
 {
-	char tag[50];
+	static char tag[50];
 
 	snprintf(tag, sizeof(tag), "%s", logident_base);
 	if (fmt != NULL) {
