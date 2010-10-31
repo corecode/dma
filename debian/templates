@@ -1,6 +1,0 @@
-Template: dma/relayhost
-Type: string
-_Description: Smarthost:
- Please enter the IP address or the host name of a mail server that
- this system should use as outgoing smarthost. If no smarthost is
- specified, dma will try to deliver all messages directly.
