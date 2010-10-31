@@ -77,7 +77,7 @@ dch:
 
 ppa:
 	@if [ -z '${DEB_DIST}' ]; then echo "please set DEB_DIST to build"; exit 1; fi
-	dch -v "${debversion}~${DEB_DIST}" -D ${DEB_DIST} "${DEB_DIST} build"
+	dch -v "${debversion}~${DEB_DIST}" -D ${DEB_DIST} "${DEB_DIST} build" -b
 	debuild -S -sa
 	ver=$$(dpkg-parsechangelog -n1 | awk '$$1 == "Version:" { print $$2 }'); \
 	dput ppa:corecode/dma ../$${ver}_source.changes
