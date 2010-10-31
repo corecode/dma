@@ -80,4 +80,4 @@ ppa:
 	dch -v "${debversion}~${DEB_DIST}" -D ${DEB_DIST} "${DEB_DIST} build" -b
 	debuild -S -sa
 	ver=$$(dpkg-parsechangelog -n1 | awk '$$1 == "Version:" { print $$2 }'); \
-	dput ppa:corecode/dma ../$${ver}_source.changes
+	dput ppa:corecode/dma ../dma_$${ver}_source.changes
