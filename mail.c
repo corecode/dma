@@ -351,7 +351,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 		"\tid %s\n"
 		"\tby %s (%s)\n"
 		"\t%s\n",
-		username, getuid(),
+		username, useruid,
 		queue->sender,
 		queue->id,
 		hostname(), VERSION,

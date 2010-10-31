@@ -65,6 +65,7 @@ struct aliases aliases = LIST_HEAD_INITIALIZER(aliases);
 struct strlist tmpfs = SLIST_HEAD_INITIALIZER(tmpfs);
 struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
 char username[USERNAME_SIZE];
+uid_t useruid;
 const char *logident_base;
 char errmsg[ERRMSG_SIZE];
 
@@ -372,6 +373,26 @@ main(int argc, char **argv)
 	int nodot = 0, doqueue = 0, showq = 0, queue_only = 0;
 	int recp_from_header = 0;
 
+	set_username();
+
+	/*
+	 * We never run as root.  If called by root, drop permissions
+	 * to the mail user.
+	 */
+	if (geteuid() == 0 || getuid() == 0) {
+		struct passwd *pw;
+
+		pw = getpwnam(DMA_ROOT_USER);
+		if (pw == NULL)
+			err(1, "cannot drop root privileges");
+
+		if (setuid(pw->pw_uid) != 0)
+			err(1, "cannot drop root privileges");
+
+		if (geteuid() == 0 || getuid() == 0)
+			errx(1, "cannot drop root privileges");
+	}
+
 	atexit(deltmp);
 	init_random();
 
@@ -476,9 +497,6 @@ skipopts:
 	if (logident_base == NULL)
 		logident_base = "dma";
 	setlogident(NULL);
-	set_username();
-
-	/* XXX fork root here */
 
 	act.sa_handler = sighup_handler;
 	act.sa_flags = 0;

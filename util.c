@@ -198,21 +198,20 @@ void
 set_username(void)
 {
 	struct passwd *pwd;
-	uid_t uid;
 
-	uid = getuid();
-	if (check_username(getlogin(), uid))
+	useruid = getuid();
+	if (check_username(getlogin(), useruid))
 		return;
-	if (check_username(getenv("LOGNAME"), uid))
+	if (check_username(getenv("LOGNAME"), useruid))
 		return;
-	if (check_username(getenv("USER"), uid))
+	if (check_username(getenv("USER"), useruid))
 		return;
-	pwd = getpwuid(uid);
+	pwd = getpwuid(useruid);
 	if (pwd != NULL && pwd->pw_name != NULL && pwd->pw_name[0] != '\0') {
-		if (check_username(pwd->pw_name, uid))
+		if (check_username(pwd->pw_name, useruid))
 			return;
 	}
-	snprintf(username, sizeof(username), "uid=%ld", (long)uid);
+	snprintf(username, sizeof(username), "uid=%ld", (long)useruid);
 }
 
 void

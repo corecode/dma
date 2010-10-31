@@ -143,6 +143,7 @@ extern struct config config;
 extern struct strlist tmpfs;
 extern struct authusers authusers;
 extern char username[USERNAME_SIZE];
+extern uid_t useruid;
 extern const char *logident_base;
 
 extern char neterr[ERRMSG_SIZE];
