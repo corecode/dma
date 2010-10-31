@@ -1,3 +1,23 @@
+dma (0.2) unstable; urgency=low
+
+  * Update to dma 0.2
+    - debian: better mark as UNRELEASED
+    - add ppa makefile recipe
+    - TODO: suggest way to run a queue flush on boot
+    - partially adopt 34-manpage-defaults.patch: AUTHPATH is not set by default
+    - Revert "debian: better mark as UNRELEASED"
+    - setlogident: openlog() wants a static variable
+    - writequeuef: create files with g+rw
+    - drop privileges when run by root
+    - implement mbox creation via setuid helper
+    - debian: build with consistent flags
+    - debian: remove unused files
+    - debian: fix lintian warnings and errors
+    - make ppa: force lower version number
+    - make ppa: proper name
+
+ -- Simon Schubert <2@0x2c.org>  Sun, 31 Oct 2010 23:57:50 +0100
+
 dma (0.1) unstable; urgency=low
 
   * Update dma to 0.1
