@@ -70,6 +70,14 @@
 #define CONF_PATH	"/etc/dma/dma.conf"	/* Default path to dma.conf */
 #endif
 
+#ifndef LIBEXEC_PATH
+#error Please define LIBEXEC_PATH
+#endif
+
+#define DMA_ROOT_USER	"mail"
+#define DMA_GROUP	"mail"
+
+
 struct stritem {
 	SLIST_ENTRY(stritem) next;
 	char *str;
