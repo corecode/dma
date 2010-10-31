@@ -123,8 +123,10 @@ writequeuef(struct qitem *it)
 	int error;
 	int queuefd;
 
-	queuefd = open_locked(it->queuefn, O_CREAT|O_EXCL|O_RDWR, 0600);
+	queuefd = open_locked(it->queuefn, O_CREAT|O_EXCL|O_RDWR, 0660);
 	if (queuefd == -1)
+		return (-1);
+	if (fchmod(queuefd, 0660) < 0)
 		return (-1);
 	it->queuef = fdopen(queuefd, "w+");
 	if (it->queuef == NULL)
