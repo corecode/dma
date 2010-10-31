@@ -5,6 +5,8 @@
 DDIR=		$(CURDIR)/debian
 D=		$(DDIR)/dma
 
+BUILDDEFS=	DESTDIR=$D PREFIX=/usr CONFDIR=/etc
+
 CFLAGS:=	$(shell dpkg-buildflags --get CFLAGS)
 CPPFLAGS:=	$(shell dpkg-buildflags --get CPPFLAGS)
 LDFLAGS:=	$(shell dpkg-buildflags --get LDFLAGS)
@@ -26,7 +28,7 @@ endif
 export CFLAGS CPPFLAGS LDFLAGS
 
 override_dh_auto_build:
-	$(MAKE) -f Makefile
+	$(MAKE) -f Makefile ${BUILDDEFS}
 	$(MAKE) -C $(DDIR)/migrate
 
 override_dh_auto_clean:
@@ -34,12 +36,12 @@ override_dh_auto_clean:
 	$(MAKE) -C $(DDIR)/migrate clean
 
 override_dh_auto_install:
-	$(MAKE) -f Makefile DESTDIR=$D PREFIX=/usr CONFDIR=/etc install
+	$(MAKE) -f Makefile ${BUILDDEFS} install
 	install -o root -g mail -m 644 dma.conf $D/etc/dma
 	install -o root -g mail -m 640 auth.conf $D/etc/dma
 
 override_dh_fixperms:
-	dh_fixperms -Xusr/sbin/dma -Xvar/spool/dma -Xetc/dma
+	dh_fixperms -Xusr/sbin/dma -Xusr/lib/dma-mbox-create -Xvar/spool/dma -Xetc/dma
 
 override_dh_installchangelogs:
 	dh_installchangelogs -p dma
