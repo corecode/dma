@@ -107,7 +107,7 @@ main(int argc, char **argv)
 	if (fchown(f, user_uid, mail_gid))
 		return (1);
 
-	if (fchmod(f, 0660))
+	if (fchmod(f, 0620))
 		return (1);
 
 	/* file should be present with the right owner and permissions */
