@@ -145,6 +145,7 @@ errlog(int exitcode, const char *fmt, ...)
 		va_end(ap);
 	}
 
+	errno = oerrno;
 	if (*outs != 0) {
 		syslog(LOG_ERR, "%s: %m", outs);
 		fprintf(stderr, "%s: %s: %s\n", getprogname(), outs, strerror(oerrno));
