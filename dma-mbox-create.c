@@ -41,14 +41,40 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 
+#include <errno.h>
 #include <fcntl.h>
 #include <grp.h>
 #include <paths.h>
 #include <pwd.h>
 #include <stdio.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #include "dma.h"
+
+
+static void
+logfail(const char *fmt, ...)
+{
+	int oerrno = errno;
+	va_list ap;
+	char outs[1024];
+
+	outs[0] = 0;
+	if (fmt != NULL) {
+		va_start(ap, fmt);
+		vsnprintf(outs, sizeof(outs), fmt, ap);
+		va_end(ap);
+	}
+
+	errno = oerrno;
+	if (*outs != 0)
+		syslog(LOG_ERR, errno ? "%s: %m" : "%s", outs);
+	else
+		syslog(LOG_ERR, errno ? "%m" : "unknown error");
+
+	exit(1);
+}
 
 /*
  * Create a mbox in /var/mail for a given user, or make sure
@@ -67,50 +93,68 @@ main(int argc, char **argv)
 	char fn[PATH_MAX+1];
 	int f;
 
-	/*
-	 * We take exactly one argument: the username.
-	 */
-	if (argc != 2)
-		return (1);
-	user = argv[1];
+	openlog("dma-mbox-create", 0, LOG_MAIL);
 
-	/* the username may not contain a pathname separator */
-	if (strchr(user, '/'))
-		return (1);
-
-	/* verify the user exists */
-	pw = getpwnam(user);
-	if (!pw)
-		return (1);
-
-	user_uid = pw->pw_uid;
-
+	errno = 0;
 	gr = getgrnam(DMA_GROUP);
 	if (!gr)
-		return (1);
+		logfail("cannot find dma group `%s'", DMA_GROUP);
 
 	mail_gid = gr->gr_gid;
 
 	if (setgid(mail_gid) != 0)
-		return (1);
+		logfail("cannot set gid to %d (%s)", mail_gid, DMA_GROUP);
 	if (getegid() != mail_gid)
-		return (1);
+		logfail("cannot set gid to %d (%s), still at %d", mail_gid, DMA_GROUP, getegid());
+
+	/*
+	 * We take exactly one argument: the username.
+	 */
+	if (argc != 2) {
+		errno = 0;
+		logfail("no arguments");
+	}
+	user = argv[1];
+
+	syslog(LOG_NOTICE, "creating mbox for `%s'", user);
+
+	/* the username may not contain a pathname separator */
+	if (strchr(user, '/')) {
+		errno = 0;
+		logfail("path separator in username `%s'", user);
+		exit(1);
+	}
+
+	/* verify the user exists */
+	errno = 0;
+	pw = getpwnam(user);
+	if (!pw)
+		logfail("cannot find user `%s'", user);
+
+	user_uid = pw->pw_uid;
 
 	error = snprintf(fn, sizeof(fn), "%s/%s", _PATH_MAILDIR, user);
-	if (error < 0 || (size_t)error >= sizeof(fn))
-		return (1);
+	if (error < 0 || (size_t)error >= sizeof(fn)) {
+		if (error >= 0) {
+			errno = 0;
+			logfail("mbox path too long");
+		}
+		logfail("cannot build mbox path for `%s/%s'", _PATH_MAILDIR, user);
+	}
 
 	f = open(fn, O_RDONLY|O_CREAT, 0600);
 	if (f < 0)
-		return (1);
+		logfail("cannot open mbox `%s'", fn);
 
 	if (fchown(f, user_uid, mail_gid))
-		return (1);
+		logfail("cannot change owner of mbox `%s'", fn);
 
 	if (fchmod(f, 0620))
-		return (1);
+		logfail("cannot change permissions of mbox `%s'", fn);
 
 	/* file should be present with the right owner and permissions */
+
+	syslog(LOG_NOTICE, "successfully created mbox for `%s'", user);
 
 	return (0);
 }
