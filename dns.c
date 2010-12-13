@@ -80,7 +80,7 @@ add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t 
 	snprintf(servname, sizeof(servname), "%d", port);
 	err = getaddrinfo(host, servname, &hints, &res0);
 	if (err)
-		return (-1);
+		return (err == EAI_AGAIN ? 1 : -1);
 
 	for (res = res0; res != NULL; res = res->ai_next) {
 		if (*ps + 1 >= roundup(*ps, count_inc)) {
@@ -110,7 +110,7 @@ add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t 
 out:
 	if (res0 != NULL)
 		freeaddrinfo(res0);
-	return (-1);
+	return (1);
 }
 
 int
@@ -127,6 +127,7 @@ dns_get_mx_list(const char *host, int port, struct mx_hostentry **he, int no_mx)
 	size_t anssz;
 	int pref;
 	int cname_recurse;
+	int have_mx = 0;
 	int err;
 	int i;
 
@@ -183,6 +184,7 @@ repeat:
 
 		switch (ns_rr_type(rr)) {
 		case ns_t_mx:
+			have_mx = 1;
 			pref = ns_get16(cp);
 			cp += 2;
 			err = ns_name_uncompress(ns_msg_base(msg), ns_msg_end(msg),
@@ -190,7 +192,9 @@ repeat:
 			if (err < 0)
 				goto transerr;
 
-			add_host(pref, outname, port, &hosts, &nhosts);
+			err = add_host(pref, outname, port, &hosts, &nhosts);
+			if (err == -1)
+				goto err;
 			break;
 
 		case ns_t_cname:
@@ -225,17 +229,23 @@ err:
 
 	free(ans);
 
-	if (!err) {
-		/*
-		 * If we didn't find any MX, use the hostname instead.
-		 */
-		if (nhosts == 0)
-			add_host(0, searchhost, port, &hosts, &nhosts);
-
-		qsort(hosts, nhosts, sizeof(*hosts), sort_pref);
+	if (err == 0) {
+		if (!have_mx) {
+			/*
+			 * If we didn't find any MX, use the hostname instead.
+			 */
+			err = add_host(0, host, port, &hosts, &nhosts);
+		} else if (nhosts == 0) {
+			/*
+			 * We did get MX, but couldn't resolve any of them
+			 * due to transient errors.
+			 */
+			err = 1;
+		}
 	}
 
 	if (nhosts > 0) {
+		qsort(hosts, nhosts, sizeof(*hosts), sort_pref);
 		/* terminate list */
 		*hosts[nhosts].host = 0;
 	} else {
