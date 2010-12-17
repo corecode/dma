@@ -105,7 +105,7 @@ add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t 
 	}
 	freeaddrinfo(res0);
 
-	return (*ps - onhosts);
+	return (0);
 
 out:
 	if (res0 != NULL)
