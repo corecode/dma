@@ -341,6 +341,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 	int had_from = 0;
 	int had_messagid = 0;
 	int had_date = 0;
+	int had_last_line = 0;
 	int nocopy = 0;
 
 	parse_state.state = NONE;
@@ -360,12 +361,20 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 		return (-1);
 
 	while (!feof(stdin)) {
-		if (fgets(line, sizeof(line), stdin) == NULL)
+		if (fgets(line, sizeof(line) - 1, stdin) == NULL)
 			break;
+		if (had_last_line)
+			errlogx(1, "bad mail input format");
 		linelen = strlen(line);
 		if (linelen == 0 || line[linelen - 1] != '\n') {
-			errno = EINVAL;		/* XXX mark permanent errors */
-			return (-1);
+			/*
+			 * This line did not end with a newline character.
+			 * If we fix it, it better be the last line of
+			 * the file.
+			 */
+			line[linelen] = '\n';
+			line[linelen + 1] = 0;
+			had_last_line = 1;
 		}
 		if (!had_headers) {
 			/*
