@@ -379,10 +379,13 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	}
 
 	/* Check first reply from remote host */
-	config.features |= NOSSL;
-	READ_REMOTE_CHECK("connect", 2);
+	if ((config.features & SECURETRANS) == 0 ||
+	    (config.features & STARTTLS) != 0) {
+		config.features |= NOSSL;
+		READ_REMOTE_CHECK("connect", 2);
 
-	config.features &= ~NOSSL;
+		config.features &= ~NOSSL;
+	}
 
 	if ((config.features & SECURETRANS) != 0) {
 		error = smtp_init_crypto(fd, config.features);
@@ -390,6 +393,9 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 			syslog(LOG_DEBUG, "SSL initialization successful");
 		else
 			goto out;
+
+		if ((config.features & STARTTLS) == 0)
+			READ_REMOTE_CHECK("connect", 2);
 	}
 
 	/* XXX allow HELO fallback */
