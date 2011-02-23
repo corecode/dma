@@ -269,6 +269,7 @@ smtp_auth_md5(int fd, char *login, char *password)
 		syslog(LOG_DEBUG, "smarthost authentication:"
 		       " AUTH cram-md5 not available: %s", neterr);
 		/* if cram-md5 is not available */
+		free(temp);
 		return (-1);
 	}
 
