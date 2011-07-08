@@ -40,6 +40,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <paths.h>
+#include <signal.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <syslog.h>

@@ -51,6 +51,9 @@
 const char *
 hostname(void)
 {
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX	255
+#endif
 	static char name[HOST_NAME_MAX+1];
 	static int initialized = 0;
 	char *s;

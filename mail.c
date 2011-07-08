@@ -424,7 +424,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 					snprintf(line, sizeof(line), "Message-Id: <%"PRIxMAX".%s.%"PRIxMAX"@%s>\n",
 						 (uintmax_t)time(NULL),
 						 queue->id,
-						 random(),
+						 (uintmax_t)random(),
 						 hostname());
 				} else if (!had_from) {
 					had_from = 1;
