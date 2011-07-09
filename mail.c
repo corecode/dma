@@ -290,6 +290,16 @@ again:
 
 		case ',':
 		case ';':
+			/*
+			 * Next address, copy previous one.
+			 * However, we might be directly after
+			 * a <address>, or have two consecutive
+			 * commas.
+			 * Skip the comma unless there is
+			 * really something to copy.
+			 */
+			if (ps->pos == 0)
+				goto skip;
 			s++;
 			goto newaddr;
 
