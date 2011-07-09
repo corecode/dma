@@ -1,3 +1,27 @@
+dma (0.3) unstable; urgency=low
+
+  [ Simon Schubert ]
+  * todo: we create mboxes properly now
+  * dma-mbox-create: group mail only needs to write to mboxes
+  * errlog: preserve errno
+  * dma-mbox-create: add error/status logging
+  * dns_get_mx_list: handle errors properly
+
+  [ Peter Pentchev ]
+  * Make add_host() really return an error code.
+
+  [ Simon Schubert ]
+  * readmail: accept mail without newline at the end
+
+  [ Peter Pentchev ]
+  * In OpenSSL 1.0, TLSv1_client_method() returns a const pointer.
+
+  [ Simon Schubert ]
+  * make dma compile again on DragonFly
+  * parse_addrs: fix parsing for multiple <addresses>
+
+ -- Simon Schubert <2@0x2c.org>  Sat, 09 Jul 2011 02:38:05 +0200
+
 dma (0.2) unstable; urgency=low
 
   * Update to dma 0.2
