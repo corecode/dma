@@ -68,7 +68,7 @@ aliases_scan.c: aliases_scan.l
 	${CC} ${CFLAGS} ${CPPFLAGS} -include dfcompat.h -o $@ -c $<
 
 dma: ${OBJS}
-	${CC} ${LDFLAGS} ${LDADD} -o $@ ${OBJS}
+	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LDADD}
 
 
 dch:
