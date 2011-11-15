@@ -1,3 +1,21 @@
+dma (0.4) unstable; urgency=low
+
+  [ Simon Schubert ]
+  * Makefile: put libraries at the end when linking
+  * LICENSE: add
+  * Merge commit 'refs/merge-requests/3' of git://gitorious.org/dma/dma
+  * Merge commit 'refs/merge-requests/4' of git://gitorious.org/dma/dma
+  * Add symlink for sendmail which is expected by many packages
+  * Makefile: create spool directories in a separate target
+  * Makefile: add symlink for mailq
+  * README: elaborate, use markdown
+
+  [ Peter Pentchev ]
+  * Fix straight SSL/TLS delivery to remote MX's.
+  * Fix a minor memory leak discovered by cppcheck.
+
+ -- Simon Schubert <2@0x2c.org>  Wed, 16 Nov 2011 00:08:28 +0100
+
 dma (0.3) unstable; urgency=low
 
   [ Simon Schubert ]
