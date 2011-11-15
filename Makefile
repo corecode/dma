@@ -29,9 +29,11 @@ MAN?=		${PREFIX}/share/man
 VAR?=		/var
 DMASPOOL?=	${VAR}/spool/dma
 VARMAIL?=	${VAR}/mail
+SYMLINK?=	-s # or empty to create hard link
 
 YACC?=		yacc
 LEX?=		lex
+LN?=		ln
 
 OBJS=	aliases_parse.o aliases_scan.o base64.o conf.o crypto.o
 OBJS+=	dma.o dns.o local.o mail.o net.o spool.o util.o
@@ -51,6 +53,9 @@ install: all
 	${INSTALL} -m 0644 dma.8 ${DESTDIR}${MAN}/man8/
 	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${DMASPOOL}
 	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${VARMAIL}
+
+sendmail-link:
+	cd ${DESTDIR}${SBIN} && ${LN} ${SYMLINK} dma sendmail
 
 permissions:
 	-${CHGRP} mail ${DESTDIR}${VARMAIL}/*

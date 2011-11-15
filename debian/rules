@@ -36,7 +36,7 @@ override_dh_auto_clean:
 	$(MAKE) -C $(DDIR)/migrate clean
 
 override_dh_auto_install:
-	$(MAKE) -f Makefile ${BUILDDEFS} install
+	$(MAKE) -f Makefile ${BUILDDEFS} install sendmail-link
 	install -o root -g mail -m 644 dma.conf $D/etc/dma
 	install -o root -g mail -m 640 auth.conf $D/etc/dma
 
