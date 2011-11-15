@@ -55,6 +55,9 @@ install: all
 sendmail-link:
 	cd ${DESTDIR}${SBIN} && ${LN} ${SYMLINK} dma sendmail
 
+mailq-link:
+	cd ${DESTDIR}${SBIN} && ${LN} ${SYMLINK} dma mailq
+
 install-spool-dirs:
 	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${DMASPOOL}
 	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${VARMAIL}
