@@ -44,18 +44,20 @@ all: dma dma-mbox-create
 clean:
 	-rm -f .depend dma dma-mbox-create *.[do]
 	-rm -f aliases_parse.[ch] aliases_scan.c
- 
+
 install: all
 	${INSTALL} -d ${DESTDIR}${SBIN} ${DESTDIR}${CONFDIR}
 	${INSTALL} -d ${DESTDIR}${MAN}/man8 ${DESTDIR}${LIBEXEC}
 	${INSTALL} -m 2755 -o root -g mail dma ${DESTDIR}${SBIN}
 	${INSTALL} -m 4754 -o root -g mail dma-mbox-create ${DESTDIR}${LIBEXEC}
 	${INSTALL} -m 0644 dma.8 ${DESTDIR}${MAN}/man8/
-	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${DMASPOOL}
-	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${VARMAIL}
 
 sendmail-link:
 	cd ${DESTDIR}${SBIN} && ${LN} ${SYMLINK} dma sendmail
+
+install-spool-dirs:
+	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${DMASPOOL}
+	${INSTALL} -d -m 2775 -o root -g mail ${DESTDIR}${VARMAIL}
 
 permissions:
 	-${CHGRP} mail ${DESTDIR}${VARMAIL}/*
