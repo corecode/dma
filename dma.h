@@ -121,6 +121,8 @@ struct config {
 	const char *certfile;
 	int features;
 	const char *mailname;
+	const char *masquerade_host;
+	const char *masquerade_user;
 
 	/* XXX does not belong into config */
 	SSL *ssl;

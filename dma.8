@@ -262,6 +262,36 @@ If
 .Sq MAILNAME
 is an absolute path to a file, the first line of this file will be used
 as the hostname.
+.It Ic MASQUERADE Xo
+(string, default=empty)
+.Xc
+Masquerade the envelope from addresses with this address/hostname.
+Use this setting if mails are not accepted by destination mail servers
+because your sender domain is invalid.
+This setting is overridden by the
+.Fl f
+flag and the
+.Ev EMAIL
+environment variable.
+.Pp
+If
+.Sq MASQUERADE
+does not contain a
+.Li @
+sign, the string is interpreted as a host name.
+For example, setting
+.Sq MASQUERADE
+to
+.Ql john@
+on host
+.Ql hamlet
+will send all mails as
+.Ql john@hamlet ;
+setting it to
+.Ql percolator
+will send all mails as
+.Ql Sm off Va username @percolator .
+.Sm on
 .El
 .Ss Environment variables
 The behavior of

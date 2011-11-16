@@ -80,6 +80,8 @@ struct config config = {
 	.certfile	= NULL,
 	.features	= 0,
 	.mailname	= NULL,
+	.masquerade_host = NULL,
+	.masquerade_user = NULL,
 };
 
 
@@ -103,7 +105,14 @@ set_from(struct queue *queue, const char *osender)
 		if (sender == NULL)
 			return (NULL);
 	} else {
-		if (asprintf(&sender, "%s@%s", username, hostname()) <= 0)
+		const char *from_user = username;
+		const char *from_host = hostname();
+
+		if (config.masquerade_user)
+			from_user = config.masquerade_user;
+		if (config.masquerade_host)
+			from_host = config.masquerade_host;
+		if (asprintf(&sender, "%s@%s", from_user, from_host) <= 0)
 			return (NULL);
 	}
 

@@ -203,7 +203,23 @@ parse_conf(const char *config_path)
 			config.certfile = data;
 		else if (strcmp(word, "MAILNAME") == 0 && data != NULL)
 			config.mailname = data;
-		else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
+		else if (strcmp(word, "MASQUERADE") == 0 && data != NULL) {
+			char *user = NULL, *host = NULL;
+			if (strrchr(data, '@')) {
+				host = strrchr(data, '@');
+				host = 0;
+				host++;
+				user = data;
+			} else {
+				host = data;
+			}
+ 			if (host && *host == 0)
+				host = NULL;
+                        if (user && *user == 0)
+                                user = NULL;
+			config.masquerade_host = host;
+			config.masquerade_user = user;
+		} else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
 			config.features |= STARTTLS;
 		else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 && data == NULL)
 			config.features |= TLS_OPP;
