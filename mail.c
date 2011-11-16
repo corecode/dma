@@ -57,7 +57,7 @@ bounce(struct qitem *it, const char *reason)
 	bzero(&bounceq, sizeof(bounceq));
 	LIST_INIT(&bounceq.queue);
 	bounceq.sender = "";
-	if (add_recp(&bounceq, it->sender, 1) != 0)
+	if (add_recp(&bounceq, it->sender, EXPAND_WILDCARD) != 0)
 		goto fail;
 
 	if (newspoolf(&bounceq) != 0)
@@ -334,7 +334,7 @@ newaddr:
 	if (addr == NULL)
 		errlog(1, NULL);
 
-	if (add_recp(queue, addr, 1) != 0)
+	if (add_recp(queue, addr, EXPAND_WILDCARD) != 0)
 		errlogx(1, "invalid recipient `%s'", addr);
 
 	goto again;

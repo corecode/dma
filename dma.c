@@ -144,12 +144,30 @@ read_aliases(void)
 	return (0);
 }
 
+static int
+do_alias(struct queue *queue, const char *addr)
+{
+	struct alias *al;
+        struct stritem *sit;
+	int aliased = 0;
+
+        LIST_FOREACH(al, &aliases, next) {
+                if (strcmp(al->alias, addr) != 0)
+                        continue;
+		SLIST_FOREACH(sit, &al->dests, next) {
+			if (add_recp(queue, sit->str, EXPAND_ADDR) != 0)
+				return (-1);
+		}
+		aliased = 1;
+        }
+
+        return (aliased);
+}
+
 int
 add_recp(struct queue *queue, const char *str, int expand)
 {
 	struct qitem *it, *tit;
-	struct stritem *sit;
-	struct alias *al;
 	struct passwd *pw;
 	char *host;
 	int aliased = 0;
@@ -180,15 +198,11 @@ add_recp(struct queue *queue, const char *str, int expand)
 	if (strrchr(it->addr, '@') == NULL) {
 		it->remote = 0;
 		if (expand) {
-			LIST_FOREACH(al, &aliases, next) {
-				if (strcmp(al->alias, it->addr) != 0)
-					continue;
-				SLIST_FOREACH(sit, &al->dests, next) {
-					if (add_recp(queue, sit->str, 1) != 0)
-						return (-1);
-				}
-				aliased = 1;
-			}
+			aliased = do_alias(queue, it->addr);
+			if (!aliased && expand == EXPAND_WILDCARD)
+				aliased = do_alias(queue, "*");
+			if (aliased < 0)
+				return (-1);
 			if (aliased) {
 				LIST_REMOVE(it, next);
 			} else {
@@ -544,7 +558,7 @@ skipopts:
 	setlogident("%s", queue.id);
 
 	for (i = 0; i < argc; i++) {
-		if (add_recp(&queue, argv[i], 1) != 0)
+		if (add_recp(&queue, argv[i], EXPAND_WILDCARD) != 0)
 			errlogx(1, "invalid recipient `%s'", argv[i]);
 	}
 

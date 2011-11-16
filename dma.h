@@ -187,6 +187,8 @@ int base64_encode(const void *, int, char **);
 int base64_decode(const char *, void *);
 
 /* dma.c */
+#define EXPAND_ADDR	1
+#define EXPAND_WILDCARD	2
 int add_recp(struct queue *, const char *, int);
 void run_queue(struct queue *);
 
