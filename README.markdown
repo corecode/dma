@@ -21,7 +21,7 @@ Building
 Installation
 ------------
 
-	make install sendmail-link mailq-link install-spool-dirs
+	make install sendmail-link mailq-link install-spool-dirs install-etc
 
 
 Contact

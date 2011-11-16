@@ -15,7 +15,7 @@ CC?=		gcc
 CFLAGS?=	-O -pipe
 LDADD?=		-lssl -lcrypto -lresolv
 
-CFLAGS+=	-Wall -DDMA_VERSION='"${version}"' -DLIBEXEC_PATH='"${LIBEXEC}"'
+CFLAGS+=	-Wall -DDMA_VERSION='"${version}"' -DLIBEXEC_PATH='"${LIBEXEC}"' -DCONF_PATH='"${CONFDIR}"'
 
 INSTALL?=	install -p
 CHGRP?=		chgrp
@@ -24,7 +24,7 @@ CHMOD?=		chmod
 PREFIX?=	/usr/local
 SBIN?=		${PREFIX}/sbin
 LIBEXEC?=	${PREFIX}/lib
-CONFDIR?=	/etc
+CONFDIR?=	/etc/dma
 MAN?=		${PREFIX}/share/man
 VAR?=		/var
 DMASPOOL?=	${VAR}/spool/dma
@@ -46,7 +46,7 @@ clean:
 	-rm -f aliases_parse.[ch] aliases_scan.c
 
 install: all
-	${INSTALL} -d ${DESTDIR}${SBIN} ${DESTDIR}${CONFDIR}
+	${INSTALL} -d ${DESTDIR}${SBIN}
 	${INSTALL} -d ${DESTDIR}${MAN}/man8 ${DESTDIR}${LIBEXEC}
 	${INSTALL} -m 2755 -o root -g mail dma ${DESTDIR}${SBIN}
 	${INSTALL} -m 4754 -o root -g mail dma-mbox-create ${DESTDIR}${LIBEXEC}
@@ -65,6 +65,21 @@ install-spool-dirs:
 permissions:
 	-${CHGRP} mail ${DESTDIR}${VARMAIL}/*
 	-${CHMOD} g+w ${DESTDIR}${VARMAIL}/*
+
+install-etc:
+	${INSTALL} -d ${DESTDIR}${CONFDIR}
+	@if [ -e ${DESTDIR}${CONFDIR}/dma.conf ]; then \
+		echo "Not overwriting ${DESTDIR}${CONFDIR}/dma.conf."; \
+	else \
+		echo ${INSTALL} -m 644 -o root -g mail dma.conf ${DESTDIR}${CONFDIR}; \
+		${INSTALL} -m 644 -o root -g mail dma.conf ${DESTDIR}${CONFDIR}; \
+	fi
+	@if [ -e ${DESTDIR}${CONFDIR}/auth.conf ]; then \
+		echo "Not overwriting ${DESTDIR}${CONFDIR}/auth.conf."; \
+	else \
+		echo ${INSTALL} -m 640 -o root -g mail auth.conf ${DESTDIR}${CONFDIR}; \
+		${INSTALL} -m 640 -o root -g mail auth.conf ${DESTDIR}${CONFDIR}; \
+	fi
 
 aliases_parse.c: aliases_parse.y
 	${YACC} -d -o aliases_parse.c aliases_parse.y

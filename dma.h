@@ -67,7 +67,7 @@
 #define TLS_OPP		0x080		/* Opportunistic STARTTLS */
 
 #ifndef CONF_PATH
-#define CONF_PATH	"/etc/dma/dma.conf"	/* Default path to dma.conf */
+#error Please define CONF_PATH
 #endif
 
 #ifndef LIBEXEC_PATH

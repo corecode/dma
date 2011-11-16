@@ -513,7 +513,7 @@ skipopts:
 	if (sigaction(SIGHUP, &act, NULL) != 0)
 		syslog(LOG_WARNING, "can not set signal handler: %m");
 
-	parse_conf(CONF_PATH);
+	parse_conf(CONF_PATH "/dma.conf");
 
 	if (config.authpath != NULL)
 		parse_authfile(config.authpath);
