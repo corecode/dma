@@ -1,3 +1,12 @@
+dma (0.5) unstable; urgency=low
+
+  [ Simon Schubert ]
+  * implement masquerading using the MASQUERADE config option
+  * access config files at CONF_PATH, add makefile target to install conf files
+  * implement the "*" catch-all alias
+
+ -- Simon Schubert <2@0x2c.org>  Wed, 16 Nov 2011 13:34:43 +0100
+
 dma (0.4) unstable; urgency=low
 
   [ Simon Schubert ]
