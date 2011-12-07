@@ -214,7 +214,17 @@ retry:
 			goto chop;
 		}
 
-		if (hadnl && strncmp(line, "From ", 5) == 0) {
+		/*
+		 * mboxro processing:
+		 * - escape lines that start with "From " with a > sign.
+		 * - be reversable by escaping lines that contain an arbitrary
+		 *   number of > signs, followed by "From ", i.e. />*From / in regexp.
+		 * - strict mbox processing only requires escaping after empty lines,
+		 *   yet most MUAs seem to relax this requirement and will treat any
+		 *   line starting with "From " as the beginning of a new mail.
+		 */
+		if ((!MBOX_STRICT || hadnl) &&
+		    strncmp(&line[strspn(line, ">")], "From ", 5) == 0) {
 			const char *gt = ">";
 
 			if (write(mbox, gt, 1) != 1)

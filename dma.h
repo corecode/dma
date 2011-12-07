@@ -77,6 +77,10 @@
 #define DMA_ROOT_USER	"mail"
 #define DMA_GROUP	"mail"
 
+#ifndef MBOX_STRICT
+#define MBOX_STRICT	0
+#endif
+
 
 struct stritem {
 	SLIST_ENTRY(stritem) next;
