@@ -1,3 +1,10 @@
+dma (0.6) unstable; urgency=low
+
+  [ Simon Schubert ]
+  * deliver_local: quote "From " more liberally
+
+ -- Simon Schubert <2@0x2c.org>  Wed, 07 Dec 2011 12:42:22 +0100
+
 dma (0.5) unstable; urgency=low
 
   [ Simon Schubert ]
