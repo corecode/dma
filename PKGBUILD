@@ -2,7 +2,7 @@
 # $Id: PKGBUILD,v 1.2 2010/12/25 18:46:11 andres Exp $
 
 pkgname="dma"
-pkgver=0.5
+pkgver=0.6
 pkgrel=1
 pkgdesc="DragonFly BSD mail transport agent"
 url="https://gitorious.org/dma"
@@ -12,7 +12,7 @@ depends=('openssl')
 backup=('etc/dma/auth.conf' 'etc/dma/dma.conf')
 arch=('i686' 'x86_64')
 source=("https://github.com/corecode/dma/tarball/v$pkgver")
-sha256sums=('63b45c1b3fc3058f26aa59c5e29c8352ebe47a778fedbd2c33b52a3f3b2b55c6')
+sha256sums=('3b15e2274372d5cb63a0a166c7a0ff33009e315114abfc4f7ecd8059816695be')
 
 build() {
 	cd corecode-dma-*

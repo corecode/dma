@@ -1,6 +1,6 @@
 pkgbase = dma
 	pkgdesc = DragonFly BSD mail transport agent
-	pkgver = 0.5
+	pkgver = 0.6
 	pkgrel = 1
 	url = https://gitorious.org/dma
 	arch = i686
@@ -10,8 +10,8 @@ pkgbase = dma
 	depends = openssl
 	backup = etc/dma/auth.conf
 	backup = etc/dma/dma.conf
-	source = https://github.com/corecode/dma/tarball/v0.5
-	sha256sums = 63b45c1b3fc3058f26aa59c5e29c8352ebe47a778fedbd2c33b52a3f3b2b55c6
+	source = https://github.com/corecode/dma/tarball/v0.6
+	sha256sums = 3b15e2274372d5cb63a0a166c7a0ff33009e315114abfc4f7ecd8059816695be
 
 pkgname = dma
 
