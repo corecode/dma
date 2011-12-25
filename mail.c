@@ -69,7 +69,7 @@ bounce(struct qitem *it, const char *reason)
 	error = fprintf(bounceq.mailf,
 		"Received: from MAILER-DAEMON\n"
 		"\tid %s\n"
-		"\tby %s (%s)\n"
+		"\tby %s (%s);\n"
 		"\t%s\n"
 		"X-Original-To: <%s>\n"
 		"From: MAILER-DAEMON <>\n"
@@ -360,7 +360,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 		"Received: from %s (uid %d)\n"
 		"\t(envelope-from %s)\n"
 		"\tid %s\n"
-		"\tby %s (%s)\n"
+		"\tby %s (%s);\n"
 		"\t%s\n",
 		username, useruid,
 		queue->sender,
