@@ -66,11 +66,8 @@ add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t 
 	struct addrinfo hints, *res, *res0 = NULL;
 	char servname[10];
 	struct mx_hostentry *p;
-	size_t onhosts;
 	const int count_inc = 10;
 	int err;
-
-	onhosts = *ps;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;

@@ -56,8 +56,6 @@ trim_line(char *line)
 	size_t linelen;
 	char *p;
 
-	p = line;
-
 	if ((p = strchr(line, '\n')))
 		*p = (char)0;
 
