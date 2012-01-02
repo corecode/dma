@@ -207,7 +207,7 @@ parse_conf(const char *config_path)
 			char *user = NULL, *host = NULL;
 			if (strrchr(data, '@')) {
 				host = strrchr(data, '@');
-				host = 0;
+				*host = 0;
 				host++;
 				user = data;
 			} else {
