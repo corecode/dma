@@ -1,3 +1,13 @@
+dma (0.7) unstable; urgency=low
+
+  [ Simon Schubert ]
+  * add semicolon before date in Received: header
+  * parse_conf: fix bug with masqueraded domains
+  * clear up warnings found by clang static analysis
+  * mark printf-alike functions
+
+ -- Simon Schubert <2@0x2c.org>  Tue, 03 Jan 2012 14:53:43 +0100
+
 dma (0.6) unstable; urgency=low
 
   [ Simon Schubert ]
