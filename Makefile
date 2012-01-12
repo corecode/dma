@@ -8,8 +8,10 @@
 #   getprogname
 #
 
-version=	$(shell sh get-version.sh)
-debversion=	$(shell sh get-version.sh | sed -Ee 's/^v//;s/[.]([[:digit:]]+)[.](g[[:xdigit:]]+)$$/+\1+\2/')
+SH?=		sh
+
+version=	$(shell ${SH} get-version.sh)
+debversion=	$(shell ${SH} get-version.sh | sed -Ee 's/^v//;s/[.]([[:digit:]]+)[.](g[[:xdigit:]]+)$$/+\1+\2/')
 
 CC?=		gcc
 CFLAGS?=	-O -pipe
