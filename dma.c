@@ -476,6 +476,9 @@ main(int argc, char **argv)
 			break;
 
 		case 'q':
+			/* Don't let getopt slup up other arguments */
+			if (optarg && *optarg == '-')
+				optind--;
 			doqueue = 1;
 			break;
 
