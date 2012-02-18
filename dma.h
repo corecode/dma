@@ -52,6 +52,7 @@
 #define MIN_RETRY	300		/* 5 minutes */
 #define MAX_RETRY	(3*60*60)	/* retry at least every 3 hours */
 #define MAX_TIMEOUT	(5*24*60*60)	/* give up after 5 days */
+#define SLEEP_TIMEOUT	30		/* check for queue flush every 30 seconds */
 #ifndef PATH_MAX
 #define PATH_MAX	1024		/* Max path len */
 #endif
@@ -73,6 +74,8 @@
 #ifndef LIBEXEC_PATH
 #error Please define LIBEXEC_PATH
 #endif
+
+#define SPOOL_FLUSHFILE	"flush"
 
 #define DMA_ROOT_USER	"mail"
 #define DMA_GROUP	"mail"
@@ -203,6 +206,8 @@ int load_queue(struct queue *);
 void delqueue(struct qitem *);
 int acquirespool(struct qitem *);
 void dropspool(struct queue *, struct qitem *);
+int flushqueue_since(unsigned int);
+int flushqueue_signal(void);
 
 /* local.c */
 int deliver_local(struct qitem *);

@@ -395,3 +395,52 @@ dropspool(struct queue *queue, struct qitem *keep)
 			fclose(it->mailf);
 	}
 }
+
+int
+flushqueue_since(unsigned int period)
+{
+        struct stat st;
+	struct timeval now;
+        char *flushfn = NULL;
+
+	if (asprintf(&flushfn, "%s/%s", config.spooldir, SPOOL_FLUSHFILE) < 0)
+		return (0);
+	if (stat(flushfn, &st) < 0) {
+		free(flushfn);
+		return (0);
+	}
+	free(flushfn);
+	flushfn = NULL;
+	if (gettimeofday(&now, 0) != 0)
+		return (0);
+
+	/* Did the flush file get touched within the last period seconds? */
+	if (st.st_mtim.tv_sec + period >= now.tv_sec)
+		return (1);
+	else
+		return (0);
+}
+
+int
+flushqueue_signal(void)
+{
+        char *flushfn = NULL;
+	int fd;
+
+        if (asprintf(&flushfn, "%s/%s", config.spooldir, SPOOL_FLUSHFILE) < 0)
+		return (-1);
+	fd = open(flushfn, O_CREAT|O_RDONLY, 0440);
+	if (fd < 0) {
+		syslog(LOG_ERR, "could not open flush file: %m");
+		free(flushfn);
+		return (-1);
+	}
+        close(fd);
+        if (utimes(flushfn, NULL) < 0) {
+		syslog(LOG_ERR, "could not touch flush file: %m");
+		free(flushfn);
+		return (-1);
+	}
+	free (flushfn);
+	return (0);
+}
