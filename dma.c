@@ -70,6 +70,7 @@ const char *logident_base;
 char errmsg[ERRMSG_SIZE];
 
 static int daemonize = 1;
+static int doqueue = 0;
 
 struct config config = {
 	.smarthost	= NULL,
@@ -265,11 +266,21 @@ retit:
 			/*
 			 * If necessary, acquire the queue and * mail files.
 			 * If this fails, we probably were raced by another
-			 * process.
+			 * process.  It is okay to be raced if we're supposed
+			 * to flush the queue.
 			 */
 			setlogident("%s", it->queueid);
-			if (acquirespool(it) < 0)
+			switch (acquirespool(it)) {
+			case 0:
+				break;
+			case 1:
+				if (doqueue)
+					exit(0);
+				syslog(LOG_WARNING, "could not lock queue file");
 				exit(1);
+			default:
+				exit(1);
+			}
 			dropspool(queue, it);
 			return (it);
 
@@ -393,7 +404,7 @@ main(int argc, char **argv)
 	char *sender = NULL;
 	struct queue queue;
 	int i, ch;
-	int nodot = 0, doqueue = 0, showq = 0, queue_only = 0;
+	int nodot = 0, showq = 0, queue_only = 0;
 	int recp_from_header = 0;
 
 	set_username();

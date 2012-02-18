@@ -374,6 +374,8 @@ acquirespool(struct qitem *it)
 	return (0);
 
 fail:
+	if (errno == EWOULDBLOCK)
+		return (1);
 	syslog(LOG_INFO, "could not acquire queue file: %m");
 	return (-1);
 }
