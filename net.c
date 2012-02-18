@@ -516,7 +516,8 @@ deliver_remote(struct qitem *it)
 
 	error = dns_get_mx_list(host, port, &hosts, smarthost);
 	if (error) {
-		syslog(LOG_NOTICE, "remote delivery %s: DNS failure (%s)",
+		snprintf(errmsg, sizeof(errmsg), "DNS lookup failure: host %s not found", host);
+		syslog(LOG_NOTICE, "remote delivery %s: DNS lookup failure: host %s not found",
 		       error < 0 ? "failed" : "deferred",
 		       host);
 		return (error);
