@@ -1,3 +1,22 @@
+dma (0.8) unstable; urgency=low
+
+  [ Gert van den Berg ]
+  * Added some more documentation on compiling
+  * Make Makefile and README consistent with INSTALL
+
+  [ Sascha Wildner ]
+  * dma.8: Fix a few small issues.
+
+  [ Simon Schubert ]
+  * dma.8: we only have 2 config files at the moment
+  * Merge pull request #2 from mohag/master
+  * don't treat -options following -q as argument to it
+  * deliver_remote: propagate back DNS errors
+  * don't complain when we can't lock a queue file during flush
+  * implement queue flushing prod
+
+ -- Simon Schubert <2@0x2c.org>  Fri, 30 Mar 2012 12:03:54 +0200
+
 dma (0.7) unstable; urgency=low
 
   [ Simon Schubert ]
