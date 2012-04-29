@@ -427,7 +427,7 @@ main(int argc, char **argv)
 		if (pw == NULL)
 			err(1, "cannot drop root privileges");
 
-		if (setuid(pw->pw_uid) != 0)
+		if (setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) != 0)
 			err(1, "cannot drop root privileges");
 
 		if (geteuid() == 0 || getuid() == 0)
