@@ -349,15 +349,34 @@ esmtp_nextline(char **buff, int skip)
 	long status;
 	
 	if (skip) {
-		/* Allow skipping to the next line */
-		while (*line != '\0' && !isdigit(*line))
+		/* Allow skipping to the next line,
+		 * possible scenarios are:
+		 * - the parser is already on a newline
+		 *   when it deleted '\r' and is currently over
+		 *   a '\n' character.
+		 * - the parser is in a token inside a line,
+		 *   happens when it deleted ' ' and is over
+		 *   the next token of a line.
+		 */
+		while (*line != '\0' && *line != '\n')
 			line++;
+		
+		if (*line == '\n') {
+			line++;
+		}
 	}
 	
+	/* now we expect the status number*/
 	status = strtol(line, &line, 10);
 	if (status != 250) {
 		/*invalid status*/
 		return -1;
+	}
+	
+	if (*line == ' ') {
+		/* signal end of parse with a positive number */
+		*buff = line;
+		return 1;
 	}
 	
 	if (*line != '-') {
@@ -365,6 +384,7 @@ esmtp_nextline(char **buff, int skip)
 		return -1;
 	}
 	
+	/* success */
 	line++;
 	*buff = line;
 	return 0;
@@ -376,7 +396,7 @@ esmtp_nexttoken(char **buff)
 	char *line = *buff;
 	char *tok = line;
 	
-	if (isdigit(*line)) {
+	if (*line == '\n' || *line == '\0') {
 		/* No more tokens available,
 		 * we are on the next line of the ESMTP response.
 		 */
@@ -386,7 +406,7 @@ esmtp_nexttoken(char **buff)
 	/* make the line uppercase to honour RFC
 	 * (tokens are parsed regardless their case)
 	 */
-	while (*line != '\0' && *line != '\r' && *line != '\n' && *line != ' ') {
+	while (*line != '\0' && *line != '\r' && *line != ' ') {
 		*line = toupper(*line);
 		line++;
 	}
@@ -395,15 +415,12 @@ esmtp_nexttoken(char **buff)
 	if (*line == '\r') {
 	    *line++ = 0;
 	}
-	if (*line == '\n') {
-	  *line++ = 0;
-	}
 	if (*line == ' ') {
 	  *line++ = 0;
 	}
 	
 	*buff = line;
-	return (*line != '\0'? tok : NULL);
+	return tok;
 }
 
 static int
@@ -414,7 +431,7 @@ esmtp_response(int fd)
 	char **parse;
 	char *esmtp;
 	char *tok;
-	int done;
+	int error;
 	int res;
   
 	res = read_remote(fd, &buffsize, buff);
@@ -427,22 +444,19 @@ esmtp_response(int fd)
 		return -1;
 	}
 	
-	/* parse ESMP */
+	/* initialize ESMTP parsing */
 	esmtp = buff;
 	parse = &esmtp;
-	done = 0;
-	
-	do {
-		if (esmtp_nextline(parse, 0) != 0) {
-			/* parsing error */
+	error = esmtp_nextline(parse, 0);
+	while (error == 0) {
+		tok = esmtp_nexttoken(parse);
+		if (!tok) {
+			/* shouldn't happen, return parse error */
 			return -1;
 		}
 		
-		tok = esmtp_nexttoken(parse);
-		if (!tok) {
-			/* shouldn't happen */
-			return -1;
-		}
+		if ((config.features & VERBOSE) != 0)
+		      syslog(LOG_DEBUG, "ESMTP got %s", tok);
 		
 		if (strcmp(tok, "STARTTLS") == 0) {
 			/* STARTTLS is supported */
@@ -458,17 +472,16 @@ esmtp_response(int fd)
 					config.features |= AUTHPLAIN;
 			}
 			
-		} else if (strcmp(tok, "OK") == 0) {
-			/* done parsing */
-			done = 1;
-		} else {
-			/* unknown or uninteresting feature, skip to newline*/
-			if (esmtp_nextline(parse, 0) != 0) {
-				return -1;
-			}
 		}
 		
-	} while (!done);
+		/*position over next line*/
+		error = esmtp_nextline(parse, 1);
+		
+	}
+	
+	/*return a negative number on parsing error*/
+	if (error < 0)
+	    res = -1;
 	
 	return res;
 }
