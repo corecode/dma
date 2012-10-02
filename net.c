@@ -714,9 +714,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		goto out;
 
 	error = 0;
-	while (!feof(it->mailf)) {
-		if (fgets(line, sizeof(line), it->mailf) == NULL)
-			break;
+	while (fgets(line, sizeof(line), it->mailf)) {
 		linelen = strlen(line);
 		if (linelen == 0 || line[linelen - 1] != '\n') {
 			syslog(LOG_CRIT, "remote delivery failed: corrupted queue file");
@@ -740,6 +738,12 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 			error = 1;
 			goto out;
 		}
+	}
+	
+	if (!feof(it->mailf) || ferror(it->mailf)) {
+		syslog(LOG_NOTICE, "remote delivery deferred: I/O read error");
+		error = 1;
+		goto out;
 	}
 
 	send_remote_command(fd, ".");
