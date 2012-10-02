@@ -588,7 +588,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	fd = open_connection(host, 1);
 	if (fd == -2) {
 		/* fallback to HELO if possible */
-		if ((config.features & NOHELO) == 0) {
+		if ((config.features & NOHELO) != 0) {
 			/* HELO disabled in config file */
 			syslog(LOG_NOTICE, "remote delivery deferred:"
 			      " EHLO unsupported by remote host and HELO fallback is disabled");
