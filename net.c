@@ -116,38 +116,44 @@ send_remote_command(int fd, const char* fmt, ...)
 }
 
 int
-read_remote(int fd, int extbufsize, char *extbuf)
+read_remote(int fd, size_t *extbufsize, char *extbuf)
 {
 	ssize_t rlen = 0;
-	size_t pos, len, copysize;
+	size_t pos, len, copysize, ebufpos = 0, ebuflen = 0;
 	char buff[BUF_SIZE];
-	int done = 0, status = 0, status_running = 0, extbufpos = 0;
-	enum { parse_status, parse_spacedash, parse_rest } parsestate;
+	long status = 0;
+	int done = 0;
 
 	if (do_timeout(CON_TIMEOUT, 1) != 0) {
 		snprintf(neterr, sizeof(neterr), "Timeout reached");
 		return (-1);
 	}
-
+	
+	if (extbuf && extbufsize) {
+		ebuflen = *extbufsize;
+	}
+	
 	/*
 	 * Remote reading code from femail.c written by Henning Brauer of
 	 * OpenBSD and released under a BSD style license.
 	 */
-	len = 0;
 	pos = 0;
-	parsestate = parse_status;
+	len = 0;
 	neterr[0] = 0;
-	while (!(done && parsestate == parse_status)) {
-		rlen = 0;
-		if (pos == 0 ||
-		    (pos > 0 && memchr(buff + pos, '\n', len - pos) == NULL)) {
+	do {
+		if (memchr(buff + pos, '\n', len - pos) == NULL) {
+			rlen = 0;
+		      
+			/* Move away already parsed data */
 			memmove(buff, buff + pos, len - pos);
 			len -= pos;
 			pos = 0;
+		      
+			/* Read the next bytes */
 			if ((config.features & USESSL) != 0) {
 				if ((rlen = SSL_read(config.ssl, buff + len, sizeof(buff) - len)) == -1) {
-					strncpy(neterr, ssl_errstr(), sizeof(neterr));
-					goto error;
+				      strncpy(neterr, ssl_errstr(), sizeof(neterr));
+				      goto error;
 				}
 			} else {
 				if ((rlen = read(fd, buff + len, sizeof(buff) - len)) == -1) {
@@ -155,87 +161,76 @@ read_remote(int fd, int extbufsize, char *extbuf)
 					goto error;
 				}
 			}
-			len += rlen;
-
-			copysize = sizeof(neterr) - strlen(neterr) - 1;
-			if (copysize > len)
-				copysize = len;
-			strncat(neterr, buff, copysize);
-		}
-		/*
-		 * If there is an external buffer with a size bigger than zero
-		 * and as long as there is space in the external buffer and
-		 * there are new characters read from the mailserver
-		 * copy them to the external buffer
-		 */
-		if (extbufpos <= (extbufsize - 1) && rlen > 0 && extbufsize > 0 && extbuf != NULL) {
-			/* do not write over the bounds of the buffer */
-			if(extbufpos + rlen > (extbufsize - 1)) {
-				rlen = extbufsize - extbufpos;
-			}
-			memcpy(extbuf + extbufpos, buff + len - rlen, rlen);
-			extbufpos += rlen;
-		}
-
-		if (pos == len)
-			continue;
-
-		switch (parsestate) {
-		case parse_status:
-			for (; pos < len; pos++) {
-				if (isdigit(buff[pos])) {
-					status_running = status_running * 10 + (buff[pos] - '0');
-				} else {
-					status = status_running;
-					status_running = 0;
-					parsestate = parse_spacedash;
-					break;
-				}
-			}
-			continue;
-
-		case parse_spacedash:
-			switch (buff[pos]) {
-			case ' ':
-				done = 1;
-				break;
-
-			case '-':
-				/* ignore */
-				/* XXX read capabilities */
-				break;
-
-			default:
-				strcpy(neterr, "invalid syntax in reply from server");
+			      
+			if (rlen == 0) {
+				strncpy(neterr, "unexpected connection end", sizeof(neterr));
 				goto error;
 			}
-
-			pos++;
-			parsestate = parse_rest;
-			continue;
-
-		case parse_rest:
-			/* skip up to \n */
-			for (; pos < len; pos++) {
-				if (buff[pos] == '\n') {
-					pos++;
-					parsestate = parse_status;
-					break;
+		      
+			/* If an external buffer is available, copy data over there */
+			if (ebuflen > 0) {
+				/* Do not write over the buffer bounds */
+				ssize_t copysiz = rlen;
+			      
+				if (ebufpos + copysiz > ebuflen) {
+					copysiz = ebuflen - ebufpos;
 				}
+			      
+				if (copysiz > 0) {
+				    memcpy(extbuf + ebufpos, buff + len, copysiz);
+				}
+			      
+				/* Add rlen to ebufpos, so the caller
+				 * can know if the provided buffer was too small.
+				 */
+				ebufpos += rlen;
 			}
 		}
 
+		for (; pos < len && isdigit(buff[pos]); pos++)
+			; /* Skip over status number */
+
+		if (pos == len) {
+			/* We need more data from the server */
+			continue;
+		}
+
+		if (buff[pos] == ' ') {
+			done = 1;
+		} else if (buff[pos] == '-') {
+
+			while (buff[pos++] != '\n')
+				; /*skip*/
+
+		} else {
+			strncpy(neterr, "invalid syntax in reply from server", sizeof(neterr));
+			goto error;
+		}
+		
+	} while (!done);
+
+	status = strtol(buff, NULL, 10);
+	if (status < 100 || status > 999) {
+		strncpy(neterr, "error reading status, out of range value", sizeof(neterr));
+		goto error;
 	}
 
 	do_timeout(0, 0);
 
-	/* chop off trailing newlines */
-	while (neterr[0] != 0 && strchr("\r\n", neterr[strlen(neterr) - 1]) != 0)
-		neterr[strlen(neterr) - 1] = 0;
-
-	return (status/100);
+	if (extbufsize)
+		*extbufsize = ebufpos;
+	
+	syslog(LOG_DEBUG, "<<< status %d", (int)status);
+	return ((int)status);
 
 error:
+	/* Ensure neterr '\0' ending byte*/
+	neterr[sizeof(neterr) - 1] = '\0';
+	
+	/* Chop off trailing newlines */
+	while (neterr[0] != 0 && strchr("\r\n", neterr[strlen(neterr) - 1]) != 0)
+		neterr[strlen(neterr) - 1] = 0;
+	
 	do_timeout(0, 0);
 	return (-1);
 }
@@ -264,7 +259,7 @@ smtp_login(int fd, char *login, char* password)
 	    (config.features & SECURETRANS) != 0) {
 		/* Send AUTH command according to RFC 2554 */
 		send_remote_command(fd, "AUTH LOGIN");
-		if (read_remote(fd, 0, NULL) != 3) {
+		if (read_remote(fd, NULL, NULL) != 334) {
 			syslog(LOG_NOTICE, "remote delivery deferred:"
 					" AUTH login not available: %s",
 					neterr);
@@ -280,11 +275,11 @@ encerr:
 
 		send_remote_command(fd, "%s", temp);
 		free(temp);
-		res = read_remote(fd, 0, NULL);
-		if (res != 3) {
+		res = read_remote(fd, NULL, NULL);
+		if (res != 334) {
 			syslog(LOG_NOTICE, "remote delivery %s: AUTH login failed: %s",
-			       res == 5 ? "failed" : "deferred", neterr);
-			return (res == 5 ? -1 : 1);
+			       res == 503 ? "failed" : "deferred", neterr);
+			return (res == 503 ? -1 : 1);
 		}
 
 		len = base64_encode(password, strlen(password), &temp);
@@ -293,11 +288,11 @@ encerr:
 
 		send_remote_command(fd, "%s", temp);
 		free(temp);
-		res = read_remote(fd, 0, NULL);
-		if (res != 2) {
+		res = read_remote(fd, NULL, NULL);
+		if (res != 235) {
 			syslog(LOG_NOTICE, "remote delivery %s: Authentication failed: %s",
-					res == 5 ? "failed" : "deferred", neterr);
-			return (res == 5 ? -1 : 1);
+					res == 503 ? "failed" : "deferred", neterr);
+			return (res == 503 ? -1 : 1);
 		}
 	} else {
 		syslog(LOG_WARNING, "non-encrypted SMTP login is disabled in config, so skipping it. ");
@@ -363,8 +358,8 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		return (1);
 
 #define READ_REMOTE_CHECK(c, exp)	\
-	res = read_remote(fd, 0, NULL); \
-	if (res == 5) { \
+	res = read_remote(fd, NULL, NULL); \
+	if (res == 500 || res == 502) { \
 		syslog(LOG_ERR, "remote delivery to %s [%s] failed after %s: %s", \
 		       host->host, host->addr, c, neterr); \
 		snprintf(errmsg, sizeof(errmsg), "%s [%s] did not like our %s:\n%s", \
@@ -379,7 +374,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	/* Check first reply from remote host */
 	if ((config.features & SECURETRANS) == 0 ||
 	    (config.features & STARTTLS) != 0) {
-		READ_REMOTE_CHECK("connect", 2);
+		READ_REMOTE_CHECK("connect", 220);
 	}
 
 	if ((config.features & SECURETRANS) != 0) {
@@ -390,13 +385,13 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 			goto out;
 
 		if ((config.features & STARTTLS) == 0)
-			READ_REMOTE_CHECK("connect", 2);
+			READ_REMOTE_CHECK("connect", 250);
 	}
 
 	/* XXX allow HELO fallback */
 	/* XXX record ESMTP keywords */
 	send_remote_command(fd, "EHLO %s", hostname());
-	READ_REMOTE_CHECK("EHLO", 2);
+	READ_REMOTE_CHECK("EHLO", 250);
 
 	/*
 	 * Use SMTP authentication if the user defined an entry for the remote
@@ -430,14 +425,14 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 
 	/* XXX send ESMTP ENVID, RET (FULL/HDRS) and 8BITMIME */
 	send_remote_command(fd, "MAIL FROM:<%s>", it->sender);
-	READ_REMOTE_CHECK("MAIL FROM", 2);
+	READ_REMOTE_CHECK("MAIL FROM", 250);
 
 	/* XXX send ESMTP ORCPT */
 	send_remote_command(fd, "RCPT TO:<%s>", it->addr);
-	READ_REMOTE_CHECK("RCPT TO", 2);
+	READ_REMOTE_CHECK("RCPT TO", 250);
 
 	send_remote_command(fd, "DATA");
-	READ_REMOTE_CHECK("DATA", 3);
+	READ_REMOTE_CHECK("DATA", 354);
 
 	error = 0;
 	while (!feof(it->mailf)) {
@@ -469,10 +464,10 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	}
 
 	send_remote_command(fd, ".");
-	READ_REMOTE_CHECK("final DATA", 2);
+	READ_REMOTE_CHECK("final DATA", 250);
 
 	send_remote_command(fd, "QUIT");
-	if (read_remote(fd, 0, NULL) != 2)
+	if (read_remote(fd, NULL, NULL) != 221)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 

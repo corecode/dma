@@ -113,9 +113,9 @@ smtp_init_crypto(int fd, int feature)
 	     (feature & STARTTLS) != 0) {
 		/* TLS init phase */
 		send_remote_command(fd, "EHLO %s", hostname());
-		if (read_remote(fd, 0, NULL) == 2) {
+		if (read_remote(fd, NULL, NULL) == 250) {
 			send_remote_command(fd, "STARTTLS");
-			if (read_remote(fd, 0, NULL) != 2) {
+			if (read_remote(fd, NULL, NULL) != 220) {
 				if ((feature & TLS_OPP) == 0) {
 					syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available: %s", neterr);
 					return (1);
@@ -254,21 +254,34 @@ smtp_auth_md5(int fd, char *login, char *password)
 	char buffer[BUF_SIZE], ascii_digest[33];
 	char *temp;
 	int len, i;
+	size_t buffsize = sizeof(buffer);
 	static char hextab[] = "0123456789abcdef";
-
-	temp = calloc(BUF_SIZE, 1);
+	
 	memset(buffer, 0, sizeof(buffer));
 	memset(digest, 0, sizeof(digest));
 	memset(ascii_digest, 0, sizeof(ascii_digest));
 
 	/* Send AUTH command according to RFC 2554 */
 	send_remote_command(fd, "AUTH CRAM-MD5");
-	if (read_remote(fd, sizeof(buffer), buffer) != 3) {
+	if (read_remote(fd, &buffsize, buffer) != 334) {
+		/* if cram-md5 is not available */
 		syslog(LOG_DEBUG, "smarthost authentication:"
 		       " AUTH cram-md5 not available: %s", neterr);
-		/* if cram-md5 is not available */
-		free(temp);
 		return (-1);
+	}
+	
+	if (buffsize > sizeof(buffer)) {
+		syslog(LOG_DEBUG, "smarthost authentication:"
+		       " oversized response to AUTH CRAM-MD5");
+		return (-1);
+	}
+	
+	/* allocate decoding buffer */
+	temp = calloc(BUF_SIZE, 1);
+	if (!temp) {
+	      syslog(LOG_WARNING, "remote delivery deferred:"
+	                          " memory allocation failed");
+	      return (-2);
 	}
 
 	/* skip 3 char status + 1 char space */
@@ -296,7 +309,7 @@ smtp_auth_md5(int fd, char *login, char *password)
 	/* send answer */
 	send_remote_command(fd, "%s", temp);
 	free(temp);
-	if (read_remote(fd, 0, NULL) != 2) {
+	if (read_remote(fd, NULL, NULL) != 220) {
 		syslog(LOG_WARNING, "remote delivery deferred:"
 				" AUTH cram-md5 failed: %s", neterr);
 		return (-2);

@@ -43,6 +43,7 @@
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <netdb.h>
+#include <stddef.h> /*size_t*/
 
 #define VERSION	"DragonFly Mail Agent " DMA_VERSION
 
@@ -185,7 +186,7 @@ int dns_get_mx_list(const char *, int, struct mx_hostentry **, int);
 
 /* net.c */
 char *ssl_errstr(void);
-int read_remote(int, int, char *);
+int read_remote(int, size_t *, char *);
 ssize_t send_remote_command(int, const char*, ...)  __attribute__((__nonnull__(2), __format__ (__printf__, 2, 3)));
 int deliver_remote(struct qitem *);
 
