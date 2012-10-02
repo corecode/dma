@@ -48,6 +48,8 @@
 #define VERSION	"DragonFly Mail Agent " DMA_VERSION
 
 #define BUF_SIZE	2048
+#define ESMTPBUF_SIZE   8192
+#define ESMTPTOK_SIZE   1024
 #define ERRMSG_SIZE	200
 #define USERNAME_SIZE	50
 #define MIN_RETRY	300		/* 5 minutes */
@@ -60,13 +62,18 @@
 #define	SMTP_PORT	25		/* Default SMTP port */
 #define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
 
-#define STARTTLS	0x002		/* StartTLS support */
-#define SECURETRANS	0x004		/* SSL/TLS in general */
-#define USESSL		0x008		/* Use SSL for communication */
-#define DEFER		0x010		/* Defer mails */
-#define INSECURE	0x020		/* Allow plain login w/o encryption */
-#define FULLBOUNCE	0x040		/* Bounce the full message */
-#define TLS_OPP		0x080		/* Opportunistic STARTTLS */
+#define STARTTLS	0x0002		/* StartTLS support required by the user*/
+#define NOHELO		0x0004		/* Don't fallback to HELO if EHLO isn't supported*/
+#define SECURETRANS	0x0008		/* SSL/TLS in general */
+#define USESSL		0x0010		/* Use SSL for communication */
+#define DEFER		0x0020		/* Defer mails */
+#define INSECURE	0x0040		/* Allow plain login w/o encryption */
+#define FULLBOUNCE	0x0080		/* Bounce the full message */
+#define TLS_OPP		0x0100		/* Opportunistic STARTTLS */
+#define HASSTARTTLS     0x0100          /* STARTTLS advertised by the remote host */
+#define AUTHPLAIN       0x0200          /* PLAIN authentication method support */
+#define AUTHLOGIN       0x0400          /* LOGIN authentication method support */
+#define AUTHCRAMMD5     0x0800          /* CRAM MD5 authentication method support */
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH

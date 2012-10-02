@@ -107,26 +107,17 @@ smtp_init_crypto(int fd, int feature)
 	}
 
 	/*
-	 * If the user wants STARTTLS, we have to send EHLO here
+	 * If STARTTLS is required, issue it here
 	 */
-	if (((feature & SECURETRANS) != 0) &&
-	     (feature & STARTTLS) != 0) {
+	if ((feature & STARTTLS) != 0) {
 		/* TLS init phase */
-		send_remote_command(fd, "EHLO %s", hostname());
-		if (read_remote(fd, NULL, NULL) == 250) {
-			send_remote_command(fd, "STARTTLS");
-			if (read_remote(fd, NULL, NULL) != 220) {
-				if ((feature & TLS_OPP) == 0) {
-					syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available: %s", neterr);
-					return (1);
-				} else {
-					syslog(LOG_INFO, "in opportunistic TLS mode, STARTTLS not available: %s", neterr);
-					return (0);
-				}
-			}
+		send_remote_command(fd, "STARTTLS");
+		if (read_remote(fd, NULL, NULL) != 220) {
+			syslog(LOG_ERR, "remote delivery deferred: STARTTLS failed: %s", neterr);
+			return (1);
 		}
-		/* End of TLS init phase, enable SSL_write/read */
-		config.features |= USESSL;
+		
+		/* End of TLS init phase */
 	}
 
 	config.ssl = SSL_new(ctx);
@@ -162,7 +153,9 @@ smtp_init_crypto(int fd, int feature)
 		       ssl_errstr());
 	}
 	X509_free(cert);
-
+	
+	/* At this point we can safely use SSL write/read*/
+	config.features |= USESSL;
 	return (0);
 }
 
@@ -266,14 +259,14 @@ smtp_auth_md5(int fd, char *login, char *password)
 	if (read_remote(fd, &buffsize, buffer) != 334) {
 		/* if cram-md5 is not available */
 		syslog(LOG_DEBUG, "smarthost authentication:"
-		       " AUTH cram-md5 not available: %s", neterr);
-		return (-1);
+		       " AUTH CRAM-MD5 failed: %s", neterr);
+		return (1);
 	}
 	
 	if (buffsize > sizeof(buffer)) {
 		syslog(LOG_DEBUG, "smarthost authentication:"
 		       " oversized response to AUTH CRAM-MD5");
-		return (-1);
+		return (1);
 	}
 	
 	/* allocate decoding buffer */
@@ -281,7 +274,7 @@ smtp_auth_md5(int fd, char *login, char *password)
 	if (!temp) {
 	      syslog(LOG_WARNING, "remote delivery deferred:"
 	                          " memory allocation failed");
-	      return (-2);
+	      return (1);
 	}
 
 	/* skip 3 char status + 1 char space */
@@ -302,8 +295,8 @@ smtp_auth_md5(int fd, char *login, char *password)
 	/* encode answer */
 	len = base64_encode(buffer, strlen(buffer), &temp);
 	if (len < 0) {
-		syslog(LOG_ERR, "can not encode auth reply: %m");
-		return (-1);
+		syslog(LOG_ERR, "cannot encode auth reply: %m");
+		return (1);
 	}
 
 	/* send answer */
@@ -311,8 +304,8 @@ smtp_auth_md5(int fd, char *login, char *password)
 	free(temp);
 	if (read_remote(fd, NULL, NULL) != 220) {
 		syslog(LOG_WARNING, "remote delivery deferred:"
-				" AUTH cram-md5 failed: %s", neterr);
-		return (-2);
+				" AUTH CRAM-MD5 failed: %s", neterr);
+		return (1);
 	}
 
 	return (0);

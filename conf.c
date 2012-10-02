@@ -219,6 +219,8 @@ parse_conf(const char *config_path)
 			config.masquerade_user = user;
 		} else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
 			config.features |= STARTTLS;
+		else if (strcmp(word, "NOHELO") == 0 && data == NULL)
+			config.features |= NOHELO;
 		else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 && data == NULL)
 			config.features |= TLS_OPP;
 		else if (strcmp(word, "SECURETRANSFER") == 0 && data == NULL)
