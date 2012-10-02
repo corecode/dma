@@ -62,6 +62,7 @@
 #define	SMTP_PORT	25		/* Default SMTP port */
 #define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
 
+#define VERBOSE         0x0001          /* Enable debug logging output to LOG_DEBUG */
 #define STARTTLS	0x0002		/* StartTLS support required by the user*/
 #define NOHELO		0x0004		/* Don't fallback to HELO if EHLO isn't supported*/
 #define SECURETRANS	0x0008		/* SSL/TLS in general */

@@ -186,7 +186,7 @@ parse_conf(const char *config_path)
 			data = strdup(data);
 		else
 			data = NULL;
-
+		
 		if (strcmp(word, "SMARTHOST") == 0 && data != NULL)
 			config.smarthost = data;
 		else if (strcmp(word, "PORT") == 0 && data != NULL)
@@ -217,7 +217,9 @@ parse_conf(const char *config_path)
                                 user = NULL;
 			config.masquerade_host = host;
 			config.masquerade_user = user;
-		} else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
+		} else if (strcmp(word, "VERBOSE") == 0 && data == NULL)
+			config.features |= VERBOSE;
+		else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
 			config.features |= STARTTLS;
 		else if (strcmp(word, "NOHELO") == 0 && data == NULL)
 			config.features |= NOHELO;

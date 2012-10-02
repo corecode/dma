@@ -92,7 +92,8 @@ send_remote_command(int fd, const char* fmt, ...)
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
 
-	/*XXX: Verbose mode that logs on LOG_DEBUG sent command*/
+	if (config.features & VERBOSE)
+		syslog(LOG_DEBUG, ">>> %s", cmd);
 	
 	if ((config.features & USESSL) != 0) {
 		while ((s = SSL_write(config.ssl, (const char*)cmd, len)) <= 0) {
@@ -108,8 +109,13 @@ send_remote_command(int fd, const char* fmt, ...)
 		pos = 0;
 		while (pos < len) {
 			n = write(fd, cmd + pos, len - pos);
-			if (n < 0)
+			if (n < 0) {
+				if (errno == EINTR)
+					continue;
+				
 				return (-1);
+			}
+			
 			pos += n;
 		}
 	}
@@ -257,6 +263,9 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 
 	if (extbufsize)
 		*extbufsize = ebufpos;
+	
+	if (config.features & VERBOSE)
+		syslog(LOG_DEBUG, "<<< %d", statnum);
 	
 	/* XXX: Verbose mode that logs on LOG_DEBUG returned status */
 	return (statnum);
