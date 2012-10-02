@@ -92,8 +92,7 @@ send_remote_command(int fd, const char* fmt, ...)
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
 
-	if (((config.features & SECURETRANS) != 0) &&
-	    ((config.features & NOSSL) == 0)) {
+	if ((config.features & USESSL) != 0) {
 		while ((s = SSL_write(config.ssl, (const char*)cmd, len)) <= 0) {
 			s = SSL_get_error(config.ssl, s);
 			if (s != SSL_ERROR_WANT_READ &&
@@ -145,8 +144,7 @@ read_remote(int fd, int extbufsize, char *extbuf)
 			memmove(buff, buff + pos, len - pos);
 			len -= pos;
 			pos = 0;
-			if (((config.features & SECURETRANS) != 0) &&
-			    (config.features & NOSSL) == 0) {
+			if ((config.features & USESSL) != 0) {
 				if ((rlen = SSL_read(config.ssl, buff + len, sizeof(buff) - len)) == -1) {
 					strncpy(neterr, ssl_errstr(), sizeof(neterr));
 					goto error;
@@ -339,7 +337,7 @@ close_connection(int fd)
 {
 	if (config.ssl != NULL) {
 		if (((config.features & SECURETRANS) != 0) &&
-		    ((config.features & NOSSL) == 0))
+		    ((config.features & USESSL) != 0))
 			SSL_shutdown(config.ssl);
 		SSL_free(config.ssl);
 	}
@@ -381,10 +379,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	/* Check first reply from remote host */
 	if ((config.features & SECURETRANS) == 0 ||
 	    (config.features & STARTTLS) != 0) {
-		config.features |= NOSSL;
 		READ_REMOTE_CHECK("connect", 2);
-
-		config.features &= ~NOSSL;
 	}
 
 	if ((config.features & SECURETRANS) != 0) {

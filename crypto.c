@@ -111,9 +111,7 @@ smtp_init_crypto(int fd, int feature)
 	 */
 	if (((feature & SECURETRANS) != 0) &&
 	     (feature & STARTTLS) != 0) {
-		/* TLS init phase, disable SSL_write */
-		config.features |= NOSSL;
-
+		/* TLS init phase */
 		send_remote_command(fd, "EHLO %s", hostname());
 		if (read_remote(fd, 0, NULL) == 2) {
 			send_remote_command(fd, "STARTTLS");
@@ -128,7 +126,7 @@ smtp_init_crypto(int fd, int feature)
 			}
 		}
 		/* End of TLS init phase, enable SSL_write/read */
-		config.features &= ~NOSSL;
+		config.features |= USESSL;
 	}
 
 	config.ssl = SSL_new(ctx);

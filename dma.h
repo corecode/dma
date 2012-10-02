@@ -61,7 +61,7 @@
 
 #define STARTTLS	0x002		/* StartTLS support */
 #define SECURETRANS	0x004		/* SSL/TLS in general */
-#define NOSSL		0x008		/* Do not use SSL */
+#define USESSL		0x008		/* Use SSL for communication */
 #define DEFER		0x010		/* Defer mails */
 #define INSECURE	0x020		/* Allow plain login w/o encryption */
 #define FULLBOUNCE	0x040		/* Bounce the full message */
