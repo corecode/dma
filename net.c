@@ -88,12 +88,12 @@ send_remote_command(int fd, const char* fmt, ...)
 		return (-1);
 	}
 
+	if (config.features & VERBOSE)
+		syslog(LOG_DEBUG, ">>> %s", cmd);
+	
 	/* We *know* there are at least two more bytes available */
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
-
-	if (config.features & VERBOSE)
-		syslog(LOG_DEBUG, ">>> %s", cmd);
 	
 	if ((config.features & USESSL) != 0) {
 		while ((s = SSL_write(config.ssl, (const char*)cmd, len)) <= 0) {
@@ -186,7 +186,7 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 				}
 			      
 				if (copysize > 0) {
-				    memcpy(extbuf + ebufpos, buff, copysize);
+					memcpy(extbuf + ebufpos, buff, copysize);
 				}
 			      
 				/* Add len to ebufpos, so the caller
@@ -350,7 +350,7 @@ esmtp_nextline(char **buff, int skip)
 	
 	if (skip) {
 		/* Allow skipping to the next line */
-		while (!isdigit(*line))
+		while (*line != '\0' && !isdigit(*line))
 			line++;
 	}
 	
@@ -366,7 +366,7 @@ esmtp_nextline(char **buff, int skip)
 	}
 	
 	line++;
-	buff = &line;
+	*buff = line;
 	return 0;
 }
 
@@ -386,15 +386,24 @@ esmtp_nexttoken(char **buff)
 	/* make the line uppercase to honour RFC
 	 * (tokens are parsed regardless their case)
 	 */
-	while (*line != '\n' && *line != ' ') {
+	while (*line != '\0' && *line != '\r' && *line != '\n' && *line != ' ') {
 		*line = toupper(*line);
 		line++;
 	}
 	
 	/* null terminate and update the parser */
-	*line++ = 0;
-	buff = &line;
-	return tok;
+	if (*line == '\r') {
+	    *line++ = 0;
+	}
+	if (*line == '\n') {
+	  *line++ = 0;
+	}
+	if (*line == ' ') {
+	  *line++ = 0;
+	}
+	
+	*buff = line;
+	return (*line != '\0'? tok : NULL);
 }
 
 static int
@@ -403,6 +412,7 @@ esmtp_response(int fd)
 	char buff[ESMTPBUF_SIZE];
 	size_t buffsize = sizeof(buff);
 	char **parse;
+	char *esmtp;
 	char *tok;
 	int done;
 	int res;
@@ -412,13 +422,14 @@ esmtp_response(int fd)
 		return res;
 	}
 	
-	if (buffsize > sizeof(buff) || buff[buffsize - 1] != '\n') {
+	if (buffsize > sizeof(buff)) {
 		/*oversized or invalid buffer*/
 		return -1;
 	}
-
+	
 	/* parse ESMP */
-	parse = &buff;
+	esmtp = buff;
+	parse = &esmtp;
 	done = 0;
 	
 	do {
