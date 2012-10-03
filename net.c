@@ -140,10 +140,13 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 	
 	if (extbufsize) {
 		/*if no extbuf is provided interpret the call as a "peek" to the size*/
-		ebufmax = extbuf? *extbufsize : 0;
+		if (extbuf) {
+			ebufmax = *extbufsize;
+		}
 		/*always leave room for ending null byte*/
-		if (ebufmax)
+		if (ebufmax) {
 			ebufmax--;
+		}
 	}
 	
 	/*
