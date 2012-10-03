@@ -42,6 +42,7 @@
 #include <paths.h>
 #include <signal.h>
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 #include <syslog.h>
 #include <unistd.h>
@@ -62,7 +63,7 @@ create_mbox(const char *name)
 	/*
 	 * We need to enable SIGCHLD temporarily so that waitpid works.
 	 */
-	bzero(&sa, sizeof(sa));
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_DFL;
 	sigaction(SIGCHLD, &sa, &osa);
 
