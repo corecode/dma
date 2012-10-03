@@ -746,7 +746,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	}
 	
 	if (ferror(it->mailf)) {
-		syslog(LOG_NOTICE, "remote delivery deferred: I/O read error");
+		syslog(LOG_NOTICE, "remote delivery deferred: I/O read error, %m");
 		error = 1;
 		goto out;
 	}
