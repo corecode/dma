@@ -240,7 +240,7 @@ go_background(struct queue *queue)
 	}
 	daemonize = 0;
 
-	bzero(&sa, sizeof(sa));
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGCHLD, &sa, NULL);
 
@@ -437,7 +437,7 @@ main(int argc, char **argv)
 	atexit(deltmp);
 	init_random();
 
-	bzero(&queue, sizeof(queue));
+	memset(&queue, 0, sizeof(queue));
 	LIST_INIT(&queue.queue);
 
 	if (strcmp(argv[0], "mailq") == 0) {

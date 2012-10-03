@@ -44,6 +44,7 @@
 #include <fcntl.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include <string.h>
 #include <syslog.h>
 
 #include "dma.h"
@@ -159,7 +160,7 @@ readqueuef(struct queue *queue, char *queuefn)
 	char *queueid = NULL, *sender = NULL, *addr = NULL;
 	struct qitem *it = NULL;
 
-	bzero(&itmqueue, sizeof(itmqueue));
+	memset(&itmqueue, 0, sizeof(itmqueue));
 	LIST_INIT(&itmqueue.queue);
 
 	queuef = fopen(queuefn, "r");
@@ -284,7 +285,7 @@ load_queue(struct queue *queue)
 	char *queuefn;
 	char *mailfn;
 
-	bzero(queue, sizeof(*queue));
+	memset(queue, 0, sizeof(*queue));
 	LIST_INIT(&queue->queue);
 
 	spooldir = opendir(config.spooldir);

@@ -92,7 +92,7 @@ add_host(int pref, const char *host, unsigned int port, struct mx_hostentry **he
 		p->pref = pref;
 		p->ai = *res;
 		p->ai.ai_addr = NULL;
-		bcopy(res->ai_addr, &p->sa, p->ai.ai_addrlen);
+		memcpy(&p->sa, res->ai_addr, p->ai.ai_addrlen);
 
 		getnameinfo((struct sockaddr *)&p->sa, p->ai.ai_addrlen,
 			    p->addr, sizeof(p->addr),

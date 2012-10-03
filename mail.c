@@ -34,6 +34,7 @@
 
 #include <errno.h>
 #include <inttypes.h>
+#include <string.h>
 #include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
@@ -54,7 +55,7 @@ bounce(struct qitem *it, const char *reason)
 		exit(1);
 	}
 
-	bzero(&bounceq, sizeof(bounceq));
+	memset(&bounceq, 0, sizeof(bounceq));
 	LIST_INIT(&bounceq.queue);
 	bounceq.sender = "";
 	if (add_recp(&bounceq, it->sender, EXPAND_WILDCARD) != 0)
@@ -170,7 +171,7 @@ again:
 
 	case START:
 		/* init our data */
-		bzero(ps, sizeof(*ps));
+		memset(ps, 0, sizeof(*ps));
 
 		/* skip over header name */
 		while (*s != ':')
