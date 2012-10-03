@@ -29,7 +29,7 @@
 .\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 .\" SUCH DAMAGE.
 .\"
-.Dd April 22, 2010
+.Dd October 03, 2012
 .Dt DMA 8
 .Os
 .Sh NAME
@@ -212,6 +212,16 @@ Just stick with the default.
 Path to the
 .Sq auth.conf
 file.
+.It Ic VERBOSE Xo
+(boolean, default=commented)
+.Xc
+Uncomment to turn on verbose development debug output, disabled by default
+for security reasons. Use this option with extreme caution, always leave this
+option disabled unless you are aware of what you are doing.
+When in debug mode
+.Nm
+is going to log any network communication, including possibly sensitive
+data and authentication credentials, to the system logger.
 .It Ic SECURETRANS Xo
 (boolean, default=commented)
 .Xc
@@ -222,6 +232,14 @@ Uncomment if you want TLS/SSL secured transfer.
 Uncomment if you want to use STARTTLS.
 Only useful together with
 .Sq SECURETRANS .
+.It Ic NOHELO Xo
+(boolean, default commented)
+.Xc
+Uncomment this option to disable HELO fallback when extended
+SMTP features are not supported by the remote host. By default
+.Nm
+falls back to HELO if possible, unless authentication or
+secure connection are required.
 .It Ic OPPORTUNISTIC_TLS Xo
 (boolean, default=commented)
 .Xc
