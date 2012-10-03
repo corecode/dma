@@ -300,7 +300,7 @@ smtp_login(int fd, char *login, char* password)
 		send_remote_command(fd, "AUTH LOGIN");
 		if (read_remote(fd, NULL, NULL) != 334) {
 			syslog(LOG_NOTICE, "remote delivery deferred:"
-					" AUTH login not available: %s",
+					" AUTH LOGIN was refused: %s",
 					neterr);
 			return (1);
 		}
@@ -597,6 +597,17 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		snprintf(errmsg, sizeof(errmsg), "can not seek: %s", strerror(errno));
 		return (-1);
 	}
+	
+	/*
+	 * Use SMTP authentication if the user defined an entry for the remote
+	 * or smarthost
+	 */
+	SLIST_FOREACH(a, &authusers, next) {
+		if (strcmp(a->host, host->host) == 0) {
+			do_auth = 1;
+			break;
+		}
+	}
 
 	fd = open_connection(host, 1);
 	if (fd == -2) {
@@ -605,6 +616,13 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 			/* HELO disabled in config file */
 			syslog(LOG_NOTICE, "remote delivery deferred:"
 			      " EHLO unsupported by remote host and HELO fallback is disabled");
+			return (1);
+		}
+		
+		if (do_auth) {
+			/* cannot fallback to HELO, authentication is required */
+			syslog(LOG_NOTICE, "remote delivery deferred:"
+			       " EHLO unsupported by remote host and authentication is required");
 			return (1);
 		}
 		
@@ -656,28 +674,19 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		
 		/* refresh supported ESMTP features if STARTTLS was used*/
 		if ((config.features & STARTTLS) != 0) {
-		      send_remote_command(fd, "EHLO %s", hostname());
-		      res = esmtp_response(fd);
-		      if (res != 250) {
-			    /* shouldn't happen */
-			    syslog(LOG_NOTICE, "remote delivery deferred: EHLO after STARTTLS failed: %s", neterr);
-			    error = 1;
-			    goto out;
-		      }
-		}
-	}
-	/*
-	 * Use SMTP authentication if the user defined an entry for the remote
-	 * or smarthost
-	 */
-	SLIST_FOREACH(a, &authusers, next) {
-		if (strcmp(a->host, host->host) == 0) {
-			do_auth = 1;
-			break;
+			config.features &= ~ESMTPMASK;
+			send_remote_command(fd, "EHLO %s", hostname());
+			res = esmtp_response(fd);
+			if (res != 250) {
+				/* shouldn't happen */
+				syslog(LOG_NOTICE, "remote delivery deferred: EHLO after STARTTLS failed: %s", neterr);
+				error = 1;
+				goto out;
+			}
 		}
 	}
 
-	if (do_auth == 1) {
+	if (do_auth) {
 		/*
 		 * Check if the user wants plain text login without using
 		 * encryption.

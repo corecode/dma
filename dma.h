@@ -63,18 +63,19 @@
 #define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
 
 #define VERBOSE         0x0001          /* Enable debug logging output to LOG_DEBUG */
-#define STARTTLS	0x0002		/* StartTLS support required by the user*/
-#define NOHELO		0x0004		/* Don't fallback to HELO if EHLO isn't supported*/
-#define SECURETRANS	0x0008		/* SSL/TLS in general */
-#define USESSL		0x0010		/* Use SSL for communication */
-#define DEFER		0x0020		/* Defer mails */
-#define INSECURE	0x0040		/* Allow plain login w/o encryption */
-#define FULLBOUNCE	0x0080		/* Bounce the full message */
-#define TLS_OPP		0x0100		/* Opportunistic STARTTLS */
+#define STARTTLS        0x0002		/* StartTLS support required by the user*/
+#define NOHELO          0x0004		/* Don't fallback to HELO if EHLO isn't supported*/
+#define SECURETRANS     0x0008		/* SSL/TLS in general */
+#define USESSL          0x0010		/* Use SSL for communication */
+#define DEFER           0x0020		/* Defer mails */
+#define INSECURE        0x0040		/* Allow plain login w/o encryption */
+#define FULLBOUNCE      0x0080		/* Bounce the full message */
+#define TLS_OPP         0x0100		/* Opportunistic STARTTLS */
 #define HASSTARTTLS     0x0100          /* STARTTLS advertised by the remote host */
 #define AUTHPLAIN       0x0200          /* PLAIN authentication method support */
 #define AUTHLOGIN       0x0400          /* LOGIN authentication method support */
 #define AUTHCRAMMD5     0x0800          /* CRAM MD5 authentication method support */
+#define ESMTPMASK       (HASSTARTTLS | AUTHPLAIN | AUTHLOGIN | AUTHCRAMMD5)
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH
