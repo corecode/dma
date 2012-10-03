@@ -130,7 +130,7 @@ struct queue {
 
 struct config {
 	const char *smarthost;
-	int port;
+	unsigned int port; /* should be unsigned for maximum compatibility (16 bit ints) */
 	const char *aliases;
 	const char *spooldir;
 	const char *authpath;
@@ -190,7 +190,7 @@ int smtp_auth_md5(int, char *, char *);
 int smtp_init_crypto(int, int);
 
 /* dns.c */
-int dns_get_mx_list(const char *, int, struct mx_hostentry **, int);
+int dns_get_mx_list(const char *, unsigned int, struct mx_hostentry **, int);
 
 /* net.c */
 char *ssl_errstr(void);

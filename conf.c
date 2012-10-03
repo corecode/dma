@@ -170,7 +170,7 @@ parse_conf(const char *config_path)
 		/* NOTREACHED */
 	}
 
-	while (fgets(line, sizeof(line), conf))
+	while (fgets(line, sizeof(line), conf)) {
 		lineno++;
 
 		chomp(line);
@@ -202,7 +202,7 @@ parse_conf(const char *config_path)
 				/* NOTREACHED */
 			}
 			
-			config.port = (int)port;
+			config.port = (unsigned int)port;
 		} else if (strcmp(word, "ALIASES") == 0 && data != NULL)
 			config.aliases = data;
 		else if (strcmp(word, "SPOOLDIR") == 0 && data != NULL)
@@ -261,8 +261,8 @@ parse_conf(const char *config_path)
 	
 	/* ensure a meaningful configuration */
 	if ((config.features & STARTTLS) != 0) {
-		if ((config.features & SECURTRANS) == 0) {
-			syslog(LOG_WARN, "STARTTLS enabled in `%s', implicitly assuming SECURETRANSFER is enabled");
+		if ((config.features & SECURETRANS) == 0) {
+			syslog(LOG_WARNING, "STARTTLS enabled in `%s', implicitly assuming SECURETRANSFER is enabled", config_path);
 			config.features |= SECURETRANS;
 		}
 	}

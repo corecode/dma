@@ -576,9 +576,9 @@ static void
 close_connection(int fd)
 {
 	if (config.ssl != NULL) {
-		if (((config.features & SECURETRANS) != 0) &&
-		    ((config.features & USESSL) != 0))
+		if ((config.features & USESSL) != 0)
 			SSL_shutdown(config.ssl);
+		
 		SSL_free(config.ssl);
 	}
 
