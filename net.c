@@ -467,11 +467,8 @@ esmtp_nexttoken(char **buff)
 	}
 	
 	/* null terminate and update the parser */
-	if (*line == '\r') {
+	if (*line == '\r' || *line == ' ') {
 	    *line++ = 0;
-	}
-	if (*line == ' ') {
-	  *line++ = 0;
 	}
 	
 	*buff = line;

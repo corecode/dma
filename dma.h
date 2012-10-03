@@ -49,7 +49,6 @@
 
 #define BUF_SIZE	2048
 #define ESMTPBUF_SIZE   8192
-#define ESMTPTOK_SIZE   1024
 #define ERRMSG_SIZE	200
 #define USERNAME_SIZE	50
 #define MIN_RETRY	300		/* 5 minutes */
