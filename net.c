@@ -352,16 +352,25 @@ smtp_login(struct connection *c, char *login, char* password)
 		 * if no authority is provided the SMTP server will derive it from authentication.
 		 */
 		char *buff;
-		 
+		
+		send_remote_command(c, "AUTH PLAIN");
+		if (read_remote(c, NULL, NULL) != 334) {
+			syslog(LOG_NOTICE, "remote delivery deferred:"
+					" AUTH PLAIN was refused: %s",
+					neterr);
+			return (1);
+		}
+		
 		len = strlen(login) + strlen(password) + 2;
-		buff = calloc(len, 1);
+		buff = calloc(len + 1, 1);
 		if (!buff) {
 			syslog(LOG_NOTICE, "remote delivery deferred: memory allocation failure");
 			return (1);
 		}
 		
-		strcpy(buff, login);
-		strcpy(buff + strlen(login) + 1, password);
+		/* we want this: '\0'username'\0'password*/
+		strcpy(buff + 1, login);
+		strcpy(buff + 1 + strlen(login) + 1, password);
 		
 		len = base64_encode(buff, len, &temp);
 		free(buff);
