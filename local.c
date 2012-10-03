@@ -75,7 +75,7 @@ create_mbox(const char *name)
 		/* child */
 		maxfd = sysconf(_SC_OPEN_MAX);
 		if (maxfd == -1)
-			maxfd = 1024;	/* what can we do... */
+			maxfd = FOPEN_MAX;	/* what can we do... */
 
 		for (i = 3; i <= maxfd; ++i)
 			close(i);
