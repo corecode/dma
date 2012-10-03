@@ -204,9 +204,7 @@ retry:
 	if (write(mbox, line, error) != error)
 		goto wrerror;
 
-	while (!feof(it->mailf)) {
-		if (fgets(line, sizeof(line), it->mailf) == NULL)
-			break;
+	while (fgets(line, sizeof(line), it->mailf)) {
 		linelen = strlen(line);
 		if (linelen == 0 || line[linelen - 1] != '\n') {
 			syslog(LOG_CRIT, "local delivery failed: corrupted queue file");
@@ -239,6 +237,13 @@ retry:
 		if ((size_t)write(mbox, line, linelen) != linelen)
 			goto wrerror;
 	}
+	
+	if (ferror(it->mailf)) {
+		syslog(LOG_ERR, "local delivery failed: I/O error while reading: %m");
+		error = 1;
+		goto chop;
+	}
+	
 	close(mbox);
 	return (0);
 
