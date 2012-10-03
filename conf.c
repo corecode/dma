@@ -253,7 +253,7 @@ parse_conf(const char *config_path)
 			config.features |= NOHELO;
 		else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 && data == NULL)
 			config.features |= TLS_OPP;
-		else if (strcmp(word, "SECURETRANS") == 0 && data == NULL)
+		else if (strcmp(word, "SECURETRANSFER") == 0 && data == NULL)
 			config.features |= SECURETRANS;
 		else if (strcmp(word, "DEFER") == 0 && data == NULL)
 			config.features |= DEFER;
