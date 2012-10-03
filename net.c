@@ -741,7 +741,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		error = smtp_login(fd, a->login, a->password);
 		if (error) {
 			syslog(LOG_ERR, "remote delivery failed:"
-					" SMTP login failed: %m");
+					" SMTP login failed");
 			snprintf(errmsg, sizeof(errmsg), "SMTP login to %s failed", host->host);
 			goto out;
 		}
