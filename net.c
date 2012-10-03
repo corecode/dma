@@ -693,15 +693,11 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		 */
 		syslog(LOG_INFO, "using SMTP authentication for user %s", a->login);
 		error = smtp_login(fd, a->login, a->password);
-		if (error < 0) {
+		if (error) {
 			syslog(LOG_ERR, "remote delivery failed:"
 					" SMTP login failed: %m");
 			snprintf(errmsg, sizeof(errmsg), "SMTP login to %s failed", host->host);
 			goto out;
-		}
-		/* SMTP login is not available, so try without */
-		else if (error > 0) {
-			syslog(LOG_WARNING, "SMTP login not available. Trying without.");
 		}
 	}
 
