@@ -127,18 +127,23 @@ int
 read_remote(int fd, size_t *extbufsize, char *extbuf)
 {
 	ssize_t pos = 0, len = 0, copysize = 0;
-	size_t ebufpos = 0, ebuflen = 0;
+	size_t ebufpos = 0, ebufmax = 0;
 	char buff[BUF_SIZE];
 	int statnum = 0, currstatnum = 0, done = 0;
 	enum { PARSE_STATNUM, PARSE_DASH, PARSE_REST } parse = PARSE_STATNUM;
 	
 	if (do_timeout(CON_TIMEOUT, 1) != 0) {
-		snprintf(neterr, sizeof(neterr), "Timeout reached");
-		return (-1);
+		strncpy(neterr, "timeout reached", sizeof(neterr));
+		statnum = -1;
+		goto timeout;
 	}
 	
-	if (extbuf && extbufsize) {
-		ebuflen = *extbufsize;
+	if (extbufsize) {
+		/*if no extbuf is provided interpret the call as a "peek" to the size*/
+		ebufmax = extbuf? *extbufsize : 0;
+		/*always leave room for ending null byte*/
+		if (ebufmax)
+			ebufmax--;
 	}
 	
 	/*
@@ -166,6 +171,7 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 			      
 			if (len == 0) {
 				strncpy(neterr, "unexpected connection end", sizeof(neterr));
+				statnum = -1;
 				goto error;
 			}
 			
@@ -177,23 +183,24 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 			strncat(neterr, buff, copysize);
 			
 			/* If an external buffer is available, copy data over there */
-			if (ebuflen > 0) {
+			if (ebufmax > 0) {
 				/* Do not write over the buffer bounds */
 				copysize = len;
 			      
-				if (ebufpos + copysize > ebuflen) {
-					copysize = ebuflen - ebufpos;
+				if (ebufpos + copysize > ebufmax) {
+					copysize = ebufmax - ebufpos;
 				}
 			      
 				if (copysize > 0) {
 					memcpy(extbuf + ebufpos, buff, copysize);
+					extbuf[ebufpos + copysize] = 0;
 				}
-			      
-				/* Add len to ebufpos, so the caller
-				 * can know if the provided buffer was too small.
-				 */
-				ebufpos += len;
 			}
+			
+			/* Add len to ebufpos, so the caller
+			 * can know if the provided buffer was too small.
+			 */
+			ebufpos += len;
 		}
 		
 		/* since rlen can't be zero, we're sure that there is at least one character*/
@@ -201,6 +208,7 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 		default:
 			/* shouldn't happen */
 			syslog(LOG_CRIT, "reached dead code");
+			statnum = -1;
 			goto error;
 		case PARSE_STATNUM:
 			/* parse status number*/
@@ -208,6 +216,13 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 				if (isdigit(buff[pos])) {
 					currstatnum = currstatnum * 10 + (buff[pos] - '0');
 				} else {
+					/* verify and store status */
+					if (currstatnum < 100 || currstatnum > 999) {
+						strncpy(neterr, "error reading status, out of range value", sizeof(neterr));
+						statnum = -1;
+						goto error;
+					}
+					
 					statnum = currstatnum;
 					currstatnum = 0;
 					parse = PARSE_DASH;
@@ -225,6 +240,7 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 				  /* XXX read capabilities */
 			} else {
 				strncpy(neterr, "invalid syntax in reply from server", sizeof(neterr));
+				statnum = -1;
 				goto error;
 			}
 			
@@ -237,7 +253,6 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 				if (buff[pos] == '\n') {
 					/* Skip the newline and expect a status number */
 					pos++;
-					statnum = 0;
 					parse = PARSE_STATNUM;
 					break;
 				}
@@ -247,32 +262,25 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 		}
 		
 	} while (!done);
-
-	if (statnum < 100 || statnum > 999) {
-		strncpy(neterr, "error reading status, out of range value", sizeof(neterr));
-		goto error;
-	}
 	
+	if (config.features & VERBOSE)
+		syslog(LOG_DEBUG, "<<< %d", statnum);
+
+error:
+	/* Disable timeout */
+	do_timeout(0, 0);
+
+timeout:
 	/* Ensure neterr null-termination*/
 	neterr[sizeof(neterr) - 1] = 0;
 	/* Chop off trailing newlines */
 	while (neterr[0] != 0 && strchr("\r\n", neterr[strlen(neterr) - 1]) != 0)
 		neterr[strlen(neterr) - 1] = 0;
 
-	do_timeout(0, 0);
-
 	if (extbufsize)
 		*extbufsize = ebufpos;
 	
-	if (config.features & VERBOSE)
-		syslog(LOG_DEBUG, "<<< %d", statnum);
-	
-	/* XXX: Verbose mode that logs on LOG_DEBUG returned status */
 	return (statnum);
-
-error:
-	do_timeout(0, 0);
-	return (-1);
 }
 
 /*
