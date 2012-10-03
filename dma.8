@@ -222,7 +222,7 @@ When in debug mode
 .Nm
 is going to log any network communication, including possibly sensitive
 data and authentication credentials, to the system logger.
-.It Ic SECURETRANS Xo
+.It Ic SECURETRANSFER Xo
 (boolean, default=commented)
 .Xc
 Uncomment if you want TLS/SSL secured transfer.
@@ -231,7 +231,7 @@ Uncomment if you want TLS/SSL secured transfer.
 .Xc
 Uncomment if you want to use STARTTLS.
 Only useful together with
-.Sq SECURETRANS .
+.Sq SECURETRANSFER .
 .It Ic NOHELO Xo
 (boolean, default=commented)
 .Xc
@@ -251,7 +251,7 @@ the outside mail exchangers; in opportunistic TLS mode, the connection will
 be encrypted if the remote server supports STARTTLS, but an unencrypted
 delivery will still be made if the negotiation fails.
 Only useful together with
-.Sq SECURETRANS
+.Sq SECURETRANSFR
 and
 .Sq STARTTLS .
 .It Ic CERTFILE Xo
