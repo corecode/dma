@@ -307,7 +307,6 @@ smtp_login(int fd, char *login, char* password)
 
 		len = base64_encode(login, strlen(login), &temp);
 		if (len < 0) {
-encerr:
 			syslog(LOG_ERR, "can not encode auth reply: %m");
 			return (1);
 		}
@@ -322,21 +321,57 @@ encerr:
 		}
 
 		len = base64_encode(password, strlen(password), &temp);
-		if (len < 0)
-			goto encerr;
+		if (len < 0) {
+			syslog(LOG_ERR, "can not encode auth reply: %m");
+			return (1); 
+		}
 
 		send_remote_command(fd, "%s", temp);
 		free(temp);
 		res = read_remote(fd, NULL, NULL);
 		if (res != 235) {
-			syslog(LOG_NOTICE, "remote delivery %s: Authentication failed: %s",
+			syslog(LOG_NOTICE, "remote delivery %s: authentication failed: %s",
 					res == 503 ? "failed" : "deferred", neterr);
 			return (res == 503 ? -1 : 1);
 		}
 		
 		return (0);
+	} else if ((config.features & AUTHPLAIN) != 0) {
+		/* PLAIN login (single string with authority, authetication and password,
+		 * if no authority is provided the SMTP server will derive it from authentication.
+		 */
+		char *buff;
+		 
+		len = strlen(login) + strlen(password) + 2;
+		buff = calloc(len, 1);
+		if (!buff) {
+			syslog(LOG_NOTICE, "remote delivery deferred: memory allocation failure");
+			return (1);
+		}
+		
+		strcpy(buff, login);
+		strcpy(buff + strlen(login) + 1, password);
+		
+		len = base64_encode(buff, len, &temp);
+		free(buff);
+		
+		if (len < 0) {
+			syslog(LOG_ERR, "can not encode auth reply: %m");
+			return (1);
+		}
+		
+		send_remote_command(fd, "%s", temp);
+		free(temp);
+		res = read_remote(fd, NULL, NULL);
+		if (res != 235) {
+			syslog(LOG_NOTICE, "remote delivery deferred: authentication failed: %s",
+			       neterr);
+			return (1);
+		}
+		
+		return (0);
 	} else {
-		/*XXX: Support PLAIN login as a fallback*/
+		/* No supported authentication method */
 		syslog(LOG_ERR, "no supported authentication method for remote host");
 		return (1);
 	}
