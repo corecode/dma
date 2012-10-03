@@ -290,7 +290,7 @@ smtp_login(int fd, char *login, char* password)
 	}
 	
 	/* Try non-encrypted logins */
-	if ((config.features & SECURETRANS) == 0 && (config.features & INSECURE) == 0) {
+	if ((config.features & USESSL) == 0 && (config.features & INSECURE) == 0) {
 		syslog(LOG_WARNING, "non-encrypted SMTP login is disabled in config, so skipping it");
 		return (1);
 	}
