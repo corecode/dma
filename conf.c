@@ -97,6 +97,7 @@ parse_authfile(const char *path)
 	struct authuser *au;
 	FILE *a;
 	char *data;
+	int error;
 	int lineno = 0;
 
 	a = fopen(path, "r");
@@ -105,9 +106,7 @@ parse_authfile(const char *path)
 		/* NOTREACHED */
 	}
 
-	while (!feof(a)) {
-		if (fgets(line, sizeof(line), a) == NULL)
-			break;
+	while (fgets(line, sizeof(line), a)) {
 		lineno++;
 
 		chomp(line);
@@ -138,8 +137,14 @@ parse_authfile(const char *path)
 
 		SLIST_INSERT_HEAD(&authusers, au, next);
 	}
-
+	
+	error = ferror(a);
 	fclose(a);
+	
+	if (error) {
+		errlog(1, "I/O error while reading file `%s'", path);
+		/* NOTREACHED */
+	}
 }
 
 /*
@@ -153,6 +158,7 @@ parse_conf(const char *config_path)
 	char *data;
 	FILE *conf;
 	char line[2048];
+	int error;
 	int lineno = 0;
 
 	conf = fopen(config_path, "r");
@@ -164,9 +170,7 @@ parse_conf(const char *config_path)
 		/* NOTREACHED */
 	}
 
-	while (!feof(conf)) {
-		if (fgets(line, sizeof(line), conf) == NULL)
-			break;
+	while (fgets(line, sizeof(line), conf))
 		lineno++;
 
 		chomp(line);
@@ -189,9 +193,17 @@ parse_conf(const char *config_path)
 		
 		if (strcmp(word, "SMARTHOST") == 0 && data != NULL)
 			config.smarthost = data;
-		else if (strcmp(word, "PORT") == 0 && data != NULL)
-			config.port = atoi(data);
-		else if (strcmp(word, "ALIASES") == 0 && data != NULL)
+		else if (strcmp(word, "PORT") == 0 && data != NULL) {
+			char*check;
+			long port = strtol(data, &check, 10);
+			
+			if (*check != '\0' || port < 0 || port > 0xffff) {
+				errlogx(1, "invalid value for PORT in %s:%d", config_path, lineno);
+				/* NOTREACHED */
+			}
+			
+			config.port = (int)port;
+		} else if (strcmp(word, "ALIASES") == 0 && data != NULL)
 			config.aliases = data;
 		else if (strcmp(word, "SPOOLDIR") == 0 && data != NULL)
 			config.spooldir = data;
@@ -239,5 +251,19 @@ parse_conf(const char *config_path)
 		}
 	}
 
+	error = ferror(conf);
 	fclose(conf);
+	
+	if (error) {
+		errlog(1, "I/O error while reading file `%s'", config_path);
+		/* NOTREACHED */
+	}
+	
+	/* ensure a meaningful configuration */
+	if ((config.features & STARTTLS) != 0) {
+		if ((config.features & SECURTRANS) == 0) {
+			syslog(LOG_WARN, "STARTTLS enabled in `%s', implicitly assuming SECURETRANSFER is enabled");
+			config.features |= SECURETRANS;
+		}
+	}
 }

@@ -740,7 +740,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		}
 	}
 	
-	if (!feof(it->mailf) || ferror(it->mailf)) {
+	if (ferror(it->mailf)) {
 		syslog(LOG_NOTICE, "remote delivery deferred: I/O read error");
 		error = 1;
 		goto out;
@@ -757,7 +757,6 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 out:
 
 	close_connection(fd);
-	
 	return (error);
 }
 
@@ -766,7 +765,7 @@ deliver_remote(struct qitem *it)
 {
 	struct mx_hostentry *hosts, *h;
 	const char *host;
-	int port;
+	unsigned int port;
 	int error = 1, smarthost = 0;
 
 	host = strrchr(it->addr, '@');
