@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <syslog.h>
 #include <stdarg.h>
 
@@ -74,12 +75,34 @@ trim_line(char *line)
 static void
 chomp(char *str)
 {
+	char *p;
+	size_t i;
 	size_t len = strlen(str);
 
+	/* remove trailing spaces */
+	for (i = 0; i < len; i++) {
+		if (!isspace(str[i]))
+		    break;
+	}
+	
+	memmove(str, str + i, len + 1 - i);
+	len -= i;
 	if (len == 0)
 		return;
-	if (str[len - 1] == '\n')
-		str[len - 1] = 0;
+	
+	/* remove ending spaces (also handles ending '\n', if any) */
+	while (len-- > 0) {
+		if (!isspace(str[len]))
+			break;
+	}
+	
+	str[len + 1] = 0;
+	
+	/* remove comments */
+	p = strchr(str, '#');
+	if (p) {
+		*p = 0;
+	}
 }
 
 /*
@@ -88,7 +111,7 @@ chomp(char *str)
  * file format is:
  * user|host:password
  *
- * A line starting with # is treated as comment and ignored.
+ * Anything following a # is treated as comment and ignored.
  */
 void
 parse_authfile(const char *path)
@@ -111,9 +134,6 @@ parse_authfile(const char *path)
 
 		chomp(line);
 
-		/* We hit a comment */
-		if (*line == '#')
-			continue;
 		/* Ignore empty lines */
 		if (*line == 0)
 			continue;
@@ -174,10 +194,6 @@ parse_conf(const char *config_path)
 		lineno++;
 
 		chomp(line);
-
-		/* We hit a comment */
-		if (strchr(line, '#'))
-			*strchr(line, '#') = 0;
 
 		data = line;
 		word = strsep(&data, EQS);
