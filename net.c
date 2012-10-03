@@ -555,20 +555,18 @@ open_connection(struct connection*c, struct mx_hostentry *h, int ehlo)
 {
 	int res;
 
-	syslog(LOG_INFO, "trying remote delivery to %s [%s] pref %d using %s",
+	syslog(LOG_INFO, "connecting to remote host %s [%s] pref %d using %s",
 	       h->host, h->addr, h->pref, ehlo? "EHLO" : "HELO");
 	
 	memset(c, 0, sizeof(*c));
 	c->fd = socket(h->ai.ai_family, h->ai.ai_socktype, h->ai.ai_protocol);
 	if (c->fd < 0) {
-		syslog(LOG_INFO, "socket for %s [%s] failed: %m",
-		       h->host, h->addr);
+		syslog(LOG_INFO, "socket creation failed: %m");
 		return (1);
 	}
 
 	if (connect(c->fd, (struct sockaddr *)&h->sa, h->ai.ai_addrlen) < 0) {
-		syslog(LOG_INFO, "connect to %s [%s] failed: %m",
-		       h->host, h->addr);
+		syslog(LOG_INFO, "connection failed: %m");
 		close(c->fd);
 		return (1);
 	}
@@ -593,7 +591,6 @@ open_connection(struct connection*c, struct mx_hostentry *h, int ehlo)
 		return (1);
 	}
 	
-	syslog(LOG_DEBUG, "connection accepted");
 	if (ehlo) {
 		/* Try EHLO */
 		send_remote_command(c, "EHLO %s", hostname());
@@ -614,6 +611,7 @@ open_connection(struct connection*c, struct mx_hostentry *h, int ehlo)
 		return -1;
 	}
 	
+	syslog(LOG_DEBUG, "connection accepted");
 	return 0;
 }
 
