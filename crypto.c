@@ -77,7 +77,7 @@ init_cert_file(SSL_CTX *ctx, const char *path)
 }
 
 int
-smtp_init_crypto(int fd, int feature)
+smtp_init_crypto(struct connection *c)
 {
 	SSL_CTX *ctx = NULL;
 	const SSL_METHOD *meth = NULL;
@@ -109,29 +109,44 @@ smtp_init_crypto(int fd, int feature)
 	/*
 	 * If STARTTLS is required, issue it here
 	 */
-	if ((feature & STARTTLS) != 0) {
+	if ((config.features & STARTTLS) != 0) {
 		/* TLS init phase */
-		send_remote_command(fd, "STARTTLS");
-		if (read_remote(fd, NULL, NULL) != 220) {
-			syslog(LOG_ERR, "remote delivery deferred: STARTTLS failed: %s", neterr);
-			return (1);
+		if ((c->flags & HASSTARTTLS) != 0) {
+			send_remote_command(c, "STARTTLS");
+			if (read_remote(c, NULL, NULL) != 220) {
+				/* even in opportunistic TLS, if server marked it as available, an error
+				* is unexpected
+				*/
+				syslog(LOG_ERR, "remote delivery deferred: STARTTLS failed: %s", neterr);
+				return (1);
+			}
+			
+			/* End of TLS init phase */	
+			c->flags |= USESTARTTLS;
+		} else {
+			if ((config.features & TLS_OPP) == 0) {
+				/* remote has no STARTTLS but user required it */
+				syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available");
+				return (1);
+			}
+			
+			/* disable STARTTLS, opportunistic mode */
+			syslog(LOG_INFO, "in opportunistic TLS mode, STARTTLS not available");
 		}
-		
-		/* End of TLS init phase */
 	}
 
-	config.ssl = SSL_new(ctx);
-	if (config.ssl == NULL) {
+	c->ssl = SSL_new(ctx);
+	if (c->ssl == NULL) {
 		syslog(LOG_NOTICE, "remote delivery deferred: SSL struct creation failed: %s",
 		       ssl_errstr());
 		return (1);
 	}
 
 	/* Set ssl to work in client mode */
-	SSL_set_connect_state(config.ssl);
+	SSL_set_connect_state(c->ssl);
 
 	/* Set fd for SSL in/output */
-	error = SSL_set_fd(config.ssl, fd);
+	error = SSL_set_fd(c->ssl, c->fd);
 	if (error == 0) {
 		syslog(LOG_NOTICE, "remote delivery deferred: SSL set fd failed: %s",
 		       ssl_errstr());
@@ -139,7 +154,7 @@ smtp_init_crypto(int fd, int feature)
 	}
 
 	/* Open SSL connection */
-	error = SSL_connect(config.ssl);
+	error = SSL_connect(c->ssl);
 	if (error < 0) {
 		syslog(LOG_ERR, "remote delivery deferred: SSL handshake failed fatally: %s",
 		       ssl_errstr());
@@ -147,7 +162,7 @@ smtp_init_crypto(int fd, int feature)
 	}
 
 	/* Get peer certificate */
-	cert = SSL_get_peer_certificate(config.ssl);
+	cert = SSL_get_peer_certificate(c->ssl);
 	if (cert == NULL) {
 		syslog(LOG_WARNING, "remote delivery deferred: Peer did not provide certificate: %s",
 		       ssl_errstr());
@@ -155,7 +170,7 @@ smtp_init_crypto(int fd, int feature)
 	X509_free(cert);
 	
 	/* At this point we can safely use SSL write/read*/
-	config.features |= USESSL;
+	c->flags |= USESSL;
 	return (0);
 }
 
@@ -241,7 +256,7 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
  * CRAM-MD5 authentication
  */
 int
-smtp_auth_md5(int fd, char *login, char *password)
+smtp_auth_md5(struct connection *c, char *login, char *password)
 {
 	unsigned char digest[BUF_SIZE];
 	char buffer[BUF_SIZE], ascii_digest[33];
@@ -255,8 +270,8 @@ smtp_auth_md5(int fd, char *login, char *password)
 	memset(ascii_digest, 0, sizeof(ascii_digest));
 
 	/* Send AUTH command according to RFC 2554 */
-	send_remote_command(fd, "AUTH CRAM-MD5");
-	if (read_remote(fd, &buffsize, buffer) != 334) {
+	send_remote_command(c, "AUTH CRAM-MD5");
+	if (read_remote(c, &buffsize, buffer) != 334) {
 		/* if cram-md5 is not available */
 		syslog(LOG_DEBUG, "smarthost authentication:"
 		       " AUTH CRAM-MD5 failed: %s", neterr);
@@ -300,9 +315,9 @@ smtp_auth_md5(int fd, char *login, char *password)
 	}
 
 	/* send answer */
-	send_remote_command(fd, "%s", temp);
+	send_remote_command(c, "%s", temp);
 	free(temp);
-	if (read_remote(fd, NULL, NULL) != 220) {
+	if (read_remote(c, NULL, NULL) != 220) {
 		syslog(LOG_WARNING, "remote delivery deferred:"
 				" AUTH CRAM-MD5 failed: %s", neterr);
 		return (1);

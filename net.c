@@ -72,7 +72,7 @@ ssl_errstr(void)
 }
 
 ssize_t
-send_remote_command(int fd, const char* fmt, ...)
+send_remote_command(struct connection *c, const char* fmt, ...)
 {
 	va_list va;
 	char cmd[4096];
@@ -95,9 +95,9 @@ send_remote_command(int fd, const char* fmt, ...)
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
 	
-	if ((config.features & USESSL) != 0) {
-		while ((s = SSL_write(config.ssl, (const char*)cmd, len)) <= 0) {
-			s = SSL_get_error(config.ssl, s);
+	if ((c->flags & USESSL) != 0) {
+		while ((s = SSL_write(c->ssl, (const char*)cmd, len)) <= 0) {
+			s = SSL_get_error(c->ssl, s);
 			if (s != SSL_ERROR_WANT_READ &&
 			    s != SSL_ERROR_WANT_WRITE) {
 				strncpy(neterr, ssl_errstr(), sizeof(neterr));
@@ -108,7 +108,7 @@ send_remote_command(int fd, const char* fmt, ...)
 	else {
 		pos = 0;
 		while (pos < len) {
-			n = write(fd, cmd + pos, len - pos);
+			n = write(c->fd, cmd + pos, len - pos);
 			if (n < 0) {
 				if (errno == EINTR)
 					continue;
@@ -124,7 +124,7 @@ send_remote_command(int fd, const char* fmt, ...)
 }
 
 int
-read_remote(int fd, size_t *extbufsize, char *extbuf)
+read_remote(struct connection *c, size_t *extbufsize, char *extbuf)
 {
 	ssize_t pos = 0, len = 0, copysize = 0;
 	size_t ebufpos = 0, ebufmax = 0;
@@ -160,13 +160,13 @@ read_remote(int fd, size_t *extbufsize, char *extbuf)
 			pos = 0;
 		      
 			/* Read the next bytes */
-			if ((config.features & USESSL) != 0) {
-				if ((len = SSL_read(config.ssl, buff, sizeof(buff))) == -1) {
+			if ((c->flags & USESSL) != 0) {
+				if ((len = SSL_read(c->ssl, buff, sizeof(buff))) == -1) {
 				      strncpy(neterr, ssl_errstr(), sizeof(neterr));
 				      goto error;
 				}
 			} else {
-				if ((len = read(fd, buff, sizeof(buff))) == -1) {
+				if ((len = read(c->fd, buff, sizeof(buff))) == -1) {
 					strncpy(neterr, strerror(errno), sizeof(neterr));
 					goto error;
 				}
@@ -290,26 +290,26 @@ timeout:
  * Handle SMTP authentication
  */
 static int
-smtp_login(int fd, char *login, char* password)
+smtp_login(struct connection *c, char *login, char* password)
 {
 	char *temp;
 	int len, res = 0;
 
-	if ((config.features & AUTHCRAMMD5) != 0) {
+	if ((c->flags & AUTHCRAMMD5) != 0) {
 		/* Use CRAM-MD5 authentication if available*/
-		return smtp_auth_md5(fd, login, password);
+		return smtp_auth_md5(c, login, password);
 	}
 	
 	/* Try non-encrypted logins */
-	if ((config.features & USESSL) == 0 && (config.features & INSECURE) == 0) {
+	if ((c->flags & USESSL) == 0 && (config.features & INSECURE) == 0) {
 		syslog(LOG_WARNING, "non-encrypted SMTP login is disabled in config, so skipping it");
 		return (1);
 	}
 	
-	if ((config.features & AUTHLOGIN) != 0) {
+	if ((c->flags & AUTHLOGIN) != 0) {
 		/* Send AUTH command according to RFC 2554 */
-		send_remote_command(fd, "AUTH LOGIN");
-		if (read_remote(fd, NULL, NULL) != 334) {
+		send_remote_command(c, "AUTH LOGIN");
+		if (read_remote(c, NULL, NULL) != 334) {
 			syslog(LOG_NOTICE, "remote delivery deferred:"
 					" AUTH LOGIN was refused: %s",
 					neterr);
@@ -322,9 +322,9 @@ smtp_login(int fd, char *login, char* password)
 			return (1);
 		}
 
-		send_remote_command(fd, "%s", temp);
+		send_remote_command(c, "%s", temp);
 		free(temp);
-		res = read_remote(fd, NULL, NULL);
+		res = read_remote(c, NULL, NULL);
 		if (res != 334) {
 			syslog(LOG_NOTICE, "remote delivery %s: AUTH LOGIN failed: %s",
 			      res == 503 ? "failed" : "deferred", neterr);
@@ -337,9 +337,9 @@ smtp_login(int fd, char *login, char* password)
 			return (1); 
 		}
 
-		send_remote_command(fd, "%s", temp);
+		send_remote_command(c, "%s", temp);
 		free(temp);
-		res = read_remote(fd, NULL, NULL);
+		res = read_remote(c, NULL, NULL);
 		if (res != 235) {
 			syslog(LOG_NOTICE, "remote delivery %s: authentication failed: %s",
 					res == 503 ? "failed" : "deferred", neterr);
@@ -347,7 +347,7 @@ smtp_login(int fd, char *login, char* password)
 		}
 		
 		return (0);
-	} else if ((config.features & AUTHPLAIN) != 0) {
+	} else if ((c->flags & AUTHPLAIN) != 0) {
 		/* PLAIN login (single string with authority, authetication and password,
 		 * if no authority is provided the SMTP server will derive it from authentication.
 		 */
@@ -371,9 +371,9 @@ smtp_login(int fd, char *login, char* password)
 			return (1);
 		}
 		
-		send_remote_command(fd, "%s", temp);
+		send_remote_command(c, "%s", temp);
 		free(temp);
-		res = read_remote(fd, NULL, NULL);
+		res = read_remote(c, NULL, NULL);
 		if (res != 235) {
 			syslog(LOG_NOTICE, "remote delivery deferred: authentication failed: %s",
 			       neterr);
@@ -470,7 +470,7 @@ esmtp_nexttoken(char **buff)
 }
 
 static int
-esmtp_response(int fd)
+esmtp_response(struct connection *c)
 {
 	char buff[ESMTPBUF_SIZE];
 	size_t buffsize = sizeof(buff);
@@ -480,7 +480,7 @@ esmtp_response(int fd)
 	int error;
 	int res;
   
-	res = read_remote(fd, &buffsize, buff);
+	res = read_remote(c, &buffsize, buff);
 	if (res != 250) {
 		return res;
 	}
@@ -506,23 +506,22 @@ esmtp_response(int fd)
 		
 		if (strcmp(tok, "STARTTLS") == 0) {
 			/* STARTTLS is supported */
-			config.features |= HASSTARTTLS;
+			c->flags |= HASSTARTTLS;
 		} else if (strcmp(tok, "AUTH") == 0) {
 			/* retrieve supported authentication methods */
 			while ((tok = esmtp_nexttoken(parse)) != NULL) {
 				if (strcmp(tok, "CRAM-MD5") == 0)
-					config.features |= AUTHCRAMMD5;
+					c->flags |= AUTHCRAMMD5;
 				else if (strcmp(tok, "LOGIN") == 0)
-					config.features |= AUTHLOGIN;
+					c->flags |= AUTHLOGIN;
 				else if (strcmp(tok, "PLAIN") == 0)
-					config.features |= AUTHPLAIN;
+					c->flags |= AUTHPLAIN;
 			}
 			
 		}
 		
 		/*position over next line*/
 		error = esmtp_nextline(parse, 1);
-		
 	}
 	
 	/*return a negative number on parsing error*/
@@ -533,9 +532,9 @@ esmtp_response(int fd)
 }
 
 static int
-expect_response(int fd, const char *when, int exp)
+expect_response(struct connection *c, const char *when, int exp)
 {
-	int res = read_remote(fd, NULL, NULL);
+	int res = read_remote(c, NULL, NULL);
       
 	if (res == 500 || res == 502) {
 		syslog(LOG_NOTICE, "remote delivery deferred: failed after %s: %s", when, neterr);
@@ -552,30 +551,30 @@ expect_response(int fd, const char *when, int exp)
 }
 
 static int
-open_connection(struct mx_hostentry *h, int ehlo)
+open_connection(struct connection*c, struct mx_hostentry *h, int ehlo)
 {
-	int fd;
 	int res;
 
 	syslog(LOG_INFO, "trying remote delivery to %s [%s] pref %d using %s",
 	       h->host, h->addr, h->pref, ehlo? "EHLO" : "HELO");
-
-	fd = socket(h->ai.ai_family, h->ai.ai_socktype, h->ai.ai_protocol);
-	if (fd < 0) {
+	
+	memset(c, 0, sizeof(*c));
+	c->fd = socket(h->ai.ai_family, h->ai.ai_socktype, h->ai.ai_protocol);
+	if (c->fd < 0) {
 		syslog(LOG_INFO, "socket for %s [%s] failed: %m",
 		       h->host, h->addr);
-		return (-1);
+		return (1);
 	}
 
-	if (connect(fd, (struct sockaddr *)&h->sa, h->ai.ai_addrlen) < 0) {
+	if (connect(c->fd, (struct sockaddr *)&h->sa, h->ai.ai_addrlen) < 0) {
 		syslog(LOG_INFO, "connect to %s [%s] failed: %m",
 		       h->host, h->addr);
-		close(fd);
-		return (-1);
+		close(c->fd);
+		return (1);
 	}
 	
 	/* Check first reply from remote host */
-	res = read_remote(fd, NULL, NULL);
+	res = read_remote(c, NULL, NULL);
 	if (res != 220) {
 		switch(res) {
 		case 421:
@@ -583,25 +582,25 @@ open_connection(struct mx_hostentry *h, int ehlo)
 			break;
 		case 554:
 			syslog(LOG_INFO, "connection failed, remote host requires QUIT");
-			send_remote_command(fd, "QUIT");
+			send_remote_command(c, "QUIT");
 			break;
 		default:
 			syslog(LOG_INFO, "connection failed, remote host greeted us with %d", res);
 			break;
 		}
 		
-		close(fd);
-		return (-2);
+		close(c->fd);
+		return (1);
 	}
 	
 	syslog(LOG_DEBUG, "connection accepted");
 	if (ehlo) {
 		/* Try EHLO */
-		send_remote_command(fd, "EHLO %s", hostname());
-		res = esmtp_response(fd);
+		send_remote_command(c, "EHLO %s", hostname());
+		res = esmtp_response(c);
 	} else {
-		send_remote_command(fd, "HELO %s", hostname());
-		res = read_remote(fd, NULL, NULL);
+		send_remote_command(c, "HELO %s", hostname());
+		res = read_remote(c, NULL, NULL);
 	}
 
 	if (res != 250) {
@@ -611,34 +610,36 @@ open_connection(struct mx_hostentry *h, int ehlo)
 			syslog(LOG_INFO, "connection failed, remote host refused our greeting");
 		}
 		
-		close(fd);
-		return -2;
+		close(c->fd);
+		return -1;
 	}
 	
-	return (fd);
+	return 0;
 }
 
 static void
-close_connection(int fd)
+close_connection(struct connection *c)
 {
-	if (config.ssl != NULL) {
-		if ((config.features & USESSL) != 0)
-			SSL_shutdown(config.ssl);
+	if (c->ssl != NULL) {
+		if ((c->flags & USESSL) != 0)
+			SSL_shutdown(c->ssl);
 		
-		SSL_free(config.ssl);
+		SSL_free(c->ssl);
 	}
 
-	close(fd);
+	close(c->fd);
 }
 
 static int
 deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
+	struct connection c;
 	struct authuser *a;
 	char line[1000];
 	size_t linelen;
-	int fd, error = 0, do_auth = 0, res = 0;
+	int error = 0, do_auth = 0, res = 0;
 
+	/*initialize read structure*/
 	if (fseek(it->mailf, 0, SEEK_SET) != 0) {
 		snprintf(errmsg, sizeof(errmsg), "can not seek: %s", strerror(errno));
 		return (-1);
@@ -655,8 +656,8 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		}
 	}
 
-	fd = open_connection(host, 1);
-	if (fd == -2) {
+	error = open_connection(&c, host, 1);
+	if (error < 0) {
 		/* fallback to HELO if possible */
 		if ((config.features & NOHELO) != 0) {
 			/* HELO disabled in config file */
@@ -686,43 +687,28 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 			return (1);
 		  
 		}
-	
-		/*disable any security*/
-		config.features &= ~(SECURETRANS | STARTTLS);
-		fd = open_connection(host, 0);
+		
+		error = open_connection(&c, host, 0);
 	}
 	
-	if (fd < 0) {
+	if (error) {
 	      /*connection failed*/
 	      return (1);
-	}
-	
-	if ((config.features & HASSTARTTLS) == 0 && (config.features & STARTTLS) != 0) {
-		  if ((config.features & TLS_OPP) != 0) {
-			/* disable STARTTLS, opportunistic mode */
-			syslog(LOG_INFO, "in opportunistic TLS mode, STARTTLS not available");
-			config.features &= ~STARTTLS;
-		  } else {
-			/* remote has no STARTTLS but user required it */
-			syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available");
-			error = 1;
-			goto out;
-		  }
 	}
 
 	if ((config.features & SECURETRANS) != 0) {
 		/* initialize secure transaction */
-		error = smtp_init_crypto(fd, config.features);
-		if (error == 0)
-			syslog(LOG_DEBUG, "SSL initialization successful");
-		else
+		error = smtp_init_crypto(&c);
+		if (error != 0) {
 			goto out;
+		}
 		
+		syslog(LOG_DEBUG, "SSL initialization successful");
 		/* refresh supported ESMTP features if STARTTLS was used*/
-		if ((config.features & STARTTLS) != 0) {
-			config.features &= ~ESMTPMASK;
-			send_remote_command(fd, "EHLO %s", hostname());
-			res = esmtp_response(fd);
+		if ((c.flags & USESTARTTLS) != 0) {
+			c.flags &= ~ESMTPMASK;
+			send_remote_command(&c, "EHLO %s", hostname());
+			res = esmtp_response(&c);
 			if (res != 250) {
 				/* shouldn't happen */
 				syslog(LOG_NOTICE, "remote delivery deferred: EHLO after STARTTLS failed: %s", neterr);
@@ -738,7 +724,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		 * encryption.
 		 */
 		syslog(LOG_INFO, "using SMTP authentication for user %s", a->login);
-		error = smtp_login(fd, a->login, a->password);
+		error = smtp_login(&c, a->login, a->password);
 		if (error) {
 			syslog(LOG_ERR, "remote delivery failed:"
 					" SMTP login failed");
@@ -748,19 +734,19 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	}
 
 	/* XXX send ESMTP ENVID, RET (FULL/HDRS) and 8BITMIME */
-	send_remote_command(fd, "MAIL FROM:<%s>", it->sender);
-	error = expect_response(fd, "MAIL FROM", 250);
+	send_remote_command(&c, "MAIL FROM:<%s>", it->sender);
+	error = expect_response(&c, "MAIL FROM", 250);
 	if (error)
 		goto out;
 
 	/* XXX send ESMTP ORCPT */
-	send_remote_command(fd, "RCPT TO:<%s>", it->addr);
-	error = expect_response(fd, "RCPT TO", 250);
+	send_remote_command(&c, "RCPT TO:<%s>", it->addr);
+	error = expect_response(&c, "RCPT TO", 250);
 	if (error)
 		goto out;
 
-	send_remote_command(fd, "DATA");
-	error = expect_response(fd, "DATA", 354);
+	send_remote_command(&c, "DATA");
+	error = expect_response(&c, "DATA", 354);
 	if (error)
 		goto out;
 
@@ -784,7 +770,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		if (line[0] == '.')
 			linelen++;
 
-		if (send_remote_command(fd, "%s", line) != (ssize_t)linelen+1) {
+		if (send_remote_command(&c, "%s", line) != (ssize_t)linelen+1) {
 			syslog(LOG_NOTICE, "remote delivery deferred: write error");
 			error = 1;
 			goto out;
@@ -797,17 +783,17 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		goto out;
 	}
 
-	send_remote_command(fd, ".");
-	error = expect_response(fd, "final DATA", 250);
+	send_remote_command(&c, ".");
+	error = expect_response(&c, "final DATA", 250);
 	if (error)
 		goto out;
 
-	send_remote_command(fd, "QUIT");
-	if (read_remote(fd, NULL, NULL) != 221)
+	send_remote_command(&c, "QUIT");
+	if (read_remote(&c, NULL, NULL) != 221)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 
-	close_connection(fd);
+	close_connection(&c);
 	return (error);
 }
 
