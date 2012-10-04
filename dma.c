@@ -309,8 +309,12 @@ deliver(struct qitem *it)
 	snprintf(errmsg, sizeof(errmsg), "unknown bounce reason");
 
 retry:
+	/* clear error and EOF indicator just in case
+	 * last delivery was aborted due to I/O error.
+	 */
+	clearerr(it->mailf);
 	syslog(LOG_INFO, "trying delivery");
-
+	
 	if (it->remote)
 		error = deliver_remote(it);
 	else
