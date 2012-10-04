@@ -111,9 +111,7 @@ bounce(struct qitem *it, const char *reason)
 				goto fail;
 		}
 	} else {
-		while (!feof(it->mailf)) {
-			if (fgets(line, sizeof(line), it->mailf) == NULL)
-				break;
+		while (fgets(line, sizeof(line), it->mailf)) {
 			if (line[0] == '\n')
 				break;
 			if (fwrite(line, strlen(line), 1, bounceq.mailf) != 1)
@@ -123,8 +121,12 @@ bounce(struct qitem *it, const char *reason)
 
 	if (linkspool(&bounceq) != 0)
 		goto fail;
+	
+	/* warn on partial bounce, but still try delivery */
+	if (ferror(it->mailf))
+		syslog(LOG_ERR, "error I/O error while crating bounce: %m");
+	
 	/* bounce is safe */
-
 	delqueue(it);
 
 	run_queue(&bounceq);

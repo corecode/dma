@@ -359,6 +359,7 @@ retry:
 	}
 
 bounce:
+	clearerr(it->mailf);
 	bounce(it, errmsg);
 	/* NOTREACHED */
 }
