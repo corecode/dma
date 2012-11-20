@@ -423,9 +423,14 @@ main(int argc, char **argv)
 	if (geteuid() == 0 || getuid() == 0) {
 		struct passwd *pw;
 
+		errno = 0;
 		pw = getpwnam(DMA_ROOT_USER);
-		if (pw == NULL)
-			err(1, "cannot drop root privileges");
+		if (pw == NULL) {
+			if (errno == 0)
+				errx(1, "user '%s' not found", DMA_ROOT_USER);
+			else
+				err(1, "cannot drop root privileges");
+		}
 
 		if (setuid(pw->pw_uid) != 0)
 			err(1, "cannot drop root privileges");
