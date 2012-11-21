@@ -6,6 +6,7 @@ version!=	sh get-version.sh
 CFLAGS+= -I${.CURDIR}
 CFLAGS+= -DHAVE_REALLOCF -DHAVE_STRLCPY -DHAVE_GETPROGNAME
 CFLAGS+= -DLIBEXEC_PATH='"${LIBEXEC}"' -DDMA_VERSION='"${version}"'
+CFLAGS+= -DCONF_PATH='"${CONFDIR}"'
 
 DPADD=  ${LIBSSL} ${LIBCRYPTO}
 LDADD=  -lssl -lcrypto
@@ -17,6 +18,7 @@ MAN=	dma.8
 
 PREFIX?=	/usr/local
 LIBEXEC?=	${PREFIX}/libexec
+CONFDIR?=	${PREFIX}/etc/dma
 
 BINOWN= root
 BINGRP= mail

@@ -580,7 +580,7 @@ skipopts:
 		errlog(1, NULL);
 
 	if (newspoolf(&queue) != 0)
-		errlog(1, "can not create temp file");
+		errlog(1, "can not create temp file in `%s'", config.spooldir);
 
 	setlogident("%s", queue.id);
 
