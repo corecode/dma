@@ -1,3 +1,17 @@
+dma (0.9) unstable; urgency=low
+
+  [ Ed Maste ]
+  * Be explicit about missing user.
+  * Allow DMA_ROOT_USER & DMA_GROUP to be overridden.
+  * Add compat #ifdef for older OpenSSL
+  * Add CONF_DIR, as in Makefile
+  * More detailed error message for tmp file failure.
+
+  [ Simon Schubert ]
+  * spool.c: bzero contents of pointer
+
+ -- Simon Schubert <2@0x2c.org>  Mon, 03 Jun 2013 15:58:44 +0200
+
 dma (0.8) unstable; urgency=low
 
   [ Gert van den Berg ]
