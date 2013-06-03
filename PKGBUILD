@@ -3,7 +3,7 @@
 
 pkgname="dma"
 pkgver=0.8
-pkgrel=1
+pkgrel=2
 pkgdesc="DragonFly BSD mail transport agent"
 url="https://github.com/corecode/dma"
 license=('BSD')
@@ -11,17 +11,19 @@ makedepends=('ed')
 depends=('openssl')
 backup=('etc/dma/auth.conf' 'etc/dma/dma.conf')
 arch=('i686' 'x86_64')
-source=("https://github.com/corecode/dma/tarball/v$pkgver")
-sha256sums=('65a81373f6803a29b2939f0383431fdcba247ba15e337464a79d88635416b810')
+source=("https://github.com/corecode/dma/archive/v$pkgver.tar.gz")
+sha256sums=('dbebb3b74f4a0e3bf951470da5f2f065ef1302d633bee8e75e04a99e62c9558b')
+
+buildargs="PREFIX=/usr LIBEXEC=/usr/lib/dma SBIN=/usr/bin"
 
 build() {
-	cd corecode-dma-*
-	make PREFIX=/usr LIBEXEC=/usr/lib/dma
+	cd dma-$pkgver
+	make $buildargs
 }
 
 package() {
-	cd corecode-dma-*
-	make install sendmail-link mailq-link install-etc DESTDIR=$pkgdir PREFIX=/usr LIBEXEC=/usr/lib/dma
+	cd dma-$pkgver
+	make install sendmail-link mailq-link install-etc DESTDIR=$pkgdir $buildargs
 
 	install -d -o root -g mail -m 2775 $pkgdir/var/spool/dma
 
