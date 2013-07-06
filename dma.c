@@ -457,6 +457,13 @@ main(int argc, char **argv)
 		if (argc != 0)
 			errx(1, "invalid arguments");
 		goto skipopts;
+	} else if (strcmp(argv[0], "newaliases") == 0) {
+		logident_base = "dma";
+		setlogident(NULL);
+
+		if (read_aliases() != 0)
+			errx(1, "could not parse aliases file `%s'", config.aliases);
+		exit(0);
 	}
 
 	opterr = 0;
@@ -580,7 +587,7 @@ skipopts:
 	}
 
 	if (read_aliases() != 0)
-		errlog(1, "can not read aliases file `%s'", config.aliases);
+		errlog(1, "could not parse aliases file `%s'", config.aliases);
 
 	if ((sender = set_from(&queue, sender)) == NULL)
 		errlog(1, NULL);
