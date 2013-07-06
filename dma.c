@@ -95,25 +95,31 @@ sighup_handler(int signo)
 static char *
 set_from(struct queue *queue, const char *osender)
 {
+	const char *addr;
 	char *sender;
 
 	if (osender) {
-		sender = strdup(osender);
-		if (sender == NULL)
-			return (NULL);
+		addr = osender;
 	} else if (getenv("EMAIL") != NULL) {
-		sender = strdup(getenv("EMAIL"));
-		if (sender == NULL)
-			return (NULL);
+		addr = getenv("EMAIL");
 	} else {
-		const char *from_user = username;
+		if (config.masquerade_user)
+			addr = config.masquerade_user;
+		else
+			addr = username;
+	}
+
+	if (!strchr(addr, '@')) {
 		const char *from_host = hostname();
 
-		if (config.masquerade_user)
-			from_user = config.masquerade_user;
 		if (config.masquerade_host)
 			from_host = config.masquerade_host;
-		if (asprintf(&sender, "%s@%s", from_user, from_host) <= 0)
+
+		if (asprintf(&sender, "%s@%s", addr, from_host) <= 0)
+			return (NULL);
+	} else {
+		sender = strdup(addr);
+		if (sender == NULL)
 			return (NULL);
 	}
 
