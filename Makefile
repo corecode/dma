@@ -67,6 +67,7 @@ install-spool-dirs:
 permissions:
 	-${CHGRP} mail ${DESTDIR}${VARMAIL}/*
 	-${CHMOD} g+w ${DESTDIR}${VARMAIL}/*
+	-${CHMOD} 660 ${DESTDIR}${DMASPOOL}/flush
 
 install-etc:
 	${INSTALL} -d ${DESTDIR}${CONFDIR}

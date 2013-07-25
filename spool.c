@@ -429,18 +429,12 @@ flushqueue_signal(void)
 
         if (asprintf(&flushfn, "%s/%s", config.spooldir, SPOOL_FLUSHFILE) < 0)
 		return (-1);
-	fd = open(flushfn, O_CREAT|O_RDONLY, 0440);
+	fd = open(flushfn, O_CREAT|O_WRONLY|O_TRUNC, 0660);
+	free(flushfn);
 	if (fd < 0) {
 		syslog(LOG_ERR, "could not open flush file: %m");
-		free(flushfn);
 		return (-1);
 	}
         close(fd);
-        if (utimes(flushfn, NULL) < 0) {
-		syslog(LOG_ERR, "could not touch flush file: %m");
-		free(flushfn);
-		return (-1);
-	}
-	free (flushfn);
 	return (0);
 }
