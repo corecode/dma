@@ -42,6 +42,7 @@
 #include <paths.h>
 #include <signal.h>
 #include <stdint.h>
+#include <string.h>
 #include <stdio.h>
 #include <syslog.h>
 #include <unistd.h>
@@ -62,7 +63,7 @@ create_mbox(const char *name)
 	/*
 	 * We need to enable SIGCHLD temporarily so that waitpid works.
 	 */
-	bzero(&sa, sizeof(sa));
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_DFL;
 	sigaction(SIGCHLD, &sa, &osa);
 
@@ -74,7 +75,7 @@ create_mbox(const char *name)
 		/* child */
 		maxfd = sysconf(_SC_OPEN_MAX);
 		if (maxfd == -1)
-			maxfd = 1024;	/* what can we do... */
+			maxfd = FOPEN_MAX;	/* what can we do... */
 
 		for (i = 3; i <= maxfd; ++i)
 			close(i);
@@ -203,9 +204,7 @@ retry:
 	if (write(mbox, line, error) != error)
 		goto wrerror;
 
-	while (!feof(it->mailf)) {
-		if (fgets(line, sizeof(line), it->mailf) == NULL)
-			break;
+	while (fgets(line, sizeof(line), it->mailf)) {
 		linelen = strlen(line);
 		if (linelen == 0 || line[linelen - 1] != '\n') {
 			syslog(LOG_CRIT, "local delivery failed: corrupted queue file");
@@ -238,6 +237,13 @@ retry:
 		if ((size_t)write(mbox, line, linelen) != linelen)
 			goto wrerror;
 	}
+	
+	if (ferror(it->mailf)) {
+		syslog(LOG_ERR, "local delivery failed: I/O error while reading: %m");
+		error = 1;
+		goto chop;
+	}
+	
 	close(mbox);
 	return (0);
 

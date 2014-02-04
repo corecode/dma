@@ -277,6 +277,9 @@ disable:
 int
 open_locked(const char *fname, int flags, ...)
 {
+#ifndef O_EXLOCK
+	int fd, save_errno;
+#endif
 	int mode = 0;
 
 	if (flags & O_CREAT) {
@@ -287,8 +290,6 @@ open_locked(const char *fname, int flags, ...)
 	}
 
 #ifndef O_EXLOCK
-	int fd, save_errno;
-
 	fd = open(fname, flags, mode);
 	if (fd < 0)
 		return(fd);

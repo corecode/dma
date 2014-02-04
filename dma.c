@@ -246,7 +246,7 @@ go_background(struct queue *queue)
 	}
 	daemonize = 0;
 
-	bzero(&sa, sizeof(sa));
+	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGCHLD, &sa, NULL);
 
@@ -315,8 +315,12 @@ deliver(struct qitem *it)
 	snprintf(errmsg, sizeof(errmsg), "unknown bounce reason");
 
 retry:
+	/* clear error and EOF indicator just in case
+	 * last delivery was aborted due to I/O error.
+	 */
+	clearerr(it->mailf);
 	syslog(LOG_INFO, "trying delivery");
-
+	
 	if (it->remote)
 		error = deliver_remote(it);
 	else
@@ -361,6 +365,7 @@ retry:
 	}
 
 bounce:
+	clearerr(it->mailf);
 	bounce(it, errmsg);
 	/* NOTREACHED */
 }
@@ -448,7 +453,7 @@ main(int argc, char **argv)
 	atexit(deltmp);
 	init_random();
 
-	bzero(&queue, sizeof(queue));
+	memset(&queue, 0, sizeof(queue));
 	LIST_INIT(&queue.queue);
 
 	if (strcmp(argv[0], "mailq") == 0) {

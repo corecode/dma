@@ -40,6 +40,7 @@
 #include <openssl/pem.h>
 #include <openssl/rand.h>
 
+#include <string.h>
 #include <syslog.h>
 
 #include "dma.h"
@@ -77,7 +78,7 @@ init_cert_file(SSL_CTX *ctx, const char *path)
 }
 
 int
-smtp_init_crypto(int fd, int feature)
+smtp_init_crypto(struct connection *c)
 {
 	SSL_CTX *ctx = NULL;
 #if (OPENSSL_VERSION_NUMBER >= 0x00909000L)
@@ -111,42 +112,46 @@ smtp_init_crypto(int fd, int feature)
 	}
 
 	/*
-	 * If the user wants STARTTLS, we have to send EHLO here
+	 * If STARTTLS is required, issue it here
 	 */
-	if (((feature & SECURETRANS) != 0) &&
-	     (feature & STARTTLS) != 0) {
-		/* TLS init phase, disable SSL_write */
-		config.features |= NOSSL;
-
-		send_remote_command(fd, "EHLO %s", hostname());
-		if (read_remote(fd, 0, NULL) == 2) {
-			send_remote_command(fd, "STARTTLS");
-			if (read_remote(fd, 0, NULL) != 2) {
-				if ((feature & TLS_OPP) == 0) {
-					syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available: %s", neterr);
-					return (1);
-				} else {
-					syslog(LOG_INFO, "in opportunistic TLS mode, STARTTLS not available: %s", neterr);
-					return (0);
-				}
+	if ((config.features & STARTTLS) != 0) {
+		/* TLS init phase */
+		if ((c->flags & HASSTARTTLS) != 0) {
+			send_remote_command(c, "STARTTLS");
+			if (read_remote(c, NULL, NULL) != 220) {
+				/* even in opportunistic TLS, if server marked it as available, an error
+				* is unexpected
+				*/
+				syslog(LOG_ERR, "remote delivery deferred: STARTTLS failed: %s", neterr);
+				return (1);
 			}
+			
+			/* End of TLS init phase */	
+			c->flags |= USESTARTTLS;
+		} else {
+			if ((config.features & TLS_OPP) == 0) {
+				/* remote has no STARTTLS but user required it */
+				syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available");
+				return (1);
+			}
+			
+			/* disable STARTTLS, opportunistic mode */
+			syslog(LOG_INFO, "in opportunistic TLS mode, STARTTLS not available");
 		}
-		/* End of TLS init phase, enable SSL_write/read */
-		config.features &= ~NOSSL;
 	}
 
-	config.ssl = SSL_new(ctx);
-	if (config.ssl == NULL) {
+	c->ssl = SSL_new(ctx);
+	if (c->ssl == NULL) {
 		syslog(LOG_NOTICE, "remote delivery deferred: SSL struct creation failed: %s",
 		       ssl_errstr());
 		return (1);
 	}
 
 	/* Set ssl to work in client mode */
-	SSL_set_connect_state(config.ssl);
+	SSL_set_connect_state(c->ssl);
 
 	/* Set fd for SSL in/output */
-	error = SSL_set_fd(config.ssl, fd);
+	error = SSL_set_fd(c->ssl, c->fd);
 	if (error == 0) {
 		syslog(LOG_NOTICE, "remote delivery deferred: SSL set fd failed: %s",
 		       ssl_errstr());
@@ -154,7 +159,7 @@ smtp_init_crypto(int fd, int feature)
 	}
 
 	/* Open SSL connection */
-	error = SSL_connect(config.ssl);
+	error = SSL_connect(c->ssl);
 	if (error < 0) {
 		syslog(LOG_ERR, "remote delivery deferred: SSL handshake failed fatally: %s",
 		       ssl_errstr());
@@ -162,13 +167,15 @@ smtp_init_crypto(int fd, int feature)
 	}
 
 	/* Get peer certificate */
-	cert = SSL_get_peer_certificate(config.ssl);
+	cert = SSL_get_peer_certificate(c->ssl);
 	if (cert == NULL) {
 		syslog(LOG_WARNING, "remote delivery deferred: Peer did not provide certificate: %s",
 		       ssl_errstr());
 	}
 	X509_free(cert);
-
+	
+	/* At this point we can safely use SSL write/read*/
+	c->flags |= USESSL;
 	return (0);
 }
 
@@ -221,10 +228,10 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
          */
 
         /* start out by storing key in pads */
-        bzero( k_ipad, sizeof k_ipad);
-        bzero( k_opad, sizeof k_opad);
-        bcopy( key, k_ipad, key_len);
-        bcopy( key, k_opad, key_len);
+        memset(k_ipad, 0, sizeof(k_ipad));
+        memset(k_opad, 0, sizeof(k_opad));
+        memcpy(k_ipad, key, key_len);
+        memcpy(k_opad, key, key_len);
 
         /* XOR key with ipad and opad values */
         for (i=0; i<64; i++) {
@@ -254,27 +261,40 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
  * CRAM-MD5 authentication
  */
 int
-smtp_auth_md5(int fd, char *login, char *password)
+smtp_auth_md5(struct connection *c, char *login, char *password)
 {
 	unsigned char digest[BUF_SIZE];
 	char buffer[BUF_SIZE], ascii_digest[33];
 	char *temp;
 	int len, i;
+	size_t buffsize = sizeof(buffer);
 	static char hextab[] = "0123456789abcdef";
-
-	temp = calloc(BUF_SIZE, 1);
+	
 	memset(buffer, 0, sizeof(buffer));
 	memset(digest, 0, sizeof(digest));
 	memset(ascii_digest, 0, sizeof(ascii_digest));
 
 	/* Send AUTH command according to RFC 2554 */
-	send_remote_command(fd, "AUTH CRAM-MD5");
-	if (read_remote(fd, sizeof(buffer), buffer) != 3) {
-		syslog(LOG_DEBUG, "smarthost authentication:"
-		       " AUTH cram-md5 not available: %s", neterr);
+	send_remote_command(c, "AUTH CRAM-MD5");
+	if (read_remote(c, &buffsize, buffer) != 334) {
 		/* if cram-md5 is not available */
-		free(temp);
-		return (-1);
+		syslog(LOG_DEBUG, "smarthost authentication:"
+		       " AUTH CRAM-MD5 failed: %s", neterr);
+		return (1);
+	}
+	
+	if (buffsize > sizeof(buffer)) {
+		syslog(LOG_DEBUG, "smarthost authentication:"
+		       " oversized response to AUTH CRAM-MD5");
+		return (1);
+	}
+	
+	/* allocate decoding buffer */
+	temp = calloc(BUF_SIZE, 1);
+	if (!temp) {
+	      syslog(LOG_WARNING, "remote delivery deferred:"
+	                          " memory allocation failed");
+	      return (1);
 	}
 
 	/* skip 3 char status + 1 char space */
@@ -295,17 +315,17 @@ smtp_auth_md5(int fd, char *login, char *password)
 	/* encode answer */
 	len = base64_encode(buffer, strlen(buffer), &temp);
 	if (len < 0) {
-		syslog(LOG_ERR, "can not encode auth reply: %m");
-		return (-1);
+		syslog(LOG_ERR, "cannot encode auth reply: %m");
+		return (1);
 	}
 
 	/* send answer */
-	send_remote_command(fd, "%s", temp);
+	send_remote_command(c, "%s", temp);
 	free(temp);
-	if (read_remote(fd, 0, NULL) != 2) {
+	if (read_remote(c, NULL, NULL) != 220) {
 		syslog(LOG_WARNING, "remote delivery deferred:"
-				" AUTH cram-md5 failed: %s", neterr);
-		return (-2);
+				" AUTH CRAM-MD5 failed: %s", neterr);
+		return (1);
 	}
 
 	return (0);

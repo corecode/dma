@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <syslog.h>
 #include <stdarg.h>
 
@@ -74,12 +75,34 @@ trim_line(char *line)
 static void
 chomp(char *str)
 {
+	char *p;
+	size_t i;
 	size_t len = strlen(str);
 
+	/* remove trailing spaces */
+	for (i = 0; i < len; i++) {
+		if (!isspace(str[i]))
+		    break;
+	}
+	
+	memmove(str, str + i, len + 1 - i);
+	len -= i;
 	if (len == 0)
 		return;
-	if (str[len - 1] == '\n')
-		str[len - 1] = 0;
+	
+	/* remove ending spaces (also handles ending '\n', if any) */
+	while (len-- > 0) {
+		if (!isspace(str[len]))
+			break;
+	}
+	
+	str[len + 1] = 0;
+	
+	/* remove comments */
+	p = strchr(str, '#');
+	if (p) {
+		*p = 0;
+	}
 }
 
 /*
@@ -88,7 +111,7 @@ chomp(char *str)
  * file format is:
  * user|host:password
  *
- * A line starting with # is treated as comment and ignored.
+ * Anything following a # is treated as comment and ignored.
  */
 void
 parse_authfile(const char *path)
@@ -97,6 +120,7 @@ parse_authfile(const char *path)
 	struct authuser *au;
 	FILE *a;
 	char *data;
+	int error;
 	int lineno = 0;
 
 	a = fopen(path, "r");
@@ -105,16 +129,11 @@ parse_authfile(const char *path)
 		/* NOTREACHED */
 	}
 
-	while (!feof(a)) {
-		if (fgets(line, sizeof(line), a) == NULL)
-			break;
+	while (fgets(line, sizeof(line), a)) {
 		lineno++;
 
 		chomp(line);
 
-		/* We hit a comment */
-		if (*line == '#')
-			continue;
 		/* Ignore empty lines */
 		if (*line == 0)
 			continue;
@@ -138,8 +157,14 @@ parse_authfile(const char *path)
 
 		SLIST_INSERT_HEAD(&authusers, au, next);
 	}
-
+	
+	error = ferror(a);
 	fclose(a);
+	
+	if (error) {
+		errlog(1, "I/O error while reading file `%s'", path);
+		/* NOTREACHED */
+	}
 }
 
 /*
@@ -153,6 +178,7 @@ parse_conf(const char *config_path)
 	char *data;
 	FILE *conf;
 	char line[2048];
+	int error;
 	int lineno = 0;
 
 	conf = fopen(config_path, "r");
@@ -164,16 +190,10 @@ parse_conf(const char *config_path)
 		/* NOTREACHED */
 	}
 
-	while (!feof(conf)) {
-		if (fgets(line, sizeof(line), conf) == NULL)
-			break;
+	while (fgets(line, sizeof(line), conf)) {
 		lineno++;
 
 		chomp(line);
-
-		/* We hit a comment */
-		if (strchr(line, '#'))
-			*strchr(line, '#') = 0;
 
 		data = line;
 		word = strsep(&data, EQS);
@@ -186,12 +206,20 @@ parse_conf(const char *config_path)
 			data = strdup(data);
 		else
 			data = NULL;
-
+		
 		if (strcmp(word, "SMARTHOST") == 0 && data != NULL)
 			config.smarthost = data;
-		else if (strcmp(word, "PORT") == 0 && data != NULL)
-			config.port = atoi(data);
-		else if (strcmp(word, "ALIASES") == 0 && data != NULL)
+		else if (strcmp(word, "PORT") == 0 && data != NULL) {
+			char*check;
+			long port = strtol(data, &check, 10);
+			
+			if (*check != '\0' || port < 0 || port > 0xffff) {
+				errlogx(1, "invalid value for PORT in %s:%d", config_path, lineno);
+				/* NOTREACHED */
+			}
+			
+			config.port = (unsigned int)port;
+		} else if (strcmp(word, "ALIASES") == 0 && data != NULL)
 			config.aliases = data;
 		else if (strcmp(word, "SPOOLDIR") == 0 && data != NULL)
 			config.spooldir = data;
@@ -217,8 +245,12 @@ parse_conf(const char *config_path)
                                 user = NULL;
 			config.masquerade_host = host;
 			config.masquerade_user = user;
-		} else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
+		} else if (strcmp(word, "VERBOSE") == 0 && data == NULL)
+			config.features |= VERBOSE;
+		else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
 			config.features |= STARTTLS;
+		else if (strcmp(word, "NOHELO") == 0 && data == NULL)
+			config.features |= NOHELO;
 		else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 && data == NULL)
 			config.features |= TLS_OPP;
 		else if (strcmp(word, "SECURETRANSFER") == 0 && data == NULL)
@@ -235,5 +267,19 @@ parse_conf(const char *config_path)
 		}
 	}
 
+	error = ferror(conf);
 	fclose(conf);
+	
+	if (error) {
+		errlog(1, "I/O error while reading file `%s'", config_path);
+		/* NOTREACHED */
+	}
+	
+	/* ensure a meaningful configuration */
+	if ((config.features & STARTTLS) != 0) {
+		if ((config.features & SECURETRANS) == 0) {
+			syslog(LOG_WARNING, "STARTTLS enabled in `%s', implicitly assuming SECURETRANSFER is enabled", config_path);
+			config.features |= SECURETRANS;
+		}
+	}
 }

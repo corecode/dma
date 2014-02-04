@@ -61,7 +61,7 @@ sort_pref(const void *a, const void *b)
 }
 
 static int
-add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t *ps)
+add_host(int pref, const char *host, unsigned int port, struct mx_hostentry **he, size_t *ps)
 {
 	struct addrinfo hints, *res, *res0 = NULL;
 	char servname[10];
@@ -74,7 +74,7 @@ add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t 
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 
-	snprintf(servname, sizeof(servname), "%d", port);
+	snprintf(servname, sizeof(servname), "%u", port);
 	err = getaddrinfo(host, servname, &hints, &res0);
 	if (err)
 		return (err == EAI_AGAIN ? 1 : -1);
@@ -92,7 +92,7 @@ add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t 
 		p->pref = pref;
 		p->ai = *res;
 		p->ai.ai_addr = NULL;
-		bcopy(res->ai_addr, &p->sa, p->ai.ai_addrlen);
+		memcpy(&p->sa, res->ai_addr, p->ai.ai_addrlen);
 
 		getnameinfo((struct sockaddr *)&p->sa, p->ai.ai_addrlen,
 			    p->addr, sizeof(p->addr),
@@ -111,7 +111,7 @@ out:
 }
 
 int
-dns_get_mx_list(const char *host, int port, struct mx_hostentry **he, int no_mx)
+dns_get_mx_list(const char *host, unsigned int port, struct mx_hostentry **he, int no_mx)
 {
 	char outname[MAXDNAME];
 	ns_msg msg;

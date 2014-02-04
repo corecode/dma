@@ -43,10 +43,12 @@
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <netdb.h>
+#include <stddef.h> /*size_t*/
 
 #define VERSION	"DragonFly Mail Agent " DMA_VERSION
 
 #define BUF_SIZE	2048
+#define ESMTPBUF_SIZE   8192
 #define ERRMSG_SIZE	200
 #define USERNAME_SIZE	50
 #define MIN_RETRY	300		/* 5 minutes */
@@ -59,13 +61,14 @@
 #define	SMTP_PORT	25		/* Default SMTP port */
 #define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
 
-#define STARTTLS	0x002		/* StartTLS support */
-#define SECURETRANS	0x004		/* SSL/TLS in general */
-#define NOSSL		0x008		/* Do not use SSL */
-#define DEFER		0x010		/* Defer mails */
-#define INSECURE	0x020		/* Allow plain login w/o encryption */
-#define FULLBOUNCE	0x040		/* Bounce the full message */
-#define TLS_OPP		0x080		/* Opportunistic STARTTLS */
+#define VERBOSE         0x0001          /* Enable debug logging output to LOG_DEBUG */
+#define STARTTLS        0x0002		/* StartTLS support required by the user*/
+#define NOHELO          0x0004		/* Don't fallback to HELO if EHLO isn't supported*/
+#define SECURETRANS     0x0008		/* SSL/TLS in general */
+#define DEFER           0x0020		/* Defer mails */
+#define INSECURE        0x0040		/* Allow plain login w/o encryption */
+#define FULLBOUNCE      0x0080		/* Bounce the full message */
+#define TLS_OPP         0x0100		/* Opportunistic STARTTLS */
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH
@@ -125,7 +128,7 @@ struct queue {
 
 struct config {
 	const char *smarthost;
-	int port;
+	unsigned int port; /* should be unsigned for maximum compatibility (16 bit ints) */
 	const char *aliases;
 	const char *spooldir;
 	const char *authpath;
@@ -134,9 +137,20 @@ struct config {
 	const char *mailname;
 	const char *masquerade_host;
 	const char *masquerade_user;
+};
 
-	/* XXX does not belong into config */
+#define USESSL          0x0001          /* Use SSL for communication */
+#define USESTARTTLS     0x0002          /* Has performed STARTTLS */
+#define HASSTARTTLS     0x0004          /* STARTTLS advertised by the remote host */
+#define AUTHPLAIN       0x0008          /* PLAIN authentication method support */
+#define AUTHLOGIN       0x0010          /* LOGIN authentication method support */
+#define AUTHCRAMMD5     0x0020          /* CRAM MD5 authentication method support */
+#define ESMTPMASK       (HASSTARTTLS | AUTHPLAIN | AUTHLOGIN | AUTHCRAMMD5)
+
+struct connection {
+	int fd;
 	SSL *ssl;
+	int flags;
 };
 
 
@@ -181,16 +195,16 @@ void parse_authfile(const char *);
 
 /* crypto.c */
 void hmac_md5(unsigned char *, int, unsigned char *, int, unsigned char *);
-int smtp_auth_md5(int, char *, char *);
-int smtp_init_crypto(int, int);
+int smtp_auth_md5(struct connection *, char *, char *) __attribute__((__nonnull__(1, 2, 3)));
+int smtp_init_crypto(struct connection *) __attribute__((__nonnull__(1)));
 
 /* dns.c */
-int dns_get_mx_list(const char *, int, struct mx_hostentry **, int);
+int dns_get_mx_list(const char *, unsigned int, struct mx_hostentry **, int);
 
 /* net.c */
 char *ssl_errstr(void);
-int read_remote(int, int, char *);
-ssize_t send_remote_command(int, const char*, ...)  __attribute__((__nonnull__(2), __format__ (__printf__, 2, 3)));
+int read_remote(struct connection *, size_t *, char *) __attribute__((__nonnull__(1)));
+ssize_t send_remote_command(struct connection *, const char*, ...)  __attribute__((__nonnull__(1, 2), __format__ (__printf__, 2, 3)));
 int deliver_remote(struct qitem *);
 
 /* base64.c */

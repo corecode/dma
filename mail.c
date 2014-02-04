@@ -34,6 +34,7 @@
 
 #include <errno.h>
 #include <inttypes.h>
+#include <string.h>
 #include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
@@ -54,7 +55,7 @@ bounce(struct qitem *it, const char *reason)
 		exit(1);
 	}
 
-	bzero(&bounceq, sizeof(bounceq));
+	memset(&bounceq, 0, sizeof(bounceq));
 	LIST_INIT(&bounceq.queue);
 	bounceq.sender = "";
 	if (add_recp(&bounceq, it->sender, EXPAND_WILDCARD) != 0)
@@ -110,9 +111,7 @@ bounce(struct qitem *it, const char *reason)
 				goto fail;
 		}
 	} else {
-		while (!feof(it->mailf)) {
-			if (fgets(line, sizeof(line), it->mailf) == NULL)
-				break;
+		while (fgets(line, sizeof(line), it->mailf)) {
 			if (line[0] == '\n')
 				break;
 			if (fwrite(line, strlen(line), 1, bounceq.mailf) != 1)
@@ -122,8 +121,12 @@ bounce(struct qitem *it, const char *reason)
 
 	if (linkspool(&bounceq) != 0)
 		goto fail;
+	
+	/* warn on partial bounce, but still try delivery */
+	if (ferror(it->mailf))
+		syslog(LOG_ERR, "error I/O error while crating bounce: %m");
+	
 	/* bounce is safe */
-
 	delqueue(it);
 
 	run_queue(&bounceq);
@@ -170,7 +173,7 @@ again:
 
 	case START:
 		/* init our data */
-		bzero(ps, sizeof(*ps));
+		memset(ps, 0, sizeof(*ps));
 
 		/* skip over header name */
 		while (*s != ':')
