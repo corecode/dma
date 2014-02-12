@@ -229,6 +229,8 @@ parse_conf(const char *config_path)
 			config.features |= INSECURE;
 		else if (strcmp(word, "FULLBOUNCE") == 0 && data == NULL)
 			config.features |= FULLBOUNCE;
+		else if (strcmp(word, "NULLCLIENT") == 0 && data == NULL)
+			config.features |= NULLCLIENT;
 		else {
 			errlogx(1, "syntax error in %s:%d", config_path, lineno);
 			/* NOTREACHED */

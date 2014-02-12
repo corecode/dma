@@ -202,7 +202,7 @@ add_recp(struct queue *queue, const char *str, int expand)
 		}
 	}
 	LIST_INSERT_HEAD(&queue->queue, it, next);
-	if (strrchr(it->addr, '@') == NULL) {
+	if (!(config.features & NULLCLIENT) && strrchr(it->addr, '@') == NULL) {
 		it->remote = 0;
 		if (expand) {
 			aliased = do_alias(queue, it->addr);
