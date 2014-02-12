@@ -202,7 +202,12 @@ add_recp(struct queue *queue, const char *str, int expand)
 		}
 	}
 	LIST_INSERT_HEAD(&queue->queue, it, next);
-	if (strrchr(it->addr, '@') == NULL) {
+
+	/**
+	 * Do local delivery if there is no @.
+	 * Do not do local delivery when NULLCLIENT is set.
+	 */
+	if (strrchr(it->addr, '@') == NULL && (config.features & NULLCLIENT) == 0) {
 		it->remote = 0;
 		if (expand) {
 			aliased = do_alias(queue, it->addr);
