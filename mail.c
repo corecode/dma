@@ -374,7 +374,9 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 		if (fgets(line, sizeof(line) - 1, stdin) == NULL)
 			break;
 		if (had_last_line)
-			errlogx(1, "bad mail input format");
+			errlogx(1, "bad mail input format:"
+				" from %s (uid %d) (envelope-from %s)",
+				username, useruid, queue->sender);
 		linelen = strlen(line);
 		if (linelen == 0 || line[linelen - 1] != '\n') {
 			/*
