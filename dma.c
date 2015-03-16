@@ -60,6 +60,8 @@
 #include "dma.h"
 
 
+extern int yyparse(void);
+
 static void deliver(struct qitem *);
 
 struct aliases aliases = LIST_HEAD_INITIALIZER(aliases);
