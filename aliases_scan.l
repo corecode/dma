@@ -5,7 +5,6 @@
 
 #define YY_NO_INPUT
 
-int yylex(void);
 %}
 
 %option yylineno
