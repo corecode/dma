@@ -174,6 +174,8 @@ extern char errmsg[ERRMSG_SIZE];
 
 /* aliases_parse.y */
 int yyparse(void);
+int yywrap(void);
+int yylex(void);
 extern FILE *yyin;
 
 /* conf.c */
