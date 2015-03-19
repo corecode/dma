@@ -9,7 +9,7 @@ CFLAGS+= -DCONF_PATH='"${CONFDIR}"'
 
 PROG=	dma-mbox-create
 .PATH: ${.CURDIR}/../..
-SRCS+=	dma-mbox-create.c
+SRCS+=	dma-mbox-create.c helper_subr.c
 NOMAN=
 
 PREFIX?=	/usr/local
@@ -19,5 +19,7 @@ CONFDIR?=	${PREFIX}/etc/dma
 BINOWN= root
 BINGRP= mail
 BINMODE=4554
+
+WARNS?=	6
 
 .include <bsd.prog.mk>
