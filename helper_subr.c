@@ -1,8 +1,9 @@
 /*
- * Copyright (c) 2010-2014, Simon Schubert <2@0x2c.org>.
+ * Copyright (c) 2010-2015, Simon Schubert <2@0x2c.org>.
  * Copyright (c) 2008 The DragonFly Project.  All rights reserved.
  *
  * This code is derived from software contributed to The DragonFly Project
+ * by Antonio Huete Jimenez <tuxillo@quantumachine.net>
  * by Simon Schubert <2@0x2c.org>.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,11 +34,6 @@
  * SUCH DAMAGE.
  */
 
-/*
- * This binary is setuid root.  Use extreme caution when touching
- * user-supplied information.  Keep the root window as small as possible.
- */
-
 #include <sys/param.h>
 #include <sys/stat.h>
 
@@ -45,66 +41,99 @@
 #include <fcntl.h>
 #include <grp.h>
 #include <paths.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <syslog.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "dma.h"
 
-/*
- * Create a mbox in /var/mail for a given user, or make sure
- * the permissions are correct for dma.
- */
-
-int
-main(int argc, char **argv)
+void
+logfail(const char *fmt, ...)
 {
-	const char *user;
-	uid_t user_uid;
+	int oerrno = errno;
+	va_list ap;
+	char outs[1024];
+
+	outs[0] = 0;
+	if (fmt != NULL) {
+		va_start(ap, fmt);
+		vsnprintf(outs, sizeof(outs), fmt, ap);
+		va_end(ap);
+	}
+
+	errno = oerrno;
+	if (*outs != 0)
+		syslog(LOG_ERR, errno ? "%s: %m" : "%s", outs);
+	else
+		syslog(LOG_ERR, errno ? "%m" : "unknown error");
+
+	exit(1);
+}
+
+gid_t
+dma_drop_grpriv(void)
+{
+	struct group *gr;
 	gid_t mail_gid;
-	int error;
-	char fn[PATH_MAX+1];
-	int f;
 
-	openlog("dma-mbox-create", 0, LOG_MAIL);
+	gr = getgrnam(DMA_GROUP);
+	if (!gr)
+		logfail("cannot find dma group `%s'", DMA_GROUP);
 
-	mail_gid = dma_drop_grpriv();
+	mail_gid = gr->gr_gid;
 
-	/*
-	 * We take exactly one argument: the username.
-	 */
-	if (argc != 2) {
+	if (setgid(mail_gid) != 0)
+		logfail("cannot set gid to %d (%s)", mail_gid, DMA_GROUP);
+	if (getegid() != mail_gid)
+		logfail("cannot set gid to %d (%s), still at %d", mail_gid,
+		    DMA_GROUP, getegid());
+
+	endgrent();
+
+	return mail_gid;
+}
+
+uid_t
+dma_getuser(const char *user)
+{
+	struct passwd *pw;
+	uid_t uid;
+
+	/* the username may not contain a pathname separator */
+	if (strchr(user, '/')) {
 		errno = 0;
-		logfail("no arguments");
-	}
-	user = argv[1];
-
-	syslog(LOG_NOTICE, "creating mbox for `%s'", user);
-
-	user_uid = dma_getuser(user);
-
-	error = snprintf(fn, sizeof(fn), "%s/%s", _PATH_MAILDIR, user);
-	if (error < 0 || (size_t)error >= sizeof(fn)) {
-		if (error >= 0) {
-			errno = 0;
-			logfail("mbox path too long");
-		}
-		logfail("cannot build mbox path for `%s/%s'", _PATH_MAILDIR, user);
+		logfail("path separator in username `%s'", user);
+		exit(1);
 	}
 
-	f = open(fn, O_RDONLY|O_CREAT, 0600);
-	if (f < 0)
-		logfail("cannot open mbox `%s'", fn);
+	/* verify the user exists */
+	errno = 0;
+	pw = getpwnam(user);
+	if (!pw)
+		logfail("cannot find user `%s'", user);
 
-	if (fchown(f, user_uid, mail_gid))
-		logfail("cannot change owner of mbox `%s'", fn);
+	uid = pw->pw_uid;
+	endpwent();
 
-	if (fchmod(f, 0620))
-		logfail("cannot change permissions of mbox `%s'", fn);
+	return uid;
+}
 
-	/* file should be present with the right owner and permissions */
+/* caller is responsible of freeing dir */
+void
+dma_gethome(const char *user, char **dir)
+{
+	struct passwd *pw;
 
-	syslog(LOG_NOTICE, "successfully created mbox for `%s'", user);
+	/* verify the user exists */
+	pw = getpwnam(user);
+	if (!pw)
+		logfail("cannot find user `%s'", user);
 
-	return (0);
+	if (pw->pw_dir)
+		asprintf(dir, "%s", pw->pw_dir);
+	else
+		logfail("cannot get %s home directory", user);
+
 }

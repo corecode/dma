@@ -44,6 +44,7 @@
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <netdb.h>
+#include <pwd.h>
 
 #define VERSION	"DragonFly Mail Agent " DMA_VERSION
 
@@ -236,5 +237,11 @@ int open_locked(const char *, int, ...);
 char *rfc822date(void);
 int strprefixcmp(const char *, const char *);
 void init_random(void);
+
+/* helper_subr.c */
+void logfail(const char *, ...);
+gid_t dma_drop_grpriv(void);
+uid_t dma_getuser(const char *);
+void dma_gethome(const char *, char **);
 
 #endif
