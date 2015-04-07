@@ -290,7 +290,7 @@ load_queue(struct queue *queue)
 
 	spooldir = opendir(config.spooldir);
 	if (spooldir == NULL)
-		err(1, "reading queue");
+		err(EX_NOINPUT, "reading queue");
 
 	while ((de = readdir(spooldir)) != NULL) {
 		queuefn = NULL;
