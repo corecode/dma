@@ -11,6 +11,7 @@ PROG=	dma-mbox-create
 .PATH: ${.CURDIR}/../..
 SRCS+=	dma-mbox-create.c
 NOMAN=
+MK_MAN=	no
 
 PREFIX?=	/usr/local
 LIBEXEC?=	${PREFIX}/libexec
