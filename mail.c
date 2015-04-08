@@ -52,7 +52,7 @@ bounce(struct qitem *it, const char *reason)
 	/* Don't bounce bounced mails */
 	if (it->sender[0] == 0) {
 		syslog(LOG_INFO, "can not bounce a bounce message, discarding");
-		exit(1);
+		exit(EX_SOFTWARE);
 	}
 
 	bzero(&bounceq, sizeof(bounceq));
@@ -133,7 +133,7 @@ bounce(struct qitem *it, const char *reason)
 fail:
 	syslog(LOG_CRIT, "error creating bounce: %m");
 	delqueue(it);
-	exit(1);
+	exit(EX_IOERR);
 }
 
 struct parse_state {
@@ -333,10 +333,10 @@ newaddr:
 	ps->pos = 0;
 	addr = strdup(ps->addr);
 	if (addr == NULL)
-		errlog(1, NULL);
+		errlog(EX_SOFTWARE, NULL);
 
 	if (add_recp(queue, addr, EXPAND_WILDCARD) != 0)
-		errlogx(1, "invalid recipient `%s'", addr);
+		errlogx(EX_DATAERR, "invalid recipient `%s'", addr);
 
 	goto again;
 }
@@ -375,7 +375,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 		if (fgets(line, sizeof(line) - 1, stdin) == NULL)
 			break;
 		if (had_last_line)
-			errlogx(1, "bad mail input format:"
+			errlogx(EX_DATAERR, "bad mail input format:"
 				" from %s (uid %d) (envelope-from %s)",
 				username, useruid, queue->sender);
 		linelen = strlen(line);
@@ -408,7 +408,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 
 			if (parse_state.state != NONE) {
 				if (parse_addrs(&parse_state, line, queue) < 0) {
-					errlogx(1, "invalid address in header\n");
+					errlogx(EX_DATAERR, "invalid address in header\n");
 					/* NOTREACHED */
 				}
 			}
@@ -419,7 +419,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 					strprefixcmp(line, "Bcc:") == 0)) {
 				parse_state.state = START;
 				if (parse_addrs(&parse_state, line, queue) < 0) {
-					errlogx(1, "invalid address in header\n");
+					errlogx(EX_DATAERR, "invalid address in header\n");
 					/* NOTREACHED */
 				}
 			}

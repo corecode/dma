@@ -82,7 +82,7 @@ create_mbox(const char *name)
 
 		execl(LIBEXEC_PATH "/dma-mbox-create", "dma-mbox-create", name, NULL);
 		syslog(LOG_ERR, "cannot execute "LIBEXEC_PATH"/dma-mbox-create: %m");
-		exit(1);
+		exit(EX_SOFTWARE);
 
 	default:
 		/* parent */

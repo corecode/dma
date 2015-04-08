@@ -44,6 +44,7 @@
 #include <arpa/inet.h>
 #include <openssl/ssl.h>
 #include <netdb.h>
+#include <sysexits.h>
 
 #define VERSION	"DragonFly Mail Agent " DMA_VERSION
 
