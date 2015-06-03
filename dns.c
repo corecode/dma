@@ -78,7 +78,7 @@ add_host(int pref, const char *host, int port, struct mx_hostentry **he, size_t 
 	snprintf(servname, sizeof(servname), "%d", port);
 	err = getaddrinfo(host, servname, &hints, &res0);
 	if (err)
-		return ((err == EAI_AGAIN || err == EAI_NONAME) ? 1 : -1);
+		return (err == EAI_AGAIN ? 1 : -1);
 
 	for (res = res0; res != NULL; res = res->ai_next) {
 		if (*ps + 1 >= roundup(*ps, count_inc)) {
