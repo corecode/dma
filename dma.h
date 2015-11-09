@@ -51,6 +51,7 @@
 #define BUF_SIZE	2048
 #define ERRMSG_SIZE	200
 #define USERNAME_SIZE	50
+#define EHLO_RESPONSE_SIZE BUF_SIZE
 #define MIN_RETRY	300		/* 5 minutes */
 #define MAX_RETRY	(3*60*60)	/* retry at least every 3 hours */
 #define MAX_TIMEOUT	(5*24*60*60)	/* give up after 5 days */
@@ -160,6 +161,15 @@ struct mx_hostentry {
 	struct sockaddr_storage	sa;
 };
 
+struct smtp_auth_mechanisms {
+	int cram_md5;
+	int login;
+};
+
+struct smtp_features {
+	struct smtp_auth_mechanisms auth;
+	int starttls;
+};
 
 /* global variables */
 extern struct aliases aliases;
@@ -187,7 +197,7 @@ void parse_authfile(const char *);
 /* crypto.c */
 void hmac_md5(unsigned char *, int, unsigned char *, int, unsigned char *);
 int smtp_auth_md5(int, char *, char *);
-int smtp_init_crypto(int, int);
+int smtp_init_crypto(int, int, struct smtp_features*);
 
 /* dns.c */
 int dns_get_mx_list(const char *, int, struct mx_hostentry **, int);
@@ -196,6 +206,7 @@ int dns_get_mx_list(const char *, int, struct mx_hostentry **, int);
 char *ssl_errstr(void);
 int read_remote(int, int, char *);
 ssize_t send_remote_command(int, const char*, ...)  __attribute__((__nonnull__(2), __format__ (__printf__, 2, 3)));
+int perform_server_greeting(int, struct smtp_features*);
 int deliver_remote(struct qitem *);
 
 /* base64.c */
