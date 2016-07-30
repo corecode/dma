@@ -345,7 +345,7 @@ int
 readmail(struct queue *queue, int nodot, int recp_from_header)
 {
 	struct parse_state parse_state;
-	char line[DMA_LINE_MAX];
+	char line[DMA_LINE_MAX+1];	/* allow 'fgets' to append an '\0' */
 	size_t linelen;
 	size_t error;
 	int had_headers = 0;
@@ -379,12 +379,14 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 				" from %s (uid %d) (envelope-from %s)",
 				username, useruid, queue->sender);
 		linelen = strlen(line);
-		if (linelen == 0 || line[linelen - 1] != '\n') {
+		if (linelen == 0 || line[linelen - 2] != '\r' || line[linelen - 1] != '\n') ) {
 			/*
-			 * This line did not end with a newline character.
-			 * If we fix it, it better be the last line of
+			 * This line did not end with a CRLF, cludge it.
+			 * If we fixed it, it better be the last line of
 			 * the file.
+			 * XXX: overwriting valid input is probably an inadequate cludge here
 			 */
+			line[linelen-1] = '\r';
 			line[linelen] = '\n';
 			line[linelen + 1] = 0;
 			had_last_line = 1;
