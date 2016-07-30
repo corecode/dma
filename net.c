@@ -352,7 +352,7 @@ static int
 deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
 	struct authuser *a;
-	char line[1000];
+	char line[RFC822_LINE_MAX];
 	size_t linelen;
 	int fd, error = 0, do_auth = 0, res = 0;
 

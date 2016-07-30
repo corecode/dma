@@ -45,7 +45,7 @@ void
 bounce(struct qitem *it, const char *reason)
 {
 	struct queue bounceq;
-	char line[1000];
+	char line[DMA_LINE_MAX];
 	size_t pos;
 	int error;
 
@@ -137,7 +137,7 @@ fail:
 }
 
 struct parse_state {
-	char addr[1000];
+	char addr[DMA_LINE_MAX];	/* will not be larger than input line */
 	int pos;
 
 	enum {
@@ -345,7 +345,7 @@ int
 readmail(struct queue *queue, int nodot, int recp_from_header)
 {
 	struct parse_state parse_state;
-	char line[1000];	/* by RFC2822 */
+	char line[DMA_LINE_MAX];
 	size_t linelen;
 	size_t error;
 	int had_headers = 0;

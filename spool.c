@@ -153,7 +153,7 @@ writequeuef(struct qitem *it)
 static struct qitem *
 readqueuef(struct queue *queue, char *queuefn)
 {
-	char line[1000];
+	char line[DMA_LINE_MAX];
 	struct queue itmqueue;
 	FILE *queuef = NULL;
 	char *s;

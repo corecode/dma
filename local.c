@@ -126,7 +126,7 @@ int
 deliver_local(struct qitem *it)
 {
 	char fn[PATH_MAX+1];
-	char line[1000];
+	char line[DMA_LINE_MAX];
 	const char *sender;
 	const char *newline = "\n";
 	size_t linelen;
