@@ -144,7 +144,7 @@ main(int argc, char **argv)
 
 	f = open(fn, O_RDONLY|O_CREAT|O_NOFOLLOW, 0600);
 	if (f < 0)
-		logfail(EX_NOINPUT, "cannt open mbox `%s'", fn);
+		logfail(EX_NOINPUT, "cannot open mbox `%s'", fn);
 
 	if (fchown(f, user_uid, mail_gid))
 		logfail(EX_OSERR, "cannot change owner of mbox `%s'", fn);
