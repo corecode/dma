@@ -58,6 +58,8 @@
 #ifndef PATH_MAX
 #define PATH_MAX	1024		/* Max path len */
 #endif
+#define RFC2822_LINE_MAX	1000		/* Max email line length, per RFC2822 */
+#define DMA_LINE_MAX	2^16		/* Max email line length, internal */
 #define	SMTP_PORT	25		/* Default SMTP port */
 #define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
 
