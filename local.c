@@ -218,7 +218,7 @@ retry:
 		/*
 		 * mboxro processing:
 		 * - escape lines that start with "From " with a > sign.
-		 * - be reversable by escaping lines that contain an arbitrary
+		 * - be reversible by escaping lines that contain an arbitrary
 		 *   number of > signs, followed by "From ", i.e. />*From / in regexp.
 		 * - strict mbox processing only requires escaping after empty lines,
 		 *   yet most MUAs seem to relax this requirement and will treat any
