@@ -77,7 +77,7 @@ init_cert_file(SSL_CTX *ctx, const char *path)
 }
 
 int
-smtp_init_crypto(int fd, int feature)
+smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 {
 	SSL_CTX *ctx = NULL;
 #if (OPENSSL_VERSION_NUMBER >= 0x00909000L)
@@ -123,8 +123,7 @@ smtp_init_crypto(int fd, int feature)
 		/* TLS init phase, disable SSL_write */
 		config.features |= NOSSL;
 
-		send_remote_command(fd, "EHLO %s", hostname());
-		if (read_remote(fd, 0, NULL) == 2) {
+		if (perform_server_greeting(fd, features) == 0) {
 			send_remote_command(fd, "STARTTLS");
 			if (read_remote(fd, 0, NULL) != 2) {
 				if ((feature & TLS_OPP) == 0) {
@@ -136,6 +135,7 @@ smtp_init_crypto(int fd, int feature)
 				}
 			}
 		}
+
 		/* End of TLS init phase, enable SSL_write/read */
 		config.features &= ~NOSSL;
 	}
