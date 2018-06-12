@@ -42,7 +42,12 @@
 #include <netdb.h>
 #include <resolv.h>
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
+
+#if defined(__sun)
+#include <sys/sysmacros.h>
+#endif
 
 #include "dma.h"
 
