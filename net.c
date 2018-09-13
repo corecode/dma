@@ -53,6 +53,7 @@
 #include <netdb.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <strings.h>
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
@@ -477,21 +478,23 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	if (fd < 0)
 		return (1);
 
-#define READ_REMOTE_CHECK(c, exp)	\
-	res = read_remote(fd, 0, NULL); \
-	if (res == 5) { \
-		syslog(LOG_ERR, "remote delivery to %s [%s] failed after %s: %s", \
-		       host->host, host->addr, c, neterr); \
-		snprintf(errmsg, sizeof(errmsg), "%s [%s] did not like our %s:\n%s", \
-			 host->host, host->addr, c, neterr); \
-		error = -1; \
-		goto out; \
-	} else if (res != exp) { \
-		syslog(LOG_NOTICE, "remote delivery deferred: %s [%s] failed after %s: %s", \
-		       host->host, host->addr, c, neterr); \
-		error = 1; \
-		goto out; \
-	}
+#define READ_REMOTE_CHECK(c, exp)                                       \
+        do {                                                            \
+                res = read_remote(fd, 0, NULL);                         \
+                if (res == 5) {                                         \
+                        syslog(LOG_ERR, "remote delivery to %s [%s] failed after %s: %s", \
+                               host->host, host->addr, c, neterr);      \
+                        snprintf(errmsg, sizeof(errmsg), "%s [%s] did not like our %s:\n%s", \
+                                 host->host, host->addr, c, neterr);    \
+                        error = -1;                                     \
+                        goto out;                                       \
+                } else if (res != exp) {                                \
+                        syslog(LOG_NOTICE, "remote delivery deferred: %s [%s] failed after %s: %s", \
+                               host->host, host->addr, c, neterr);      \
+                        error = 1;                                      \
+                        goto out;                                       \
+                }                                                       \
+        } while (0)
 
 	/* Check first reply from remote host */
 	if ((config.features & SECURETRANS) == 0 ||
