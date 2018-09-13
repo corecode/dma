@@ -160,7 +160,7 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 
 	/* Open SSL connection */
 	error = SSL_connect(config.ssl);
-	if (error < 0) {
+	if (error != 1) {
 		syslog(LOG_ERR, "remote delivery deferred: SSL handshake failed fatally: %s",
 		       ssl_errstr());
 		return (1);
