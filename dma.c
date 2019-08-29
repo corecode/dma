@@ -100,15 +100,14 @@ set_from(struct queue *queue, const char *osender)
 	const char *addr;
 	char *sender;
 
-	if (osender) {
+	if (config.masquerade_user) {
+		addr = config.masquerade_user;
+	} else if (osender) {
 		addr = osender;
 	} else if (getenv("EMAIL") != NULL) {
 		addr = getenv("EMAIL");
 	} else {
-		if (config.masquerade_user)
-			addr = config.masquerade_user;
-		else
-			addr = username;
+		addr = username;
 	}
 
 	if (!strchr(addr, '@')) {

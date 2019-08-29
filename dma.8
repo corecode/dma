@@ -89,8 +89,11 @@ Useful for debugging.
 .It Fl f Ar sender
 Set sender address (envelope-from) to
 .Ar sender .
-This overrides the value of the environment variable
-.Ev EMAIL .
+This overrides the value of the
+.Ev EMAIL
+environment variable, but is overridden by the
+.Sq MASQUERADE
+config file setting.
 .It Fl i
 Ignore dots alone on lines by themselves in incoming messages.
 This should be set if you are reading data from a file.
@@ -283,7 +286,7 @@ as the hostname.
 Masquerade the envelope-from addresses with this address/hostname.
 Use this setting if mails are not accepted by destination mail servers
 because your sender domain is invalid.
-This setting is overridden by the
+This setting overrides the
 .Fl f
 flag and the
 .Ev EMAIL
@@ -328,6 +331,8 @@ Used to set the sender address (envelope-from).
 Use a plain address, in the form of
 .Li user@example.com .
 This value will be overridden when the
+.Sq MASQUERADE
+config file setting or the
 .Fl f
 flag is used.
 .El
