@@ -399,7 +399,9 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 			if (!(line[0] == ' ' || line[0] == '\t'))
 				nocopy = 0;
 
-			if (strprefixcmp(line, "Date:") == 0)
+			if (strprefixcmp(line, "From ") == 0 || strprefixcmp(line, ">From ") == 0)
+				continue;
+			else if (strprefixcmp(line, "Date:") == 0)
 				had_date = 1;
 			else if (strprefixcmp(line, "Message-Id:") == 0)
 				had_messagid = 1;
