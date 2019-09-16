@@ -356,6 +356,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 	int had_date = 0;
 	int had_last_line = 0;
 	int nocopy = 0;
+	int had_firstline = 0;
 
 	parse_state.state = NONE;
 
@@ -391,6 +392,11 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 			line[linelen + 1] = 0;
 			had_last_line = 1;
 		}
+		if (!had_firstline) {
+			had_firstline = 1;
+			if (strprefixcmp(line, "From ") == 0 || strprefixcmp(line, ">From ") == 0)
+				continue;
+		}
 		if (!had_headers) {
 			/*
 			 * Unless this is a continuation, switch of
@@ -399,9 +405,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 			if (!(line[0] == ' ' || line[0] == '\t'))
 				nocopy = 0;
 
-			if (strprefixcmp(line, "From ") == 0 || strprefixcmp(line, ">From ") == 0)
-				continue;
-			else if (strprefixcmp(line, "Date:") == 0)
+			if (strprefixcmp(line, "Date:") == 0)
 				had_date = 1;
 			else if (strprefixcmp(line, "Message-Id:") == 0)
 				had_messagid = 1;
