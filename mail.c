@@ -393,6 +393,10 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 			had_last_line = 1;
 		}
 		if (!had_first_line) {
+			/*
+			 * Ignore a leading RFC-976 From_ or >From_ line mistakenly
+			 * inserted by some programs.
+			 */
 			if (strprefixcmp(line, "From ") == 0 || strprefixcmp(line, ">From ") == 0)
 				continue;
 			had_first_line = 1;
