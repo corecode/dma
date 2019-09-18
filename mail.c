@@ -354,6 +354,7 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 	int had_from = 0;
 	int had_messagid = 0;
 	int had_date = 0;
+	int had_first_line = 0;
 	int had_last_line = 0;
 	int nocopy = 0;
 
@@ -390,6 +391,15 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 			line[linelen] = '\n';
 			line[linelen + 1] = 0;
 			had_last_line = 1;
+		}
+		if (!had_first_line) {
+			/*
+			 * Ignore a leading RFC-976 From_ or >From_ line mistakenly
+			 * inserted by some programs.
+			 */
+			if (strprefixcmp(line, "From ") == 0 || strprefixcmp(line, ">From ") == 0)
+				continue;
+			had_first_line = 1;
 		}
 		if (!had_headers) {
 			/*
