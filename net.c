@@ -41,6 +41,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -74,6 +75,29 @@ ssl_errstr(void)
 	return (ERR_error_string(oerr, NULL));
 }
 
+static void
+debug_log(const char *dir, const char *data, size_t len)
+{
+	if (config.debugfd == -1)
+		return;
+
+	char tag[20];
+	snprintf(tag, sizeof(tag), "%d\t %s: ", getpid(), dir);
+
+	struct iovec iov[2] = {
+		{ tag, strlen(tag) },
+		{ (void *)data, len },
+	};
+
+	ssize_t res = writev(config.debugfd, iov, sizeof(iov)/sizeof(*iov));
+
+	if (res < 0) {
+		syslog(LOG_ERR, "could not write to debug log: %m");
+		close(config.debugfd);
+		config.debugfd = -1;
+	}
+}
+
 ssize_t
 send_remote_command(int fd, const char* fmt, ...)
 {
@@ -94,6 +118,8 @@ send_remote_command(int fd, const char* fmt, ...)
 	/* We *know* there are at least two more bytes available */
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
+
+	debug_log("C", cmd, len);
 
 	if (((config.features & SECURETRANS) != 0) &&
 	    ((config.features & NOSSL) == 0)) {
@@ -160,6 +186,9 @@ read_remote(int fd, int extbufsize, char *extbuf)
 					goto error;
 				}
 			}
+
+			debug_log("S", buff + len, rlen);
+
 			len += rlen;
 
 			copysize = sizeof(neterr) - strlen(neterr) - 1;
