@@ -35,6 +35,7 @@
 
 #include <err.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -230,6 +231,12 @@ parse_conf(const char *config_path)
 			config.features |= FULLBOUNCE;
 		else if (strcmp(word, "NULLCLIENT") == 0 && data == NULL)
 			config.features |= NULLCLIENT;
+		else if (strcmp(word, "DEBUGLOG") == 0 && data != NULL) {
+			config.debugfd = open(data, O_APPEND|O_WRONLY);
+			if (config.debugfd == -1)
+				errlog(EX_CONFIG, "could not open debug log file");
+			syslog(LOG_NOTICE, "debug logging to `%s'", data);
+		}
 		else {
 			errlogx(EX_CONFIG, "syntax error in %s:%d", config_path, lineno);
 			/* NOTREACHED */

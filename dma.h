@@ -141,6 +141,7 @@ struct config {
 
 	/* XXX does not belong into config */
 	SSL *ssl;
+	int debugfd;
 };
 
 
