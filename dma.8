@@ -226,6 +226,9 @@ Uncomment if you want TLS/SSL secured transfer.
 Uncomment if you want to use STARTTLS.
 Only useful together with
 .Sq SECURETRANS .
+.It Ic FINGERPRINT Xo
+Pin the server certificate by specifying its SHA256 fingerprint.
+Only makes sense if you use a smarthost.
 .It Ic OPPORTUNISTIC_TLS Xo
 (boolean, default=commented)
 .Xc

@@ -79,6 +79,29 @@ init_cert_file(SSL_CTX *ctx, const char *path)
 }
 
 int
+verify_server_fingerprint(const X509 *cert)
+{
+	unsigned char fingerprint[EVP_MAX_MD_SIZE] = {0};
+	unsigned int fingerprint_len = 0;
+	if(!X509_digest(cert, EVP_sha256(), fingerprint, &fingerprint_len)) {
+		syslog(LOG_WARNING, "failed to load fingerprint of server's certicate: %s",
+			   ssl_errstr());
+		return (1);
+	}
+	if(fingerprint_len != SHA256_DIGEST_LENGTH) {
+		syslog(LOG_WARNING, "sha256 fingerprint has unexpected length of %d bytes",
+		       fingerprint_len);
+		return (1);
+	}
+	if(memcmp(fingerprint, config.fingerprint, SHA256_DIGEST_LENGTH) != 0) {
+		syslog(LOG_WARNING, "fingerprints do not match");
+		return (1);
+	}
+	syslog(LOG_DEBUG, "verified server's fingerprint");
+	return (0);
+}
+
+int
 smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 {
 	SSL_CTX *ctx = NULL;
@@ -173,6 +196,11 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 	if (cert == NULL) {
 		syslog(LOG_WARNING, "remote delivery deferred: Peer did not provide certificate: %s",
 		       ssl_errstr());
+		return (1);
+	}
+	if(config.fingerprint != NULL && verify_server_fingerprint(cert)) {
+		X509_free(cert);
+		return (1);
 	}
 	X509_free(cert);
 
