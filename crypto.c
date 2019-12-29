@@ -84,7 +84,7 @@ verify_server_fingerprint(const X509 *cert)
 	unsigned char fingerprint[EVP_MAX_MD_SIZE] = {0};
 	unsigned int fingerprint_len = 0;
 	if(!X509_digest(cert, EVP_sha256(), fingerprint, &fingerprint_len)) {
-		syslog(LOG_WARNING, "failed to load fingerprint of server's certicate: %s",
+		syslog(LOG_WARNING, "failed to load fingerprint of server certicate: %s",
 			   ssl_errstr());
 		return (1);
 	}
@@ -97,7 +97,7 @@ verify_server_fingerprint(const X509 *cert)
 		syslog(LOG_WARNING, "fingerprints do not match");
 		return (1);
 	}
-	syslog(LOG_DEBUG, "verified server's fingerprint");
+	syslog(LOG_DEBUG, "successfully verified server certificate fingerprint");
 	return (0);
 }
 
