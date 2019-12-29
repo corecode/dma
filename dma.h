@@ -138,6 +138,7 @@ struct config {
 	const char *mailname;
 	const char *masquerade_host;
 	const char *masquerade_user;
+	const unsigned char *fingerprint;
 
 	/* XXX does not belong into config */
 	SSL *ssl;

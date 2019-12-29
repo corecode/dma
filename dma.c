@@ -85,6 +85,7 @@ struct config config = {
 	.mailname	= NULL,
 	.masquerade_host = NULL,
 	.masquerade_user = NULL,
+	.fingerprint = NULL,
 };
 
 
