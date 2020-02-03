@@ -566,7 +566,6 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		READ_REMOTE_CHECK("RCPT TO", 2);
 		to_addr = strtok(NULL, ",");
 	}
-	free(addrtmp);
 
 	send_remote_command(fd, "DATA");
 	READ_REMOTE_CHECK("DATA", 3);
@@ -608,6 +607,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 
+	free(addrtmp);
 	close_connection(fd);
 	return (error);
 }
