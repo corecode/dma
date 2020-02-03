@@ -465,7 +465,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
 	struct authuser *a;
 	struct smtp_features features;
-	char line[1000], *to_addr, *addrtmp;
+	char line[1000], *to_addr, *addrtmp = NULL;
 	size_t linelen;
 	int fd, error = 0, do_auth = 0, res = 0;
 
@@ -607,7 +607,8 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 
-	free(addrtmp);
+	if (addrtmp != NULL)
+		free(addrtmp);
 	close_connection(fd);
 	return (error);
 }
