@@ -465,7 +465,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
 	struct authuser *a;
 	struct smtp_features features;
-	char line[1000], *to_addr, *addrtmp = NULL;
+	char line[1000], *addrtmp = NULL, *to_addr;
 	size_t linelen;
 	int fd, error = 0, do_auth = 0, res = 0;
 
