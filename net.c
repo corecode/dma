@@ -559,7 +559,12 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	READ_REMOTE_CHECK("MAIL FROM", 2);
 
 	/* XXX send ESMTP ORCPT */
-	addrtmp = strdup(it->addr);
+	if ((addrtmp = strdup(it->addr)) == NULL) {
+		syslog(LOG_CRIT, "remote delivery deffered: unable to allocate memory");
+		snprintf(errmsg, sizeof(errmsg), "unable to allocate memory");
+		error = 1;
+		goto out;
+	}
 	to_addr = strtok(addrtmp, ",");
 	while (to_addr != NULL) {
 		send_remote_command(fd, "RCPT TO:<%s>", to_addr);
