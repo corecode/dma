@@ -561,7 +561,6 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	/* XXX send ESMTP ORCPT */
 	if ((addrtmp = strdup(it->addr)) == NULL) {
 		syslog(LOG_CRIT, "remote delivery deffered: unable to allocate memory");
-		snprintf(errmsg, sizeof(errmsg), "unable to allocate memory");
 		error = 1;
 		goto out;
 	}
