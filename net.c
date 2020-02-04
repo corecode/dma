@@ -607,8 +607,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 
-	if (addrtmp != NULL)
-		free(addrtmp);
+	free(addrtmp);
 	close_connection(fd);
 	return (error);
 }
