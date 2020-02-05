@@ -101,7 +101,7 @@ send_remote_command(int fd, const char* fmt, ...)
 			s = SSL_get_error(config.ssl, s);
 			if (s != SSL_ERROR_WANT_READ &&
 			    s != SSL_ERROR_WANT_WRITE) {
-				strncpy(neterr, ssl_errstr(), sizeof(neterr));
+				strlcpy(neterr, ssl_errstr(), sizeof(neterr));
 				return (-1);
 			}
 		}
@@ -151,12 +151,12 @@ read_remote(int fd, int extbufsize, char *extbuf)
 			if (((config.features & SECURETRANS) != 0) &&
 			    (config.features & NOSSL) == 0) {
 				if ((rlen = SSL_read(config.ssl, buff + len, sizeof(buff) - len)) == -1) {
-					strncpy(neterr, ssl_errstr(), sizeof(neterr));
+					strlcpy(neterr, ssl_errstr(), sizeof(neterr));
 					goto error;
 				}
 			} else {
 				if ((rlen = read(fd, buff + len, sizeof(buff) - len)) == -1) {
-					strncpy(neterr, strerror(errno), sizeof(neterr));
+					strlcpy(neterr, strerror(errno), sizeof(neterr));
 					goto error;
 				}
 			}
