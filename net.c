@@ -465,7 +465,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
 	struct authuser *a;
 	struct smtp_features features;
-	char line[1000];
+	char line[1000], *addrtmp = NULL, *to_addr;
 	size_t linelen;
 	int fd, error = 0, do_auth = 0, res = 0;
 
@@ -559,8 +559,17 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	READ_REMOTE_CHECK("MAIL FROM", 2);
 
 	/* XXX send ESMTP ORCPT */
-	send_remote_command(fd, "RCPT TO:<%s>", it->addr);
-	READ_REMOTE_CHECK("RCPT TO", 2);
+	if ((addrtmp = strdup(it->addr)) == NULL) {
+		syslog(LOG_CRIT, "remote delivery deferred: unable to allocate memory");
+		error = 1;
+		goto out;
+	}
+	to_addr = strtok(addrtmp, ",");
+	while (to_addr != NULL) {
+		send_remote_command(fd, "RCPT TO:<%s>", to_addr);
+		READ_REMOTE_CHECK("RCPT TO", 2);
+		to_addr = strtok(NULL, ",");
+	}
 
 	send_remote_command(fd, "DATA");
 	READ_REMOTE_CHECK("DATA", 3);
@@ -602,6 +611,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 
+	free(addrtmp);
 	close_connection(fd);
 	return (error);
 }
