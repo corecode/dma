@@ -445,7 +445,13 @@ main(int argc, char **argv)
 				err(EX_OSERR, "cannot drop root privileges");
 		}
 
+		if (setgid(pw->pw_gid) != 0)
+			err(EX_OSERR, "cannot drop root privileges");
+
 		if (setuid(pw->pw_uid) != 0)
+			err(EX_OSERR, "cannot drop root privileges");
+
+		if (getegid() == 0 || getgid() == 0)
 			err(EX_OSERR, "cannot drop root privileges");
 
 		if (geteuid() == 0 || getuid() == 0)
