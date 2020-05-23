@@ -95,7 +95,7 @@ send_remote_command(int fd, const char* fmt, ...)
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
 
-	if (((config.features & SECURETRANS) != 0) &&
+	if (((config.features & SECURETRANSFER) != 0) &&
 	    ((config.features & NOSSL) == 0)) {
 		while ((s = SSL_write(config.ssl, (const char*)cmd, len)) <= 0) {
 			s = SSL_get_error(config.ssl, s);
@@ -148,7 +148,7 @@ read_remote(int fd, int extbufsize, char *extbuf)
 			memmove(buff, buff + pos, len - pos);
 			len -= pos;
 			pos = 0;
-			if (((config.features & SECURETRANS) != 0) &&
+			if (((config.features & SECURETRANSFER) != 0) &&
 			    (config.features & NOSSL) == 0) {
 				if ((rlen = SSL_read(config.ssl, buff + len, sizeof(buff) - len)) == -1) {
 					strlcpy(neterr, ssl_errstr(), sizeof(neterr));
@@ -271,7 +271,7 @@ smtp_login(int fd, char *login, char* password, const struct smtp_features* feat
 	// LOGIN
 	if (features->auth.login) {
 		if ((config.features & INSECURE) != 0 ||
-		    (config.features & SECURETRANS) != 0) {
+		    (config.features & SECURETRANSFER) != 0) {
 			/* Send AUTH command according to RFC 2554 */
 			send_remote_command(fd, "AUTH LOGIN");
 			if (read_remote(fd, 0, NULL) != 3) {
@@ -347,7 +347,7 @@ static void
 close_connection(int fd)
 {
 	if (config.ssl != NULL) {
-		if (((config.features & SECURETRANS) != 0) &&
+		if (((config.features & SECURETRANSFER) != 0) &&
 		    ((config.features & NOSSL) == 0))
 			SSL_shutdown(config.ssl);
 		SSL_free(config.ssl);
@@ -497,7 +497,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
         } while (0)
 
 	/* Check first reply from remote host */
-	if ((config.features & SECURETRANS) == 0 ||
+	if ((config.features & SECURETRANSFER) == 0 ||
 	    (config.features & STARTTLS) != 0) {
 		config.features |= NOSSL;
 		READ_REMOTE_CHECK("connect", 2);
@@ -505,7 +505,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		config.features &= ~NOSSL;
 	}
 
-	if ((config.features & SECURETRANS) != 0) {
+	if ((config.features & SECURETRANSFER) != 0) {
 		error = smtp_init_crypto(fd, config.features, &features);
 		if (error == 0)
 			syslog(LOG_DEBUG, "SSL initialization successful");

@@ -143,7 +143,7 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 	/*
 	 * If the user wants STARTTLS, we have to send EHLO here
 	 */
-	if (((feature & SECURETRANS) != 0) &&
+	if (((feature & SECURETRANSFER) != 0) &&
 	     (feature & STARTTLS) != 0) {
 		/* TLS init phase, disable SSL_write */
 		config.features |= NOSSL;
