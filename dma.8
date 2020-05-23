@@ -216,7 +216,7 @@ Just stick with the default.
 Path to the
 .Sq auth.conf
 file.
-.It Ic SECURETRANS Xo
+.It Ic SECURETRANSFER Xo
 (boolean, default=commented)
 .Xc
 Uncomment if you want TLS/SSL secured transfer.
@@ -225,7 +225,7 @@ Uncomment if you want TLS/SSL secured transfer.
 .Xc
 Uncomment if you want to use STARTTLS.
 Only useful together with
-.Sq SECURETRANS .
+.Sq SECURETRANSFER .
 .It Ic FINGERPRINT Xo
 Pin the server certificate by specifying its SHA256 fingerprint.
 Only makes sense if you use a smarthost.
@@ -240,7 +240,7 @@ the outside mail exchangers; in opportunistic TLS mode, the connection will
 be encrypted if the remote server supports STARTTLS, but an unencrypted
 delivery will still be made if the negotiation fails.
 Only useful together with
-.Sq SECURETRANS
+.Sq SECURETRANSFER
 and
 .Sq STARTTLS .
 .It Ic CERTFILE Xo
