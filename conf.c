@@ -236,7 +236,7 @@ parse_conf(const char *config_path)
 		} else if (strcmp(word, "OPPORTUNISTIC_TLS") == 0 && data == NULL)
 			config.features |= TLS_OPP;
 		else if (strcmp(word, "SECURETRANSFER") == 0 && data == NULL)
-			config.features |= SECURETRANS;
+			config.features |= SECURETRANSFER;
 		else if (strcmp(word, "DEFER") == 0 && data == NULL)
 			config.features |= DEFER;
 		else if (strcmp(word, "INSECURE") == 0 && data == NULL)

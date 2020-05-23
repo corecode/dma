@@ -63,7 +63,7 @@
 #define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
 
 #define STARTTLS	0x002		/* StartTLS support */
-#define SECURETRANS	0x004		/* SSL/TLS in general */
+#define SECURETRANSFER	0x004		/* SSL/TLS in general */
 #define NOSSL		0x008		/* Do not use SSL */
 #define DEFER		0x010		/* Defer mails */
 #define INSECURE	0x020		/* Allow plain login w/o encryption */
