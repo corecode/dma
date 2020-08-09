@@ -422,6 +422,7 @@ main(int argc, char **argv)
 {
 	struct sigaction act;
 	char *sender = NULL;
+	char *own_name = NULL;
 	struct queue queue;
 	int i, ch;
 	int nodot = 0, showq = 0, queue_only = 0;
@@ -458,13 +459,15 @@ main(int argc, char **argv)
 	bzero(&queue, sizeof(queue));
 	LIST_INIT(&queue.queue);
 
-	if (strcmp(basename(argv[0]), "mailq") == 0) {
+	own_name = basename(argv[0]);
+
+	if (strcmp(own_name, "mailq") == 0) {
 		argv++; argc--;
 		showq = 1;
 		if (argc != 0)
 			errx(EX_USAGE, "invalid arguments");
 		goto skipopts;
-	} else if (strcmp(argv[0], "newaliases") == 0) {
+	} else if (strcmp(own_name, "newaliases") == 0) {
 		logident_base = "dma";
 		setlogident(NULL);
 
@@ -481,7 +484,7 @@ main(int argc, char **argv)
 			if (optarg[0] == 'c' || optarg[0] == 'm') {
 				break;
 			}
-			/* else FALLTRHOUGH */
+			/* Else FALLTHROUGH */
 		case 'b':
 			/* -bX is being ignored, except for -bp */
 			if (optarg[0] == 'p') {
@@ -491,7 +494,7 @@ main(int argc, char **argv)
 				queue_only = 1;
 				break;
 			}
-			/* else FALLTRHOUGH */
+			/* Else FALLTHROUGH */
 		case 'D':
 			daemonize = 0;
 			break;
@@ -511,7 +514,7 @@ main(int argc, char **argv)
 			/* -oX is being ignored, except for -oi */
 			if (optarg[0] != 'i')
 				break;
-			/* else FALLTRHOUGH */
+			/* Else FALLTHROUGH */
 		case 'O':
 			break;
 		case 'i':
@@ -545,7 +548,7 @@ main(int argc, char **argv)
 				doqueue = 1;
 				break;
 			}
-			/* FALLTHROUGH */
+			/* Else FALLTHROUGH */
 
 		default:
 			fprintf(stderr, "invalid argument: `-%c'\n", optopt);
