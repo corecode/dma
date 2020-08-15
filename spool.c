@@ -79,7 +79,7 @@ newspoolf(struct queue *queue)
 	struct stritem *t;
 	int fd;
 
-	if (snprintf(fn, sizeof(fn), "%s/%s", config.spooldir, "tmp_XXXXXXXXXX") <= 0)
+	if (snprintf(fn, sizeof(fn), "%s/%s", get_configuration_value(CONF_SPOOLDIR), "tmp_XXXXXXXXXX") <= 0)
 		return (-1);
 
 	fd = mkstemp(fn);
@@ -236,6 +236,7 @@ linkspool(struct queue *queue)
 {
 	struct stat st;
 	struct qitem *it;
+	const char *spooldir = get_configuration_value(CONF_SPOOLDIR);
 
 	if (fflush(queue->mailf) != 0 || fsync(fileno(queue->mailf)) != 0)
 		goto delfiles;
@@ -246,9 +247,9 @@ linkspool(struct queue *queue)
 	LIST_FOREACH(it, &queue->queue, next) {
 		if (asprintf(&it->queueid, "%s.%"PRIxPTR, queue->id, (uintptr_t)it) <= 0)
 			goto delfiles;
-		if (asprintf(&it->queuefn, "%s/Q%s", config.spooldir, it->queueid) <= 0)
+		if (asprintf(&it->queuefn, "%s/Q%s", spooldir, it->queueid) <= 0)
 			goto delfiles;
-		if (asprintf(&it->mailfn, "%s/M%s", config.spooldir, it->queueid) <= 0)
+		if (asprintf(&it->mailfn, "%s/M%s", spooldir, it->queueid) <= 0)
 			goto delfiles;
 
 		/* Neither file may not exist yet */
@@ -287,11 +288,12 @@ load_queue(struct queue *queue)
 	struct dirent *de;
 	char *queuefn;
 	char *mailfn;
+	const char *spooldir_path = get_configuration_value(CONF_SPOOLDIR);
 
 	bzero(queue, sizeof(*queue));
 	LIST_INIT(&queue->queue);
 
-	spooldir = opendir(config.spooldir);
+	spooldir = opendir(spooldir_path);
 	if (spooldir == NULL)
 		err(EX_NOINPUT, "reading queue");
 
@@ -302,9 +304,9 @@ load_queue(struct queue *queue)
 		/* ignore non-queue files */
 		if (de->d_name[0] != 'Q')
 			continue;
-		if (asprintf(&queuefn, "%s/Q%s", config.spooldir, de->d_name + 1) < 0)
+		if (asprintf(&queuefn, "%s/Q%s", spooldir_path, de->d_name + 1) < 0)
 			goto fail;
-		if (asprintf(&mailfn, "%s/M%s", config.spooldir, de->d_name + 1) < 0)
+		if (asprintf(&mailfn, "%s/M%s", spooldir_path, de->d_name + 1) < 0)
 			goto fail;
 
 		/*
@@ -407,7 +409,7 @@ flushqueue_since(unsigned int period)
 	struct timeval now;
         char *flushfn = NULL;
 
-	if (asprintf(&flushfn, "%s/%s", config.spooldir, SPOOL_FLUSHFILE) < 0)
+	if (asprintf(&flushfn, "%s/%s", get_configuration_value(CONF_SPOOLDIR), SPOOL_FLUSHFILE) < 0)
 		return (0);
 	if (stat(flushfn, &st) < 0) {
 		free(flushfn);
@@ -431,7 +433,7 @@ flushqueue_signal(void)
         char *flushfn = NULL;
 	int fd;
 
-        if (asprintf(&flushfn, "%s/%s", config.spooldir, SPOOL_FLUSHFILE) < 0)
+        if (asprintf(&flushfn, "%s/%s", get_configuration_value(CONF_SPOOLDIR), SPOOL_FLUSHFILE) < 0)
 		return (-1);
 	fd = open(flushfn, O_CREAT|O_WRONLY|O_TRUNC, 0660);
 	free(flushfn);

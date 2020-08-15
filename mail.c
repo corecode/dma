@@ -99,7 +99,7 @@ bounce(struct qitem *it, const char *reason)
 		VERSION, hostname(),
 		it->addr,
 		reason,
-		config.features & FULLBOUNCE ?
+		is_configuration_setting_enabled(CONF_FULLBOUNCE) ?
 		    "Original message follows." :
 		    "Message headers follow.");
 	if (error < 0)
@@ -107,7 +107,7 @@ bounce(struct qitem *it, const char *reason)
 
 	if (fseek(it->mailf, 0, SEEK_SET) != 0)
 		goto fail;
-	if (config.features & FULLBOUNCE) {
+	if (is_configuration_setting_enabled(CONF_FULLBOUNCE)) {
 		while ((pos = fread(line, 1, sizeof(line), it->mailf)) > 0) {
 			if (fwrite(line, 1, pos, bounceq.mailf) != pos)
 				goto fail;

@@ -60,21 +60,22 @@ hostname(void)
 	static char name[HOST_NAME_MAX+1];
 	static int initialized = 0;
 	char *s;
+	const char *mailname = get_configuration_value(CONF_MAILNAME);
 
 	if (initialized)
 		return (name);
 
-	if (config.mailname == NULL || !*config.mailname)
+	if (mailname == NULL || !*mailname)
 		goto local;
 
-	if (config.mailname[0] == '/') {
+	if (mailname[0] == '/') {
 		/*
 		 * If the mailname looks like an absolute path,
 		 * treat it as a file.
 		 */
 		FILE *fp;
 
-		fp = fopen(config.mailname, "r");
+		fp = fopen(mailname, "r");
 		if (fp == NULL)
 			goto local;
 
@@ -93,7 +94,7 @@ hostname(void)
 		initialized = 1;
 		return (name);
 	} else {
-		snprintf(name, sizeof(name), "%s", config.mailname);
+		snprintf(name, sizeof(name), "%s", mailname);
 		initialized = 1;
 		return (name);
 	}
@@ -345,4 +346,33 @@ init_random(void)
 
 	if (rf != -1)
 		close(rf);
+}
+
+void cleanUp(void)
+{
+	deltmp();
+	free_all_auth_entries();
+	free_all_configuration_settings();
+}
+
+void free_auth_details(struct auth_details_t *user_details)
+{
+	if(user_details == NULL)
+		return;
+
+	memset(user_details->password, 0, strlen(user_details->password));
+	free(user_details->login);
+	free(user_details->password);
+	free(user_details);
+}
+
+void free_masquerade_settings(struct masquerade_config_t *masquerade)
+{
+	if(masquerade == NULL)
+		return;
+	if(masquerade->user != NULL)
+		free(masquerade->user);
+	if(masquerade->host != NULL)
+		free(masquerade->host);
+	free(masquerade);
 }

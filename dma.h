@@ -45,31 +45,47 @@
 #include <openssl/ssl.h>
 #include <netdb.h>
 #include <sysexits.h>
+#include <stdbool.h>
 
 #define VERSION	"DragonFly Mail Agent " DMA_VERSION
+
+/* Defaults */
 
 #define BUF_SIZE	2048
 #define ERRMSG_SIZE	1024
 #define USERNAME_SIZE	50
 #define EHLO_RESPONSE_SIZE BUF_SIZE
-#define MIN_RETRY	300		/* 5 minutes */
-#define MAX_RETRY	(3*60*60)	/* retry at least every 3 hours */
+#define MIN_RETRY	300				/* 5 minutes */
+#define MAX_RETRY	(3*60*60)		/* retry at least every 3 hours */
 #define MAX_TIMEOUT	(5*24*60*60)	/* give up after 5 days */
-#define SLEEP_TIMEOUT	30		/* check for queue flush every 30 seconds */
+#define SLEEP_TIMEOUT	30			/* check for queue flush every 30 seconds */
 #ifndef PATH_MAX
-#define PATH_MAX	1024		/* Max path len */
+#define PATH_MAX	1024			/* Max path len */
 #endif
-#define	SMTP_PORT	25		/* Default SMTP port */
-#define CON_TIMEOUT	(5*60)		/* Connection timeout per RFC5321 */
+#define	SMTP_PORT	25				/* Default SMTP port */
+#define SMTP_PORT_STRING			"25" /* as above, as string */
+#define CON_TIMEOUT	(5*60)			/* Connection timeout per RFC5321 */
+#define DEFAULT_ALIASES_PATH		"/etc/aliases"
+#define DEFAULT_SPOOLDIR			"/var/spool/dma"
 
-#define STARTTLS	0x002		/* StartTLS support */
-#define SECURETRANSFER	0x004		/* SSL/TLS in general */
-#define NOSSL		0x008		/* Do not use SSL */
-#define DEFER		0x010		/* Defer mails */
-#define INSECURE	0x020		/* Allow plain login w/o encryption */
-#define FULLBOUNCE	0x040		/* Bounce the full message */
-#define TLS_OPP		0x080		/* Opportunistic STARTTLS */
-#define NULLCLIENT	0x100		/* Nullclient support */
+/* String constants representing the configuration settings */
+
+#define CONF_STARTTLS				"STARTTLS"
+#define CONF_SECURETRANSFER			"SECURETRANSFER"
+#define CONF_DEFER					"DEFER"
+#define CONF_INSECURE				"INSECURE"
+#define CONF_FULLBOUNCE				"FULLBOUNCE"
+#define CONF_NULLCLIENT				"NULLCLIENT"
+#define CONF_TLS_OPP				"OPPORTUNISTIC_TLS"
+#define CONF_FINGERPRINT			"FINGERPRINT"
+#define CONF_MASQUERADE				"MASQUERADE"
+#define CONF_MAILNAME				"MAILNAME"
+#define CONF_CERTFILE				"CERTFILE"
+#define CONF_AUTHPATH				"AUTHPATH"
+#define CONF_SPOOLDIR				"SPOOLDIR"
+#define CONF_ALIASES				"ALIASES"
+#define CONF_PORT					"PORT"
+#define CONF_SMARTHOST				"SMARTHOST"
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH
@@ -127,32 +143,10 @@ struct queue {
 	const char *sender;
 };
 
-struct config {
-	const char *smarthost;
-	int port;
-	const char *aliases;
-	const char *spooldir;
-	const char *authpath;
-	const char *certfile;
-	int features;
-	const char *mailname;
-	const char *masquerade_host;
-	const char *masquerade_user;
-	const unsigned char *fingerprint;
-
-	/* XXX does not belong into config */
-	SSL *ssl;
-};
-
-
-struct authuser {
-	SLIST_ENTRY(authuser) next;
-	char *login;
-	char *password;
+struct masquerade_config_t {
 	char *host;
+	char *user;
 };
-SLIST_HEAD(authusers, authuser);
-
 
 struct mx_hostentry {
 	char		host[MAXDNAME];
@@ -172,13 +166,18 @@ struct smtp_features {
 	int starttls;
 };
 
+struct auth_details_t {
+	char *login;
+	char *password;
+};
+
 /* global variables */
 extern struct aliases aliases;
-extern struct config config;
+extern bool no_ssl_flag;
 extern struct strlist tmpfs;
-extern struct authusers authusers;
 extern char username[USERNAME_SIZE];
 extern uid_t useruid;
+extern SSL *ssl_pointer;
 extern const char *logident_base;
 
 extern char neterr[ERRMSG_SIZE];
@@ -190,15 +189,34 @@ int yywrap(void);
 int yylex(void);
 extern FILE *yyin;
 
+/* auth_parse.y */
+extern FILE *auth_in;
+int auth_parse(void);
+
 /* conf.c */
-void trim_line(char *);
-void parse_conf(const char *);
+/* "Public" functions */
+void free_all_configuration_settings(void);
+struct auth_details_t *get_auth_details_for_host(const char *);
+struct masquerade_config_t *extract_masquerade_settings(const char *);
+const char *get_configuration_value(const char *);
+const struct masquerade_config_t *get_masquerade_settings(void);
+bool is_configuration_setting_enabled(const char *);
 void parse_authfile(const char *);
+void parse_conf(const char *);
+void initialize_all_configuration_settings(void);
+void trim_line(char *);
+int try_to_set_configuration_setting(char *, char *);
+int add_auth_entry(char *, char *, char *);
+void free_all_auth_entries(void);
+
+/* conf_parse.y */
+extern FILE *conf_in;
+int conf_parse(void);
 
 /* crypto.c */
 void hmac_md5(unsigned char *, int, unsigned char *, int, unsigned char *);
 int smtp_auth_md5(int, char *, char *);
-int smtp_init_crypto(int, int, struct smtp_features*);
+int smtp_init_crypto(int, struct smtp_features*);
 int verify_server_fingerprint(const X509 *);
 
 /* dns.c */
@@ -243,6 +261,8 @@ const char *hostname(void);
 void setlogident(const char *, ...) __attribute__((__format__ (__printf__, 1, 2)));
 void errlog(int, const char *, ...) __attribute__((__format__ (__printf__, 2, 3)));
 void errlogx(int, const char *, ...) __attribute__((__format__ (__printf__, 2, 3)));
+void free_auth_details(struct auth_details_t *);
+void free_masquerade_settings(struct masquerade_config_t *);
 void set_username(void);
 void deltmp(void);
 int do_timeout(int, int);
@@ -250,5 +270,6 @@ int open_locked(const char *, int, ...);
 char *rfc822date(void);
 int strprefixcmp(const char *, const char *);
 void init_random(void);
+void cleanUp(void);
 
 #endif
