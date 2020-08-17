@@ -95,10 +95,10 @@ send_remote_command(int fd, const char* fmt, ...)
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
 
-	if (is_configuration_setting_enabled(CONF_SECURETRANSFER) == true &&
-	    no_ssl_flag == false) {
-		while ((s = SSL_write(ssl_pointer, (const char*)cmd, len)) <= 0) {
-			s = SSL_get_error(ssl_pointer, s);
+	if (is_configuration_setting_enabled(CONF_SECURETRANSFER) &&
+	                !no_ssl_flag) {
+		while ((s = SSL_write(ssl_state, (const char*)cmd, len)) <= 0) {
+			s = SSL_get_error(ssl_state, s);
 			if (s != SSL_ERROR_WANT_READ &&
 			    s != SSL_ERROR_WANT_WRITE) {
 				strlcpy(neterr, ssl_errstr(), sizeof(neterr));
@@ -148,9 +148,9 @@ read_remote(int fd, int extbufsize, char *extbuf)
 			memmove(buff, buff + pos, len - pos);
 			len -= pos;
 			pos = 0;
-			if (is_configuration_setting_enabled(CONF_SECURETRANSFER) == true &&
-					no_ssl_flag == false) {
-				if ((rlen = SSL_read(ssl_pointer, buff + len, sizeof(buff) - len)) == -1) {
+			if (is_configuration_setting_enabled(CONF_SECURETRANSFER) &&
+					!no_ssl_flag) {
+				if ((rlen = SSL_read(ssl_state, buff + len, sizeof(buff) - len)) == -1) {
 					strlcpy(neterr, ssl_errstr(), sizeof(neterr));
 					goto error;
 				}
@@ -274,8 +274,8 @@ smtp_login(int fd, char *login, char* password, const struct smtp_features* feat
 		 * (config.features & SECURETRANSFER) != 0)
 		 * does this combination make sense?
 		 */
-		if (is_configuration_setting_enabled(CONF_INSECURE) == true ||
-				is_configuration_setting_enabled(CONF_SECURETRANSFER) == true) {
+		if (is_configuration_setting_enabled(CONF_INSECURE) ||
+				is_configuration_setting_enabled(CONF_SECURETRANSFER)) {
 			/* Send AUTH command according to RFC 2554 */
 			send_remote_command(fd, "AUTH LOGIN");
 			if (read_remote(fd, 0, NULL) != 3) {
@@ -350,11 +350,11 @@ open_connection(struct mx_hostentry *h)
 static void
 close_connection(int fd)
 {
-	if (ssl_pointer != NULL) {
-		if (is_configuration_setting_enabled(CONF_SECURETRANSFER) == true &&
-			no_ssl_flag == false)
-			SSL_shutdown(ssl_pointer);
-		SSL_free(ssl_pointer);
+	if (ssl_state != NULL) {
+		if (is_configuration_setting_enabled(CONF_SECURETRANSFER) &&
+			!no_ssl_flag)
+			SSL_shutdown(ssl_state);
+		SSL_free(ssl_state);
 	}
 
 	close(fd);
@@ -501,22 +501,22 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
         } while (0)
 
 	/* Check first reply from remote host */
-	if (is_configuration_setting_enabled(CONF_SECURETRANSFER) == false ||
-			is_configuration_setting_enabled(CONF_STARTTLS) == true) {
+	if (! is_configuration_setting_enabled(CONF_SECURETRANSFER) ||
+			is_configuration_setting_enabled(CONF_STARTTLS)) {
 		no_ssl_flag = true;
 		READ_REMOTE_CHECK("connect", 2);
 
 		no_ssl_flag = false;
 	}
 
-	if (is_configuration_setting_enabled(CONF_SECURETRANSFER) == true) {
+	if (is_configuration_setting_enabled(CONF_SECURETRANSFER)) {
 		error = smtp_init_crypto(fd, &features);
 		if (error == 0)
 			syslog(LOG_DEBUG, "SSL initialization successful");
 		else
 			goto out;
 
-		if (is_configuration_setting_enabled(CONF_STARTTLS) == false)
+		if (!is_configuration_setting_enabled(CONF_STARTTLS))
 			READ_REMOTE_CHECK("connect", 2);
 	}
 
@@ -609,11 +609,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 
-	if(auth != NULL)
-	{
-		free_auth_details(auth);
-		auth = NULL;
-	}
+	free_auth_details(auth);
 	free(addrtmp);
 	close_connection(fd);
 	return (error);
@@ -630,7 +626,7 @@ deliver_remote(struct qitem *it)
 	port = SMTP_PORT;
 
 	/* Smarthost support? */
-	if (is_configuration_setting_enabled(CONF_SMARTHOST) == true) {
+	if (is_configuration_setting_enabled(CONF_SMARTHOST)) {
 		host = get_configuration_value(CONF_SMARTHOST);
 		port = atoi(get_configuration_value(CONF_PORT));
 		syslog(LOG_INFO, "using smarthost (%s:%i)", host, port);

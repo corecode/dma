@@ -47,6 +47,7 @@
 #include "dma.h"
 
 bool no_ssl_flag = false;
+SSL *ssl_state = NULL;
 
 static int
 init_cert_file(SSL_CTX *ctx, const char *path)
@@ -134,7 +135,7 @@ smtp_init_crypto(int fd, struct smtp_features* features)
 	}
 
 	/* User supplied a certificate */
-	if (is_configuration_setting_enabled(CONF_CERTFILE) == true) {
+	if (is_configuration_setting_enabled(CONF_CERTFILE)) {
 		error = init_cert_file(ctx, get_configuration_value(CONF_CERTFILE));
 		if (error) {
 			syslog(LOG_WARNING, "remote delivery deferred");
@@ -145,15 +146,15 @@ smtp_init_crypto(int fd, struct smtp_features* features)
 	/*
 	 * If the user wants STARTTLS, we have to send EHLO here
 	 */
-	if (is_configuration_setting_enabled(CONF_SECURETRANSFER) == true &&
-		is_configuration_setting_enabled(CONF_STARTTLS) == true) {
+	if (is_configuration_setting_enabled(CONF_SECURETRANSFER) &&
+		is_configuration_setting_enabled(CONF_STARTTLS)) {
 		/* TLS init phase, disable SSL_write */
 		no_ssl_flag = true;
 
 		if (perform_server_greeting(fd, features) == 0) {
 			send_remote_command(fd, "STARTTLS");
 			if (read_remote(fd, 0, NULL) != 2) {
-				if (is_configuration_setting_enabled(CONF_TLS_OPP) == false) {
+				if (!is_configuration_setting_enabled(CONF_TLS_OPP)) {
 					syslog(LOG_ERR, "remote delivery deferred: STARTTLS not available: %s", neterr);
 					return (1);
 				} else {
@@ -167,18 +168,18 @@ smtp_init_crypto(int fd, struct smtp_features* features)
 		no_ssl_flag = false;
 	}
 
-	ssl_pointer = SSL_new(ctx);
-	if (ssl_pointer == NULL) {
+	ssl_state = SSL_new(ctx);
+	if (ssl_state == NULL) {
 		syslog(LOG_NOTICE, "remote delivery deferred: SSL struct creation failed: %s",
 		       ssl_errstr());
 		return (1);
 	}
 
 	/* Set ssl to work in client mode */
-	SSL_set_connect_state(ssl_pointer);
+	SSL_set_connect_state(ssl_state);
 
 	/* Set fd for SSL in/output */
-	error = SSL_set_fd(ssl_pointer, fd);
+	error = SSL_set_fd(ssl_state, fd);
 	if (error == 0) {
 		syslog(LOG_NOTICE, "remote delivery deferred: SSL set fd failed: %s",
 		       ssl_errstr());
@@ -186,7 +187,7 @@ smtp_init_crypto(int fd, struct smtp_features* features)
 	}
 
 	/* Open SSL connection */
-	error = SSL_connect(ssl_pointer);
+	error = SSL_connect(ssl_state);
 	if (error != 1) {
 		syslog(LOG_ERR, "remote delivery deferred: SSL handshake failed fatally: %s",
 		       ssl_errstr());
@@ -194,13 +195,13 @@ smtp_init_crypto(int fd, struct smtp_features* features)
 	}
 
 	/* Get peer certificate */
-	cert = SSL_get_peer_certificate(ssl_pointer);
+	cert = SSL_get_peer_certificate(ssl_state);
 	if (cert == NULL) {
 		syslog(LOG_WARNING, "remote delivery deferred: Peer did not provide certificate: %s",
 		       ssl_errstr());
 		return (1);
 	}
-	if(is_configuration_setting_enabled(CONF_FINGERPRINT) == true && verify_server_fingerprint(cert)) {
+	if(is_configuration_setting_enabled(CONF_FINGERPRINT) && verify_server_fingerprint(cert)) {
 		X509_free(cert);
 		return (1);
 	}

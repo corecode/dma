@@ -348,13 +348,6 @@ init_random(void)
 		close(rf);
 }
 
-void cleanUp(void)
-{
-	deltmp();
-	free_all_auth_entries();
-	free_all_configuration_settings();
-}
-
 void free_auth_details(struct auth_details_t *user_details)
 {
 	if(user_details == NULL)
@@ -370,6 +363,7 @@ void free_masquerade_settings(struct masquerade_config_t *masquerade)
 {
 	if(masquerade == NULL)
 		return;
+
 	if(masquerade->user != NULL)
 		free(masquerade->user);
 	if(masquerade->host != NULL)

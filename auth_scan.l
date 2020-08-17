@@ -40,3 +40,4 @@ BLANKS			[[:blank:]]+
 <*>.									{ return T_ERROR; }
 
 %%
+

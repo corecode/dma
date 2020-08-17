@@ -8,11 +8,11 @@ int auth_error(const char *);
 
 int auth_error(const char *s)
 {
-	extern char *auth_text;
-	
-	fprintf(stderr, "error parsing %s at symbol: \"%s\" on line %d\n", s, auth_text, auth_lineno);
-	
-	return 0;
+        extern char *auth_text;
+        
+        fprintf(stderr, "error parsing %s at symbol: \"%s\" on line %d\n", s, auth_text, auth_lineno);
+        
+        return 0;
 }
 %}
 
@@ -36,22 +36,22 @@ int auth_error(const char *s)
 %%
 
 auth_file: /* empty */
-	| auth_file auth_setting
+        | auth_file auth_setting
 	
 auth_setting: user T_PIPE host T_COLON password
-	{
-		if(add_auth_entry($1, $3, $5) != 0)
-		{
-			fprintf(stderr, "Error adding authentication information to list.\n");
-			free($1);
-			free($3);
-			free($5);
-			YYABORT;
-		}
-	}
+        {
+                if(add_auth_entry($1, $3, $5) != 0) {
+                        fprintf(stderr, "Error adding authentication information to list.\n");
+                        free($1);
+                        free($3);
+                        free($5);
+                        YYABORT;
+                }
+        }
 
-user:		T_USERNAME
-host: 		T_HOSTNAME
-password:	T_PASSWORD
+user:           T_USERNAME
+host:           T_HOSTNAME
+password:       T_PASSWORD
 
 %%
+

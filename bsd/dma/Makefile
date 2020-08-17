@@ -72,3 +72,4 @@ install:
 	install  -o root -g wheel -m 444 dma.8.gz  /usr/share/man/man8/
 
 .include <bsd.prog.mk>
+

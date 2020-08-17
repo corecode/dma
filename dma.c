@@ -66,8 +66,6 @@ static void deliver(struct qitem *);
 struct aliases aliases = LIST_HEAD_INITIALIZER(aliases);
 struct strlist tmpfs = SLIST_HEAD_INITIALIZER(tmpfs);
 
-SSL *ssl_pointer = NULL;
-
 char username[USERNAME_SIZE];
 uid_t useruid;
 const char *logident_base;
@@ -89,9 +87,13 @@ set_from(struct queue *queue, const char *osender)
 	char *sender;
 	struct masquerade_config_t *masquerade_config = NULL;
 
-	if(is_configuration_setting_enabled(CONF_MASQUERADE))
+	if(is_configuration_setting_enabled(CONF_MASQUERADE)) {
 		masquerade_config = extract_masquerade_settings(get_configuration_value(CONF_MASQUERADE));
-
+		if (masquerade_config == NULL)
+		        /* Masquerade config is set but no settings could be retrieved
+		         * (probably due to malloc()) failing */
+		        errlog(EX_SOFTWARE, "Masquerade settings could not be parsed.");
+	}
 
 	if (masquerade_config != NULL && masquerade_config->user != NULL) {
 		addr = masquerade_config->user;
@@ -124,8 +126,7 @@ set_from(struct queue *queue, const char *osender)
 
 	queue->sender = sender;
 
-	if(masquerade_config != NULL)
-		free_masquerade_settings(masquerade_config);
+	free_masquerade_settings(masquerade_config);
 	return (sender);
 }
 
@@ -209,7 +210,7 @@ add_recp(struct queue *queue, const char *str, int expand)
 	 * Do local delivery if there is no @.
 	 * Do not do local delivery when NULLCLIENT is set.
 	 */
-	if (strrchr(it->addr, '@') == NULL && is_configuration_setting_enabled(CONF_NULLCLIENT) == false) {
+	if (strrchr(it->addr, '@') == NULL && !is_configuration_setting_enabled(CONF_NULLCLIENT)) {
 		it->remote = 0;
 		if (expand) {
 			aliased = do_alias(queue, it->addr);
@@ -453,7 +454,7 @@ main(int argc, char **argv)
 			errx(EX_OSERR, "cannot drop root privileges");
 	}
 
-	atexit(&cleanUp);
+	atexit(&deltmp);
 	init_random();
 	initialize_all_configuration_settings();
 
