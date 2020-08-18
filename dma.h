@@ -67,6 +67,9 @@
 #define CON_TIMEOUT	        (5*60)			/* Connection timeout per RFC5321 */
 #define DEFAULT_ALIASES_PATH    "/etc/aliases"
 #define DEFAULT_SPOOLDIR	"/var/spool/dma"
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX           255
+#endif
 
 /* String constants representing the configuration settings */
 
@@ -261,6 +264,7 @@ void errlog(int, const char *, ...) __attribute__((__format__ (__printf__, 2, 3)
 void errlogx(int, const char *, ...) __attribute__((__format__ (__printf__, 2, 3)));
 void free_auth_details(struct auth_details_t *);
 void free_masquerade_settings(struct masquerade_config_t *);
+void log_warning(const char *fmt, ...) __attribute__((__format__ (__printf__, 1, 2)));;
 void set_username(void);
 void deltmp(void);
 int do_timeout(int, int);

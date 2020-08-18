@@ -54,9 +54,6 @@
 const char *
 hostname(void)
 {
-#ifndef HOST_NAME_MAX
-#define HOST_NAME_MAX	255
-#endif
 	static char name[HOST_NAME_MAX+1];
 	static int initialized = 0;
 	char *s;
@@ -369,4 +366,29 @@ void free_masquerade_settings(struct masquerade_config_t *masquerade)
 	if(masquerade->host != NULL)
 		free(masquerade->host);
 	free(masquerade);
+}
+
+/* Copy of errlog[x] to print a warning in a consistent format
+ * as this is just a warning, it doesn't exit
+ */
+void log_warning(const char *fmt, ...)
+{
+        va_list ap;
+        char outs[ERRMSG_SIZE];
+
+        outs[0] = 0;
+        if (fmt != NULL) {
+                va_start(ap, fmt);
+                vsnprintf(outs, sizeof(outs), fmt, ap);
+                va_end(ap);
+        }
+
+        if (*outs != 0) {
+                syslog(LOG_WARNING, "%s", outs);
+                fprintf(stderr, "%s: %s\n", getprogname(), outs);
+        } else {
+                syslog(LOG_WARNING, "Unknown warning");
+                fprintf(stderr, "%s: Unknown warning\n", getprogname());
+        }
+
 }

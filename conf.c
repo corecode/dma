@@ -33,6 +33,7 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/stat.h>
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
@@ -40,6 +41,9 @@
 #include <string.h>
 #include <syslog.h>
 #include <stdarg.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <grp.h>
 
 #include "dma.h"
 
@@ -81,6 +85,7 @@ static int check_fingerprint_configuration(const char*, const char*);
 static int check_nullclient_configuration(const char*, const char*);
 static void initialize_configuration_setting(const char*, check_ptr_t, bool,
                                              const char*);
+static int check_mailname_configuration(const char*, const char*);
 
 /* Debug Configuration */
 
@@ -125,6 +130,9 @@ void trim_line(char *line)
  */
 void parse_authfile(const char *path)
 {
+        struct stat statbuffer;
+        struct group *group;
+
         auth_in = fopen(path, "r");
         if (auth_in == NULL) {
                 errlog(EX_NOINPUT, "can not open auth file `%s'", path);
@@ -133,6 +141,31 @@ void parse_authfile(const char *path)
 
         if (auth_parse())
                 errlog(EX_CONFIG, "syntax error in authfile '%s'", path);
+
+        /* Since the user is supposed to supply his user details in plain text
+         * we should check if the file containing this data is not world-readable
+         * and has the correct owners.
+         * We will still continue processing the mail in case
+         * the checks are not passed, but emit an informational warning message.
+         */
+        if(fstat(fileno(auth_in), &statbuffer) == 0) {
+                /* Check file permissions
+                 * we only care about the world permissions
+                 */
+                if((statbuffer.st_mode & S_IRWXO) != 0)
+                        log_warning("Auth file '%s': File permissions are %o whereas 640 is recommended. "
+                                        "Thus, your passwords may be readable by others.",
+                                        path, statbuffer.st_mode & 0777);
+                group = getgrnam(DMA_GROUP);
+
+                if(group != NULL) {
+                        if(statbuffer.st_uid != 0 || group->gr_gid != statbuffer.st_gid)
+                                log_warning("Auth file '%s': Incorrect owners. "
+                                                "Should be '%s' with group '%s'.",
+                                                path, "root", DMA_GROUP);
+                }
+        }
+
         fclose(auth_in);
 
 #ifdef DEBUG_CONF
@@ -160,10 +193,11 @@ void parse_conf(const char *config_path)
         fclose(conf_in);
 
         /* NULLCLIENT configuration can only be checked once all config entries have been parsed */
-        if (is_configuration_setting_enabled(CONF_NULLCLIENT))
+        if (is_configuration_setting_enabled(CONF_NULLCLIENT)) {
                 if (check_nullclient_configuration(CONF_NULLCLIENT, NULL) != 0)
                         errlogx(EX_CONFIG, "%s: NULLCLIENT requires SMARTHOST",
                                         config_path);
+        }
 
 #ifdef DEBUG_CONF
         print_configuration_settings();
@@ -171,6 +205,12 @@ void parse_conf(const char *config_path)
 #endif
 }
 
+/*
+ * Function that sets up all configuration settings that are known to the program
+ * Shall be run on startup. Runs only once.
+ * Any new configuration settings must be entered in this function according to the
+ * syntax of initialize_configuration_setting
+ */
 void initialize_all_configuration_settings(void)
 {
         if (is_configuration_initialized)
@@ -181,17 +221,15 @@ void initialize_all_configuration_settings(void)
 
         SLIST_INIT(&config_head);
 
-        /* SMARTHOST */
+        /* Settings */
         initialize_configuration_setting(CONF_SMARTHOST, NULL, false, NULL);
-        /* PORT */
         initialize_configuration_setting(CONF_PORT, NULL, false, SMTP_PORT_STRING);
-        /* and so on */
         initialize_configuration_setting(CONF_ALIASES, NULL, false,
                                          DEFAULT_ALIASES_PATH);
         initialize_configuration_setting(CONF_SPOOLDIR, NULL, false, DEFAULT_SPOOLDIR);
         initialize_configuration_setting(CONF_AUTHPATH, NULL, false, NULL);
         initialize_configuration_setting(CONF_CERTFILE, NULL, false, NULL);
-        initialize_configuration_setting(CONF_MAILNAME, NULL, false, NULL);
+        initialize_configuration_setting(CONF_MAILNAME, &check_mailname_configuration, false, NULL);
         initialize_configuration_setting(CONF_MASQUERADE, NULL, false, NULL);
         initialize_configuration_setting(CONF_STARTTLS, NULL, true, NULL);
         initialize_configuration_setting(CONF_FINGERPRINT,
@@ -202,8 +240,23 @@ void initialize_all_configuration_settings(void)
         initialize_configuration_setting(CONF_INSECURE, NULL, true, NULL);
         initialize_configuration_setting(CONF_FULLBOUNCE, NULL, true, NULL);
         initialize_configuration_setting(CONF_NULLCLIENT, NULL, true, NULL);
+
+        /* Enter any new settings here */
 }
 
+/*
+ * Sets up one configuration setting
+ * Shall only be called by initialize_all_configuration_settings()
+ *
+ * Parameters
+ * identifier: The name of the parameter
+ * func_ptr: (An address to) a function that verifies the entered data
+ *           as an example refer to the check_mailname_configuration function
+ *           can be NULL if there's no function to be called
+ * is_boolean_flag: Specifies whether the configuration setting needs a value to be provided
+ *                  true if no value is needed (for example for the STARTTLS flag)
+ * default_value: Any pre-set value for the configuration setting (NULL if there's none)
+ */
 static void initialize_configuration_setting(const char *identifier,
                                              check_ptr_t func_ptr,
                                              bool is_boolean_flag,
@@ -215,11 +268,12 @@ static void initialize_configuration_setting(const char *identifier,
                 return;
 
         /* Check if the setting has already been initialized */
-        SLIST_FOREACH(item, &config_head, next_item)
+        SLIST_FOREACH(item, &config_head, next_item) {
                 if (!strcmp(identifier, item->identifier))
                         /* Already in list */
                         errlogx(EX_SOFTWARE, "Trying to initialize setting '%s' more than once",
                                         identifier);
+        }
 
         item = calloc(1, sizeof(struct config_item_t));
         if (item == NULL)
@@ -239,6 +293,13 @@ static void initialize_configuration_setting(const char *identifier,
         SLIST_INSERT_HEAD(&config_head, item, next_item);
 }
 
+/*
+ * Called by yacc-generated parser code, do not call from anywhere else.
+ * Checks, if a configuration setting is known to the program
+ * If so, checks the value and calls an existing check function
+ * that is associated with a configuration setting.
+ * Returns non-zero on error (mostly unknown identifiers or invalid values)
+ */
 int try_to_set_configuration_setting(char *identifier, char *value)
 {
         struct config_item_t *item = NULL;
@@ -311,11 +372,12 @@ static int check_fingerprint_configuration(const char *identifier,
         if (fingerprint == NULL)
                 return EX_OSERR;
 
-        for (counter = 0; counter < SHA256_DIGEST_LENGTH; counter++)
+        for (counter = 0; counter < SHA256_DIGEST_LENGTH; counter++) {
                 if (sscanf(value + 2 * counter, "%02hhx", &fingerprint[counter]) != 1) {
                         free(fingerprint);
                         return EX_CONFIG;
                 }
+        }
 
         free(fingerprint);
         return 0;
@@ -330,9 +392,6 @@ struct masquerade_config_t* extract_masquerade_settings(const char *value)
 
         struct masquerade_config_t *masquerade;
 
-#ifdef DEBUG_CONF
-        printf("extract_masquerade_settings called with value '%s'\n", value);
-#endif
         copy_of_value = host = user = NULL;
 
         if (value == NULL)
@@ -404,7 +463,7 @@ bool is_configuration_setting_enabled(const char *identifier)
         if (identifier == NULL)
                 return false;
 
-        SLIST_FOREACH(item, &config_head, next_item)
+        SLIST_FOREACH(item, &config_head, next_item) {
                 if (!strcmp(identifier, item->identifier)) {
                         /* Found the setting */
                         if (!item->boolean_flag) {
@@ -425,6 +484,7 @@ bool is_configuration_setting_enabled(const char *identifier)
                                         return false;
                         }
                 }
+        }
 
         /* Not in list */
         return false;
@@ -432,7 +492,7 @@ bool is_configuration_setting_enabled(const char *identifier)
 
 const char* get_configuration_value(const char *identifier)
 {
-        /*	* If isConfigurationFlagEnabled() has been called before,
+        /* If isConfigurationFlagEnabled() has been called before,
          * we'll try to use the item found there first */
         struct config_item_t *item = NULL;
         char *str_value = NULL;
@@ -455,10 +515,10 @@ const char* get_configuration_value(const char *identifier)
                 }
         }
         /* Else we need to traverse the list */
-        SLIST_FOREACH(item, &config_head, next_item)
-        if (!strcmp(identifier, item->identifier))
-                return item->str_value;
-
+        SLIST_FOREACH(item, &config_head, next_item) {
+                if (!strcmp(identifier, item->identifier))
+                        return item->str_value;
+        }
         /* Not found */
         return NULL;
 }
@@ -501,9 +561,10 @@ static void print_auth_items(void)
 {
         struct authuser *item;
 
-        SLIST_FOREACH(item, &authusers, next)
+        SLIST_FOREACH(item, &authusers, next) {
                 printf("User: '%s'\tHost: '%s'\tPassword: '%s'\n", item->login, item->host,
                                 item->password);
+        }
 }
 #endif
 
@@ -515,7 +576,7 @@ struct auth_details_t* get_auth_details_for_host(const char *host)
         if (host == NULL)
                 return NULL;
 
-        SLIST_FOREACH(item, &authusers, next)
+        SLIST_FOREACH(item, &authusers, next) {
                 if (strcmp(item->host, host) == 0) {
                         user_details = malloc(sizeof(struct auth_details_t));
                         if (user_details == NULL)
@@ -532,6 +593,7 @@ struct auth_details_t* get_auth_details_for_host(const char *host)
 
                         return user_details;
                 }
+        }
 
         /* Not found */
         return NULL;
@@ -552,3 +614,46 @@ static void print_masquerade_settings(void)
         free_masquerade_settings(masquerade);
 }
 #endif
+
+/* Check function for the MAILNAME setting
+ * this function only returns non-zero in the case of a probable data corruption
+ * All other checks can only lead to warning messages,
+ * as an invalid MAILNAME configuration does not prevent local mails from working properly
+ */
+static int check_mailname_configuration(const char *identifier, const char *value)
+{
+        FILE *mailname;
+        char buffer[HOST_NAME_MAX +1] = { 0 }; /* Maximum hostname size + 1 '\0' */
+        size_t counter, length;
+
+        if(identifier == NULL || value == NULL)
+                return 1;
+
+        mailname = fopen(value, "r");
+        if(mailname == NULL) {
+                log_warning("Error opening %s: %s", value, strerror(errno));
+                return 0;
+        }
+        fgets(buffer, sizeof(buffer), mailname);
+
+        length = strlen(buffer);
+        for(counter = 0; counter < length; counter++) {
+                if(!isalnum(buffer[counter]) && buffer[counter] != '-' && buffer[counter] != '.') {
+
+                        if(buffer[counter] == '\n')
+                                buffer[counter] = '\0';
+                        else
+                                log_warning("Warning: Invalid character '%c' in hostname: '%s'", buffer[counter], buffer);
+
+                        break; /* No matter if the char is invalid or just a newline:
+                                * We're done here */
+                }
+        }
+
+#ifdef DEBUG_CONF
+        printf("Checked file '%s' with '%s' as contents.\n", value, buffer);
+        printf("Mailname configuration ended.\n");
+#endif
+
+        return 0;
+}
