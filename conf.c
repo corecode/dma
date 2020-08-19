@@ -100,7 +100,8 @@ static void print_masquerade_settings(void);
 /*
  * Remove trailing \n's
  */
-void trim_line(char *line)
+void
+trim_line(char *line)
 {
         size_t linelen;
         char *p;
@@ -128,7 +129,8 @@ void trim_line(char *line)
  *
  * A line starting with # is treated as comment and ignored.
  */
-void parse_authfile(const char *path)
+void
+parse_authfile(const char *path)
 {
         struct stat statbuffer;
         struct group *group;
@@ -142,7 +144,8 @@ void parse_authfile(const char *path)
         if (auth_parse())
                 errlog(EX_CONFIG, "syntax error in authfile '%s'", path);
 
-        /* Since the user is supposed to supply his user details in plain text
+        /*
+         * Since the user is supposed to supply his user details in plain text
          * we should check if the file containing this data is not world-readable
          * and has the correct owners.
          * We will still continue processing the mail in case
@@ -173,7 +176,8 @@ void parse_authfile(const char *path)
 #endif
 }
 
-void parse_conf(const char *config_path)
+void
+parse_conf(const char *config_path)
 {
         if (!is_configuration_initialized)
                 errlogx(EX_SOFTWARE,
@@ -211,11 +215,13 @@ void parse_conf(const char *config_path)
  * Any new configuration settings must be entered in this function according to the
  * syntax of initialize_configuration_setting
  */
-void initialize_all_configuration_settings(void)
+void
+initialize_all_configuration_settings(void)
 {
-        if (is_configuration_initialized)
+        if (is_configuration_initialized) {
                 /* This function shall only run once... */
                 return;
+        }
 
         is_configuration_initialized = true;
 
@@ -240,8 +246,6 @@ void initialize_all_configuration_settings(void)
         initialize_configuration_setting(CONF_INSECURE, NULL, true, NULL);
         initialize_configuration_setting(CONF_FULLBOUNCE, NULL, true, NULL);
         initialize_configuration_setting(CONF_NULLCLIENT, NULL, true, NULL);
-
-        /* Enter any new settings here */
 }
 
 /*
@@ -257,7 +261,8 @@ void initialize_all_configuration_settings(void)
  *                  true if no value is needed (for example for the STARTTLS flag)
  * default_value: Any pre-set value for the configuration setting (NULL if there's none)
  */
-static void initialize_configuration_setting(const char *identifier,
+static void
+initialize_configuration_setting(const char *identifier,
                                              check_ptr_t func_ptr,
                                              bool is_boolean_flag,
                                              const char *default_value)
@@ -269,16 +274,16 @@ static void initialize_configuration_setting(const char *identifier,
 
         /* Check if the setting has already been initialized */
         SLIST_FOREACH(item, &config_head, next_item) {
-                if (!strcmp(identifier, item->identifier))
+                if (strcmp(identifier, item->identifier) == 0) {
                         /* Already in list */
                         errlogx(EX_SOFTWARE, "Trying to initialize setting '%s' more than once",
                                         identifier);
+                }
         }
 
         item = calloc(1, sizeof(struct config_item_t));
         if (item == NULL)
                 errlog(EX_OSERR, "Error allocating memory\n");
-        /* exit */
 
         /* We use strdup() here so that we'll be able to properly clean up everything */
         item->identifier = strdup(identifier);
@@ -300,59 +305,66 @@ static void initialize_configuration_setting(const char *identifier,
  * that is associated with a configuration setting.
  * Returns non-zero on error (mostly unknown identifiers or invalid values)
  */
-int try_to_set_configuration_setting(char *identifier, char *value)
+int
+try_to_set_configuration_setting(char *identifier, char *value)
 {
         struct config_item_t *item = NULL;
         bool found = false;
 
         SLIST_FOREACH(item, &config_head, next_item)
-                if (!strcmp(identifier, item->identifier)) {
+                if (strcmp(identifier, item->identifier) == 0) {
                         found = true;
                         break;
                 }
 
         if (found) {
-                /* item is pointing to the correct item now */
-                /* Let's see if it requires a value */
+                /*
+                 * item is pointing to the correct item now
+                 * Let's see if it requires a value
+                 */
                 if (!item->boolean_flag) {
                         /* Check values */
                         if (value == NULL)
                                 /* Item requires a value, but no value has been provided! */
-                                return EX_CONFIG;
+                                return (EX_CONFIG);
 
                         /* Call the check function, if it exists */
                         if (item->checkFunction != NULL)
                                 if (item->checkFunction(identifier, value) != 0)
-                                        return EX_CONFIG;
+                                        return (EX_CONFIG);
 
                         /* Else let's store the value and return */
                         if (item->str_value != NULL)
                                 free(item->str_value); /* Let's free the old value first */
 
                         item->str_value = value;
-                        return 0;
+                        return (0);
                 } else {
-                        /* No value needed */
-                        /* Check if a value has been provided even though no value is expected */
+                        /*
+                         * No value needed
+                         * Check if a value has been provided even though no value is expected
+                         */
                         if (value != NULL)
-                                return EX_CONFIG;
+                                return (EX_CONFIG);
 
                         if (item->checkFunction != NULL)
                                 if (item->checkFunction(identifier, value) != 0)
-                                        return EX_CONFIG;
+                                        return (EX_CONFIG);
 
-                        /* else let's set the config flag to on
+                        /*
+                         * else let's set the config flag to on
                          * we do not bother changing the value if it is already set,
                          * as its concrete value is meaningless.
                          * The value can already be set,
-                         * if its flag has been enabled more than once in the config file. */
+                         * if its flag has been enabled more than once in the config file.
+                         */
                         if (item->str_value == NULL)
                                 item->str_value = strdup("ON");
-                        return 0;
+                        return (0);
                 }
         } else {
                 /* Item has not been found */
-                return EX_CONFIG;
+                return (EX_CONFIG);
         }
 }
 
@@ -363,28 +375,29 @@ static int check_fingerprint_configuration(const char *identifier,
         unsigned char *fingerprint;
 
         if (identifier == NULL || value == NULL)
-                return EX_CONFIG;
+                return (EX_CONFIG);
 
         if (strlen(value) != SHA256_DIGEST_LENGTH * 2)
-                return EX_CONFIG;
+                return (EX_CONFIG);
 
         fingerprint = malloc(SHA256_DIGEST_LENGTH);
         if (fingerprint == NULL)
-                return EX_OSERR;
+                return (EX_OSERR);
 
         for (counter = 0; counter < SHA256_DIGEST_LENGTH; counter++) {
                 if (sscanf(value + 2 * counter, "%02hhx", &fingerprint[counter]) != 1) {
                         free(fingerprint);
-                        return EX_CONFIG;
+                        return (EX_CONFIG);
                 }
         }
 
         free(fingerprint);
-        return 0;
+        return (0);
 }
 
 /* Helper function to return the masquerade settings split up in login and host */
-struct masquerade_config_t* extract_masquerade_settings(const char *value)
+struct masquerade_config_t*
+extract_masquerade_settings(const char *value)
 {
         char *user;
         char *host;
@@ -395,18 +408,18 @@ struct masquerade_config_t* extract_masquerade_settings(const char *value)
         copy_of_value = host = user = NULL;
 
         if (value == NULL)
-                return NULL;
+                return (NULL);
 
         masquerade = malloc(sizeof(struct masquerade_config_t));
 
         if (masquerade == NULL)
-                return NULL;
+                return (NULL);
 
         copy_of_value = strdup(value);
 
         if (copy_of_value == NULL) {
                 free(masquerade);
-                return NULL;
+                return (NULL);
         }
 
         host = strrchr(copy_of_value, '@');
@@ -439,10 +452,11 @@ struct masquerade_config_t* extract_masquerade_settings(const char *value)
 #endif
 
         free(copy_of_value);
-        return masquerade;
+        return (masquerade);
 }
 
-static int check_nullclient_configuration(const char *identifier,
+static int
+check_nullclient_configuration(const char *identifier,
                                           const char *value)
 {
         if (identifier == NULL || value != NULL)
@@ -450,21 +464,22 @@ static int check_nullclient_configuration(const char *identifier,
                                 "checkNullClientConfiguration called with invalid arguments.");
 
         if (is_configuration_setting_enabled(CONF_SMARTHOST))
-                return 0;
+                return (0);
 
         /* NULLCLIENT requires SMARTHOST */
-        return EX_CONFIG;
+        return (EX_CONFIG);
 }
 
-bool is_configuration_setting_enabled(const char *identifier)
+bool
+is_configuration_setting_enabled(const char *identifier)
 {
         struct config_item_t *item;
 
         if (identifier == NULL)
-                return false;
+                return (false);
 
         SLIST_FOREACH(item, &config_head, next_item) {
-                if (!strcmp(identifier, item->identifier)) {
+                if (strcmp(identifier, item->identifier) == 0) {
                         /* Found the setting */
                         if (!item->boolean_flag) {
                                 if (item->str_value != NULL) {
@@ -472,25 +487,26 @@ bool is_configuration_setting_enabled(const char *identifier)
                                         /* Pointer to the last item that was queried
                                          * this is subsequently checked first,
                                          * if get_configuration_value() is called */
-                                        return true;
+                                        return (true);
                                 } else {
-                                        return false;
+                                        return (false);
                                 }
                         } else {
                                 /* No value required, check if it is enabled */
                                 if (item->str_value != NULL)
-                                        return true;
+                                        return (true);
                                 else
-                                        return false;
+                                        return (false);
                         }
                 }
         }
 
         /* Not in list */
-        return false;
+        return (false);
 }
 
-const char* get_configuration_value(const char *identifier)
+const char*
+get_configuration_value(const char *identifier)
 {
         /* If isConfigurationFlagEnabled() has been called before,
          * we'll try to use the item found there first */
@@ -498,17 +514,17 @@ const char* get_configuration_value(const char *identifier)
         char *str_value = NULL;
 
         if (identifier == NULL)
-                return NULL;
+                return (NULL);
 
         if (last_checked_item != NULL) {
                 if (last_checked_item->str_value == NULL)
                         /* This really shouldn't happen */
                         errlogx(EX_DATAERR, "Internal data corruption"); /* exits */
 
-                if (!strcmp(last_checked_item->identifier, identifier)) {
+                if (strcmp(last_checked_item->identifier, identifier) == 0) {
                         str_value = last_checked_item->str_value;
                         last_checked_item = NULL; /* Reset */
-                        return str_value;
+                        return (str_value);
                 } else {
                         /* last_checked_item led to a wrong item ... let's clear it */
                         last_checked_item = NULL;
@@ -516,34 +532,36 @@ const char* get_configuration_value(const char *identifier)
         }
         /* Else we need to traverse the list */
         SLIST_FOREACH(item, &config_head, next_item) {
-                if (!strcmp(identifier, item->identifier))
-                        return item->str_value;
+                if (strcmp(identifier, item->identifier) == 0)
+                        return (item->str_value);
         }
         /* Not found */
-        return NULL;
+        return (NULL);
 }
 
-int add_auth_entry(char *user, char *domain, char *password)
+int
+add_auth_entry(char *user, char *domain, char *password)
 {
         struct authuser *auth_item;
 
         if (user == NULL || domain == NULL || password == NULL)
-                return EX_CONFIG;
+                return (EX_CONFIG);
 
         auth_item = malloc(sizeof(struct authuser));
         if (auth_item == NULL)
-                return EX_OSERR;
+                return (EX_OSERR);
 
         auth_item->login = user;
         auth_item->host = domain;
         auth_item->password = password;
 
         SLIST_INSERT_HEAD(&authusers, auth_item, next);
-        return 0;
+        return (0);
 }
 
 #ifdef DEBUG_CONF
-static void print_configuration_settings(void)
+static void
+print_configuration_settings(void)
 {
         struct config_item_t *item;
 
@@ -557,7 +575,8 @@ static void print_configuration_settings(void)
 #endif
 
 #ifdef DEBUG_CONF
-static void print_auth_items(void)
+static void
+print_auth_items(void)
 {
         struct authuser *item;
 
@@ -568,19 +587,20 @@ static void print_auth_items(void)
 }
 #endif
 
-struct auth_details_t* get_auth_details_for_host(const char *host)
+struct auth_details_t*
+get_auth_details_for_host(const char *host)
 {
         struct authuser *item;
         struct auth_details_t *user_details;
 
         if (host == NULL)
-                return NULL;
+                return (NULL);
 
         SLIST_FOREACH(item, &authusers, next) {
                 if (strcmp(item->host, host) == 0) {
                         user_details = malloc(sizeof(struct auth_details_t));
                         if (user_details == NULL)
-                                return NULL;
+                                return (NULL);
 
                         user_details->login = strdup(item->login);
                         user_details->password = strdup(item->password);
@@ -588,19 +608,20 @@ struct auth_details_t* get_auth_details_for_host(const char *host)
                                 free(user_details->login);
                                 free(user_details->password);
                                 free(user_details);
-                                return NULL;
+                                return (NULL);
                         }
 
-                        return user_details;
+                        return (user_details);
                 }
         }
 
         /* Not found */
-        return NULL;
+        return (NULL);
 }
 
 #ifdef DEBUG_CONF
-static void print_masquerade_settings(void)
+static void
+print_masquerade_settings(void)
 {
         struct masquerade_config_t *masquerade = NULL;
 
@@ -620,19 +641,20 @@ static void print_masquerade_settings(void)
  * All other checks can only lead to warning messages,
  * as an invalid MAILNAME configuration does not prevent local mails from working properly
  */
-static int check_mailname_configuration(const char *identifier, const char *value)
+static int
+check_mailname_configuration(const char *identifier, const char *value)
 {
         FILE *mailname;
         char buffer[HOST_NAME_MAX +1] = { 0 }; /* Maximum hostname size + 1 '\0' */
         size_t counter, length;
 
         if(identifier == NULL || value == NULL)
-                return 1;
+                return (1);
 
         mailname = fopen(value, "r");
         if(mailname == NULL) {
                 log_warning("Error opening %s: %s", value, strerror(errno));
-                return 0;
+                return (0);
         }
         fgets(buffer, sizeof(buffer), mailname);
 
@@ -655,5 +677,5 @@ static int check_mailname_configuration(const char *identifier, const char *valu
         printf("Mailname configuration ended.\n");
 #endif
 
-        return 0;
+        return (0);
 }

@@ -345,7 +345,8 @@ init_random(void)
 		close(rf);
 }
 
-void free_auth_details(struct auth_details_t *user_details)
+void
+free_auth_details(struct auth_details_t *user_details)
 {
 	if(user_details == NULL)
 		return;
@@ -356,22 +357,23 @@ void free_auth_details(struct auth_details_t *user_details)
 	free(user_details);
 }
 
-void free_masquerade_settings(struct masquerade_config_t *masquerade)
+void
+free_masquerade_settings(struct masquerade_config_t *masquerade)
 {
 	if(masquerade == NULL)
 		return;
 
-	if(masquerade->user != NULL)
-		free(masquerade->user);
-	if(masquerade->host != NULL)
-		free(masquerade->host);
+	free(masquerade->user);
+	free(masquerade->host);
 	free(masquerade);
 }
 
-/* Copy of errlog[x] to print a warning in a consistent format
- * as this is just a warning, it doesn't exit
+/*
+ * Copy of errlog resp errlogx to print a warning in a consistent format.
+ * Since this is supposed to be just a warning, it doesn't exit
  */
-void log_warning(const char *fmt, ...)
+void
+log_warning(const char *fmt, ...)
 {
         va_list ap;
         char outs[ERRMSG_SIZE];
@@ -383,12 +385,6 @@ void log_warning(const char *fmt, ...)
                 va_end(ap);
         }
 
-        if (*outs != 0) {
-                syslog(LOG_WARNING, "%s", outs);
-                fprintf(stderr, "%s: %s\n", getprogname(), outs);
-        } else {
-                syslog(LOG_WARNING, "Unknown warning");
-                fprintf(stderr, "%s: Unknown warning\n", getprogname());
-        }
-
+        syslog(LOG_WARNING, "%s", outs);
+        fprintf(stderr, "%s: %s\n", getprogname(), outs);
 }
