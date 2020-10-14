@@ -190,8 +190,7 @@ again:
 		switch (*s) {
 		case ' ':
 		case '\t':
-			s++;
-			/* continue */
+			ps->state = MAIN;
 			break;
 
 		default:
@@ -200,7 +199,7 @@ again:
 				goto newaddr;
 			return (0);
 		}
-		/* fallthrough */
+		break;
 
 	case QUIT:
 		return (0);
