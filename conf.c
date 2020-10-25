@@ -72,14 +72,14 @@ SLIST_HEAD( authusers, authuser);
 
 /* Initializations */
 
-struct S_CONFIGHEAD config_head = SLIST_HEAD_INITIALIZER(config_head);
-struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
-bool is_configuration_initialized = false;
+static struct S_CONFIGHEAD config_head = SLIST_HEAD_INITIALIZER(config_head);
+static struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
+static bool is_configuration_initialized = false;
 
-struct config_item_t *last_checked_item = NULL;
+static struct config_item_t *last_checked_item = NULL;
 
-/* Static function declarations
- * they are "private" (internal linkage) */
+
+ /* Static function declarations */
 
 static int check_fingerprint_configuration(const char*, const char*);
 static int check_nullclient_configuration(const char*, const char*);
@@ -152,13 +152,14 @@ parse_authfile(const char *path)
          * the checks are not passed, but emit an informational warning message.
          */
         if(fstat(fileno(auth_in), &statbuffer) == 0) {
-                /* Check file permissions
+                /* 
+                 * Check file permissions
                  * we only care about the world permissions
                  */
                 if((statbuffer.st_mode & S_IRWXO) != 0)
-                        log_warning("Auth file '%s': File permissions are %o whereas 640 is recommended. "
+                        log_warning("Auth file '%s': File permissions are %lo whereas 640 is recommended. "
                                         "Thus, your passwords may be readable by others.",
-                                        path, statbuffer.st_mode & 0777);
+                                        path, (unsigned long)(statbuffer.st_mode & 0777));
                 group = getgrnam(DMA_GROUP);
 
                 if(group != NULL) {
@@ -484,9 +485,11 @@ is_configuration_setting_enabled(const char *identifier)
                         if (!item->boolean_flag) {
                                 if (item->str_value != NULL) {
                                         last_checked_item = item;
-                                        /* Pointer to the last item that was queried
+                                        /*
+                                         * Pointer to the last item that was queried
                                          * this is subsequently checked first,
-                                         * if get_configuration_value() is called */
+                                         * if get_configuration_value() is called
+                                         */
                                         return (true);
                                 } else {
                                         return (false);
@@ -508,8 +511,10 @@ is_configuration_setting_enabled(const char *identifier)
 const char*
 get_configuration_value(const char *identifier)
 {
-        /* If isConfigurationFlagEnabled() has been called before,
-         * we'll try to use the item found there first */
+        /*
+         * If isConfigurationFlagEnabled() has been called before,
+         * we'll try to use the item found there first
+         */
         struct config_item_t *item = NULL;
         char *str_value = NULL;
 
@@ -636,7 +641,8 @@ print_masquerade_settings(void)
 }
 #endif
 
-/* Check function for the MAILNAME setting
+/* 
+ * Check function for the MAILNAME setting
  * this function only returns non-zero in the case of a probable data corruption
  * All other checks can only lead to warning messages,
  * as an invalid MAILNAME configuration does not prevent local mails from working properly
@@ -667,8 +673,10 @@ check_mailname_configuration(const char *identifier, const char *value)
                         else
                                 log_warning("Warning: Invalid character '%c' in hostname: '%s'", buffer[counter], buffer);
 
-                        break; /* No matter if the char is invalid or just a newline:
-                                * We're done here */
+                        break; /* 
+                                * No matter if the char is invalid or just a newline:
+                                * We're done here
+                                */
                 }
         }
 
