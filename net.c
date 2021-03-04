@@ -95,10 +95,10 @@ send_remote_command(int fd, const char* fmt, ...)
 	strcat(cmd, "\r\n");
 	len = strlen(cmd);
 
-	if (((config.features & SECURETRANSFER) != 0) &&
-	    ((config.features & NOSSL) == 0)) {
-		while ((s = SSL_write(config.ssl, (const char*)cmd, len)) <= 0) {
-			s = SSL_get_error(config.ssl, s);
+	if (is_configuration_setting_enabled(CONF_SECURETRANSFER) &&
+	                !no_ssl_flag) {
+		while ((s = SSL_write(ssl_state, (const char*)cmd, len)) <= 0) {
+			s = SSL_get_error(ssl_state, s);
 			if (s != SSL_ERROR_WANT_READ &&
 			    s != SSL_ERROR_WANT_WRITE) {
 				strlcpy(neterr, ssl_errstr(), sizeof(neterr));
@@ -148,9 +148,9 @@ read_remote(int fd, int extbufsize, char *extbuf)
 			memmove(buff, buff + pos, len - pos);
 			len -= pos;
 			pos = 0;
-			if (((config.features & SECURETRANSFER) != 0) &&
-			    (config.features & NOSSL) == 0) {
-				if ((rlen = SSL_read(config.ssl, buff + len, sizeof(buff) - len)) == -1) {
+			if (is_configuration_setting_enabled(CONF_SECURETRANSFER) &&
+					!no_ssl_flag) {
+				if ((rlen = SSL_read(ssl_state, buff + len, sizeof(buff) - len)) == -1) {
 					strlcpy(neterr, ssl_errstr(), sizeof(neterr));
 					goto error;
 				}
@@ -270,8 +270,12 @@ smtp_login(int fd, char *login, char* password, const struct smtp_features* feat
 
 	// LOGIN
 	if (features->auth.login) {
-		if ((config.features & INSECURE) != 0 ||
-		    (config.features & SECURETRANSFER) != 0) {
+		/* old: if ((config.features & INSECURE) != 0 ||
+		 * (config.features & SECURETRANSFER) != 0)
+		 * does this combination make sense?
+		 */
+		if (is_configuration_setting_enabled(CONF_INSECURE) ||
+				is_configuration_setting_enabled(CONF_SECURETRANSFER)) {
 			/* Send AUTH command according to RFC 2554 */
 			send_remote_command(fd, "AUTH LOGIN");
 			if (read_remote(fd, 0, NULL) != 3) {
@@ -346,11 +350,11 @@ open_connection(struct mx_hostentry *h)
 static void
 close_connection(int fd)
 {
-	if (config.ssl != NULL) {
-		if (((config.features & SECURETRANSFER) != 0) &&
-		    ((config.features & NOSSL) == 0))
-			SSL_shutdown(config.ssl);
-		SSL_free(config.ssl);
+	if (ssl_state != NULL) {
+		if (is_configuration_setting_enabled(CONF_SECURETRANSFER) &&
+			!no_ssl_flag)
+			SSL_shutdown(ssl_state);
+		SSL_free(ssl_state);
 	}
 
 	close(fd);
@@ -463,11 +467,11 @@ int perform_server_greeting(int fd, struct smtp_features* features) {
 static int
 deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
-	struct authuser *a;
 	struct smtp_features features;
+	struct auth_details_t *auth = NULL;
 	char line[1000], *addrtmp = NULL, *to_addr;
 	size_t linelen;
-	int fd, error = 0, do_auth = 0, res = 0;
+	int fd, error = 0, res = 0;
 
 	if (fseek(it->mailf, 0, SEEK_SET) != 0) {
 		snprintf(errmsg, sizeof(errmsg), "can not seek: %s", strerror(errno));
@@ -497,22 +501,22 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
         } while (0)
 
 	/* Check first reply from remote host */
-	if ((config.features & SECURETRANSFER) == 0 ||
-	    (config.features & STARTTLS) != 0) {
-		config.features |= NOSSL;
+	if (! is_configuration_setting_enabled(CONF_SECURETRANSFER) ||
+			is_configuration_setting_enabled(CONF_STARTTLS)) {
+		no_ssl_flag = true;
 		READ_REMOTE_CHECK("connect", 2);
 
-		config.features &= ~NOSSL;
+		no_ssl_flag = false;
 	}
 
-	if ((config.features & SECURETRANSFER) != 0) {
-		error = smtp_init_crypto(fd, config.features, &features);
+	if (is_configuration_setting_enabled(CONF_SECURETRANSFER)) {
+		error = smtp_init_crypto(fd, &features);
 		if (error == 0)
 			syslog(LOG_DEBUG, "SSL initialization successful");
 		else
 			goto out;
 
-		if ((config.features & STARTTLS) == 0)
+		if (!is_configuration_setting_enabled(CONF_STARTTLS))
 			READ_REMOTE_CHECK("connect", 2);
 	}
 
@@ -527,20 +531,14 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	 * Use SMTP authentication if the user defined an entry for the remote
 	 * or smarthost
 	 */
-	SLIST_FOREACH(a, &authusers, next) {
-		if (strcmp(a->host, host->host) == 0) {
-			do_auth = 1;
-			break;
-		}
-	}
-
-	if (do_auth == 1) {
+	auth = get_auth_details_for_host(host->host);
+	if(auth != NULL) {
 		/*
 		 * Check if the user wants plain text login without using
 		 * encryption.
 		 */
-		syslog(LOG_INFO, "using SMTP authentication for user %s", a->login);
-		error = smtp_login(fd, a->login, a->password, &features);
+		syslog(LOG_INFO, "using SMTP authentication for user %s", auth->login);
+		error = smtp_login(fd, auth->login, auth->password, &features);
 		if (error < 0) {
 			syslog(LOG_ERR, "remote delivery failed:"
 					" SMTP login failed: %m");
@@ -611,6 +609,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
 out:
 
+	free_auth_details(auth);
 	free(addrtmp);
 	close_connection(fd);
 	return (error);
@@ -627,9 +626,9 @@ deliver_remote(struct qitem *it)
 	port = SMTP_PORT;
 
 	/* Smarthost support? */
-	if (config.smarthost != NULL) {
-		host = config.smarthost;
-		port = config.port;
+	if (is_configuration_setting_enabled(CONF_SMARTHOST)) {
+		host = get_configuration_value(CONF_SMARTHOST);
+		port = atoi(get_configuration_value(CONF_PORT));
 		syslog(LOG_INFO, "using smarthost (%s:%i)", host, port);
 		smarthost = 1;
 	} else {

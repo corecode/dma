@@ -65,7 +65,7 @@ static void deliver(struct qitem *);
 
 struct aliases aliases = LIST_HEAD_INITIALIZER(aliases);
 struct strlist tmpfs = SLIST_HEAD_INITIALIZER(tmpfs);
-struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
+
 char username[USERNAME_SIZE];
 uid_t useruid;
 const char *logident_base;
@@ -73,21 +73,6 @@ char errmsg[ERRMSG_SIZE];
 
 static int daemonize = 1;
 static int doqueue = 0;
-
-struct config config = {
-	.smarthost	= NULL,
-	.port		= 25,
-	.aliases	= "/etc/aliases",
-	.spooldir	= "/var/spool/dma",
-	.authpath	= NULL,
-	.certfile	= NULL,
-	.features	= 0,
-	.mailname	= NULL,
-	.masquerade_host = NULL,
-	.masquerade_user = NULL,
-	.fingerprint = NULL,
-};
-
 
 static void
 sighup_handler(int signo)
@@ -100,9 +85,18 @@ set_from(struct queue *queue, const char *osender)
 {
 	const char *addr;
 	char *sender;
+	struct masquerade_config_t *masquerade_config = NULL;
 
-	if (config.masquerade_user) {
-		addr = config.masquerade_user;
+	if(is_configuration_setting_enabled(CONF_MASQUERADE)) {
+		masquerade_config = extract_masquerade_settings(get_configuration_value(CONF_MASQUERADE));
+		if (masquerade_config == NULL)
+		        /* Masquerade config is set but no settings could be retrieved
+		         * (probably due to malloc()) failing */
+		        errlog(EX_SOFTWARE, "Masquerade settings could not be parsed.");
+	}
+
+	if (masquerade_config != NULL && masquerade_config->user != NULL) {
+		addr = masquerade_config->user;
 	} else if (osender) {
 		addr = osender;
 	} else if (getenv("EMAIL") != NULL) {
@@ -114,8 +108,8 @@ set_from(struct queue *queue, const char *osender)
 	if (!strchr(addr, '@')) {
 		const char *from_host = hostname();
 
-		if (config.masquerade_host)
-			from_host = config.masquerade_host;
+		if (masquerade_config != NULL && masquerade_config->host != NULL)
+			from_host = masquerade_config->host;
 
 		if (asprintf(&sender, "%s@%s", addr, from_host) <= 0)
 			return (NULL);
@@ -131,13 +125,20 @@ set_from(struct queue *queue, const char *osender)
 	}
 
 	queue->sender = sender;
+
+	free_masquerade_settings(masquerade_config);
 	return (sender);
 }
 
 static int
 read_aliases(void)
 {
-	yyin = fopen(config.aliases, "r");
+	const char *path = get_configuration_value(CONF_ALIASES);
+
+	if(path == NULL)
+		return (-1);
+
+	yyin = fopen(path, "r");
 	if (yyin == NULL) {
 		/*
 		 * Non-existing aliases file is not a fatal error
@@ -209,7 +210,7 @@ add_recp(struct queue *queue, const char *str, int expand)
 	 * Do local delivery if there is no @.
 	 * Do not do local delivery when NULLCLIENT is set.
 	 */
-	if (strrchr(it->addr, '@') == NULL && (config.features & NULLCLIENT) == 0) {
+	if (strrchr(it->addr, '@') == NULL && !is_configuration_setting_enabled(CONF_NULLCLIENT)) {
 		it->remote = 0;
 		if (expand) {
 			aliased = do_alias(queue, it->addr);
@@ -453,8 +454,9 @@ main(int argc, char **argv)
 			errx(EX_OSERR, "cannot drop root privileges");
 	}
 
-	atexit(deltmp);
+	atexit(&deltmp);
 	init_random();
+	initialize_all_configuration_settings();
 
 	bzero(&queue, sizeof(queue));
 	LIST_INIT(&queue.queue);
@@ -472,7 +474,7 @@ main(int argc, char **argv)
 		setlogident(NULL);
 
 		if (read_aliases() != 0)
-			errx(EX_SOFTWARE, "could not parse aliases file `%s'", config.aliases);
+			errx(EX_SOFTWARE, "could not parse aliases file `%s'", get_configuration_value(CONF_ALIASES));
 		exit(EX_OK);
 	}
 
@@ -578,8 +580,8 @@ skipopts:
 
 	parse_conf(CONF_PATH "/dma.conf");
 
-	if (config.authpath != NULL)
-		parse_authfile(config.authpath);
+	if (is_configuration_setting_enabled(CONF_AUTHPATH))
+		parse_authfile(get_configuration_value(CONF_AUTHPATH));
 
 	if (showq) {
 		if (load_queue(&queue) < 0)
@@ -596,14 +598,15 @@ skipopts:
 		return (0);
 	}
 
+
 	if (read_aliases() != 0)
-		errlog(EX_SOFTWARE, "could not parse aliases file `%s'", config.aliases);
+		errlog(EX_SOFTWARE, "could not parse aliases file `%s'", get_configuration_value(CONF_ALIASES));
 
 	if ((sender = set_from(&queue, sender)) == NULL)
 		errlog(EX_SOFTWARE, NULL);
 
 	if (newspoolf(&queue) != 0)
-		errlog(EX_CANTCREAT, "can not create temp file in `%s'", config.spooldir);
+		errlog(EX_CANTCREAT, "can not create temp file in `%s'", get_configuration_value(CONF_SPOOLDIR));
 
 	setlogident("%s", queue.id);
 
@@ -626,7 +629,7 @@ skipopts:
 
 	/* From here on the mail is safe. */
 
-	if (config.features & DEFER || queue_only)
+	if (is_configuration_setting_enabled(CONF_DEFER) || queue_only)
 		return (0);
 
 	run_queue(&queue);

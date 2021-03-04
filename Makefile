@@ -16,6 +16,7 @@ debversion=	$(shell ${SH} get-version.sh | sed -Ee 's/^v//;s/[.]([[:digit:]]+)[.
 CC?=		gcc
 CFLAGS?=	-O -pipe
 LDADD?=		-lssl -lcrypto -lresolv
+YACCFLAGS?=	-d
 
 CFLAGS+=	-Wall -Wno-format-truncation -DDMA_VERSION='"${version}"' -DLIBEXEC_PATH='"${LIBEXEC}"' -DCONF_PATH='"${CONFDIR}"'
 
@@ -39,13 +40,15 @@ LN?=		ln
 
 OBJS=	aliases_parse.o aliases_scan.o base64.o conf.o crypto.o
 OBJS+=	dma.o dns.o local.o mail.o net.o spool.o util.o
-OBJS+=	dfcompat.o
+OBJS+=	dfcompat.o conf_parse.o conf_scan.o auth_parse.o auth_scan.o
 
 all: dma dma-mbox-create
 
 clean:
 	-rm -f .depend dma dma-mbox-create *.[do]
 	-rm -f aliases_parse.[ch] aliases_scan.c
+	-rm -f auth_parse.[ch] auth_scan.c
+	-rm -f conf_parse.[ch] conf_scan.c
 
 install: all
 	${INSTALL} -d ${DESTDIR}${SBIN}
@@ -85,10 +88,22 @@ install-etc:
 	fi
 
 aliases_parse.c: aliases_parse.y
-	${YACC} -d -o aliases_parse.c aliases_parse.y
+	${YACC} ${YACCFLAGS} -o aliases_parse.c aliases_parse.y
 
 aliases_scan.c: aliases_scan.l
 	${LEX} -t aliases_scan.l > aliases_scan.c
+	
+auth_parse.c: auth_parse.y
+	${YACC} ${YACCFLAGS} -p auth_ -b auth_ -o auth_parse.c auth_parse.y
+	
+auth_scan.c: auth_scan.l
+	${LEX} -t auth_scan.l > auth_scan.c
+
+conf_parse.c: conf_parse.y
+	${YACC} ${YACCFLAGS} -p conf_ -b conf_ -o conf_parse.c conf_parse.y
+
+conf_scan.c: conf_scan.l
+	${LEX} -t conf_scan.l > conf_scan.c
 
 .SUFFIXES: .c .o
 

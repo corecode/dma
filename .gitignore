@@ -4,3 +4,9 @@ dma-mbox-create
 aliases_parse.c
 aliases_parse.h
 aliases_scan.c
+auth_scan.c
+auth_parse.c
+auth_parse.h
+conf_parse.c
+conf_parse.h
+conf_scan.c
