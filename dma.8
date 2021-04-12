@@ -315,6 +315,9 @@ setting it to
 will send all mails as
 .Ql Sm off Va username @percolator .
 .Sm on
+.Pp
+You usually want to combine this setting with
+.Sq REWRITEFROM .
 .It Ic NULLCLIENT Xo
 (boolean, default=commented)
 .Xc
@@ -325,6 +328,11 @@ the defined
 requires
 .Sq SMARTHOST
 to be set.
+.It Ic REWRITEFROM Xo
+(boolean, default=commented)
+.Xc
+Rewrite the message header "From" address to the envelope-from address.
+The original unmodified header is added as "X-Original-From".
 .El
 .Ss Environment variables
 The behavior of

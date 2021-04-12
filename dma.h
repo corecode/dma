@@ -52,6 +52,8 @@
 #define ERRMSG_SIZE	1024
 #define USERNAME_SIZE	50
 #define EHLO_RESPONSE_SIZE BUF_SIZE
+#define MSG_LINE_MAX	1000		/* maximum line length in a message, by RFC2822 */
+#define MSG_HDR_FROM_MAX 10*MSG_LINE_MAX /* maximum size of "From" header lines */
 #define MIN_RETRY	300		/* 5 minutes */
 #define MAX_RETRY	(3*60*60)	/* retry at least every 3 hours */
 #define MAX_TIMEOUT	(5*24*60*60)	/* give up after 5 days */
@@ -70,6 +72,7 @@
 #define FULLBOUNCE	0x040		/* Bounce the full message */
 #define TLS_OPP		0x080		/* Opportunistic STARTTLS */
 #define NULLCLIENT	0x100		/* Nullclient support */
+#define REWRITEFROM	0x200		/* rewrite header From to envelope from */
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH
@@ -119,12 +122,19 @@ struct qitem {
 };
 LIST_HEAD(queueh, qitem);
 
+struct msg_hdr {
+	char from_addr[MSG_LINE_MAX];
+	char from_lines[MSG_HDR_FROM_MAX];
+	char rewritten_from_lines[MSG_HDR_FROM_MAX];
+};
+
 struct queue {
 	struct queueh queue;
 	char *id;
 	FILE *mailf;
 	char *tmpf;
 	const char *sender;
+	struct msg_hdr header;
 };
 
 struct config {

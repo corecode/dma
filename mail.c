@@ -138,8 +138,52 @@ fail:
 	exit(EX_IOERR);
 }
 
+static size_t
+rewrite_header_from(struct msg_hdr *header, const char *sender)
+{
+	size_t len_addr = strlen(header->from_addr);
+	size_t len_lines = strlen(header->from_lines);
+	size_t i = 0;
+
+	if (len_lines > len_addr && len_addr != 0) {
+		i = len_lines - len_addr;
+		/* XXX this doesn't work if from_addr is split into multiple lines */
+		while (strncmp(header->from_addr, header->from_lines + i, len_addr) != 0 && i >= 0) {
+			if ( i == 0 ) break;
+			i--;
+		}
+	}
+
+	if ( i == 0 ) {
+		syslog(LOG_INFO, "could not rewrite From in header");
+		strcpy(header->rewritten_from_lines, header->from_lines);
+		return (len_lines);
+	} else if ( (len_lines - len_addr) + strlen(sender) + 1 > MSG_HDR_FROM_MAX ) {
+		syslog(LOG_INFO, "could not rewrite From in header: rewritten lines too long");
+		strcpy(header->rewritten_from_lines, header->from_lines);
+		return (len_lines);
+	}
+
+	strcpy(stpcpy(stpncpy(header->rewritten_from_lines,
+			header->from_lines, i),
+			sender),
+			header->from_lines + i + len_addr);
+
+	return (strlen(header->rewritten_from_lines));
+}
+
+typedef int
+(*add_addr_funcptr_t)(struct queue *queue, const char *str, int expand);
+
+int
+add_header_from_addr(struct queue *queue, const char *str, int expand)
+{
+	strcpy(queue->header.from_addr, str);
+	return (0);
+}
+
 struct parse_state {
-	char addr[1000];
+	char addr[MSG_LINE_MAX];
 	int pos;
 
 	enum {
@@ -162,7 +206,7 @@ struct parse_state {
  * XXX local addresses will need treatment
  */
 static int
-parse_addrs(struct parse_state *ps, char *s, struct queue *queue)
+parse_addrs(struct parse_state *ps, char *s, struct queue *queue, add_addr_funcptr_t add_addr_funcptr)
 {
 	char *addr;
 
@@ -337,8 +381,8 @@ newaddr:
 	if (addr == NULL)
 		errlog(EX_SOFTWARE, NULL);
 
-	if (add_recp(queue, addr, EXPAND_WILDCARD) != 0)
-		errlogx(EX_DATAERR, "invalid recipient `%s'", addr);
+	if (add_addr_funcptr(queue, addr, EXPAND_WILDCARD) != 0)
+		errlogx(EX_DATAERR, "invalid address `%s'", addr);
 
 	goto again;
 }
@@ -347,7 +391,7 @@ int
 readmail(struct queue *queue, int nodot, int recp_from_header)
 {
 	struct parse_state parse_state;
-	char line[1000];	/* by RFC2822 */
+	char line[MSG_LINE_MAX];
 	size_t linelen;
 	size_t error;
 	int had_headers = 0;
@@ -357,8 +401,10 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 	int had_first_line = 0;
 	int had_last_line = 0;
 	int nocopy = 0;
+	size_t len_rewritten_from_lines;
 
 	parse_state.state = NONE;
+	add_addr_funcptr_t add_addr_funcptr = NULL;
 
 	error = fprintf(queue->mailf,
 		"Received: from %s (uid %d)\n"
@@ -403,8 +449,8 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 		}
 		if (!had_headers) {
 			/*
-			 * Unless this is a continuation, switch of
-			 * the Bcc: nocopy flag.
+			 * Unless this is a continuation, switch off
+			 * the nocopy flag.
 			 */
 			if (!(line[0] == ' ' || line[0] == '\t'))
 				nocopy = 0;
@@ -413,15 +459,25 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 				had_date = 1;
 			else if (strprefixcmp(line, "Message-Id:") == 0)
 				had_messagid = 1;
-			else if (strprefixcmp(line, "From:") == 0)
+			else if (strprefixcmp(line, "From:") == 0) {
 				had_from = 1;
+				if (config.features & REWRITEFROM) {
+					/* do not copy From, we'll add it later */
+					nocopy = 1;
+				}
+			}
 			else if (strprefixcmp(line, "Bcc:") == 0)
 				nocopy = 1;
 
 			if (parse_state.state != NONE) {
-				if (parse_addrs(&parse_state, line, queue) < 0) {
+				if (parse_addrs(&parse_state, line, queue, add_addr_funcptr) < 0) {
 					errlogx(EX_DATAERR, "invalid address in header\n");
 					/* NOTREACHED */
+				}
+				if (add_addr_funcptr == &add_header_from_addr && parse_state.state != QUIT) {
+					if ((strlen(queue->header.from_lines)+strlen(line)+1) > MSG_HDR_FROM_MAX)
+						errlogx(EX_DATAERR, "header From too long\n");
+					strcat(queue->header.from_lines, line);
 				}
 			}
 
@@ -430,11 +486,24 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 					strprefixcmp(line, "Cc:") == 0 ||
 					strprefixcmp(line, "Bcc:") == 0)) {
 				parse_state.state = START;
-				if (parse_addrs(&parse_state, line, queue) < 0) {
-					errlogx(EX_DATAERR, "invalid address in header\n");
+				add_addr_funcptr = &add_recp;
+				if (parse_addrs(&parse_state, line, queue, add_addr_funcptr) < 0) {
+					errlogx(EX_DATAERR, "invalid recipient in header\n");
 					/* NOTREACHED */
 				}
 			}
+
+			if (strprefixcmp(line, "From:") == 0) {
+				strcpy(queue->header.from_lines, line);
+				parse_state.state = START;
+				add_addr_funcptr = &add_header_from_addr;
+				if (parse_addrs(&parse_state, line, queue, add_addr_funcptr) < 0) {
+					errlogx(EX_DATAERR, "invalid From in header\n");
+					/* NOTREACHED */
+				}
+
+			}
+
 		}
 
 		if (strcmp(line, "\n") == 0 && !had_headers) {
@@ -453,11 +522,23 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 						 hostname());
 				} else if (!had_from) {
 					had_from = 1;
+					config.features &= ~REWRITEFROM;
 					snprintf(line, sizeof(line), "From: <%s>\n", queue->sender);
 				}
 				if (fwrite(line, strlen(line), 1, queue->mailf) != 1)
 					return (-1);
 			}
+
+			if (config.features & REWRITEFROM) {
+				config.features &= ~REWRITEFROM;
+
+				len_rewritten_from_lines = rewrite_header_from(&queue->header, queue->sender);
+				if (fwrite(queue->header.rewritten_from_lines, len_rewritten_from_lines, 1, queue->mailf) != 1 ||
+						fwrite("X-Original-From:", 16, 1, queue->mailf) != 1 ||
+						fwrite(queue->header.from_lines + 5, strlen(queue->header.from_lines) - 5, 1, queue->mailf) != 1)
+					return (-1);
+			}
+
 			strcpy(line, "\n");
 		}
 		if (!nodot && linelen == 2 && line[0] == '.')
