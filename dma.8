@@ -227,6 +227,8 @@ Uncomment if you want to use STARTTLS.
 Only useful together with
 .Sq SECURETRANSFER .
 .It Ic FINGERPRINT Xo
+(string, default=empty)
+.Xc
 Pin the server certificate by specifying its SHA256 fingerprint.
 Only makes sense if you use a smarthost.
 .It Ic OPPORTUNISTIC_TLS Xo
@@ -314,6 +316,7 @@ will send all mails as
 .Ql Sm off Va username @percolator .
 .Sm on
 .It Ic NULLCLIENT Xo
+(boolean, default=commented)
 .Xc
 Bypass aliases and local delivery, and instead forward all mails to
 the defined
