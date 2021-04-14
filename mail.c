@@ -156,14 +156,18 @@ rewrite_header_from(struct msg_hdr *header, const char *sender)
 
 	if ( i == 0 ) {
 		syslog(LOG_INFO, "could not rewrite From in header");
-		strcpy(header->rewritten_from_lines, header->from_lines);
-		return (len_lines);
 	} else if ( (len_lines - len_addr) + strlen(sender) + 1 > MSG_HDR_FROM_MAX ) {
 		syslog(LOG_INFO, "could not rewrite From in header: rewritten lines too long");
-		strcpy(header->rewritten_from_lines, header->from_lines);
-		return (len_lines);
+		i = 0;
 	}
 
+	if ( i == 0 ) {
+		/* cannot rewrite so substitute with envelope-from anyway */
+		strcpy(stpcpy(stpcpy(header->rewritten_from_lines, "From: <"), sender), ">\n");
+		return (strlen(header->rewritten_from_lines));
+	}
+
+	/* do the rewrite */
 	strcpy(stpcpy(stpncpy(header->rewritten_from_lines,
 			header->from_lines, i),
 			sender),
