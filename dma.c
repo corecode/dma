@@ -425,7 +425,7 @@ main(int argc, char **argv)
 	char *own_name = NULL;
 	struct queue queue;
 	int i, ch;
-	int nodot = 0, showq = 0, queue_only = 0;
+	int nodot = 0, showq = 0, queue_only = 0, newaliases = 0;
 	int recp_from_header = 0;
 
 	set_username();
@@ -468,12 +468,8 @@ main(int argc, char **argv)
 			errx(EX_USAGE, "invalid arguments");
 		goto skipopts;
 	} else if (strcmp(own_name, "newaliases") == 0) {
-		logident_base = "dma";
-		setlogident(NULL);
-
-		if (read_aliases() != 0)
-			errx(EX_SOFTWARE, "could not parse aliases file `%s'", config.aliases);
-		exit(EX_OK);
+		newaliases = 1;
+		goto skipopts;
 	}
 
 	opterr = 0;
@@ -598,6 +594,9 @@ skipopts:
 
 	if (read_aliases() != 0)
 		errlog(EX_SOFTWARE, "could not parse aliases file `%s'", config.aliases);
+
+	if (newaliases)
+		return(0);
 
 	if ((sender = set_from(&queue, sender)) == NULL)
 		errlog(EX_SOFTWARE, NULL);
