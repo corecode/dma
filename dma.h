@@ -239,6 +239,7 @@ int readmail(struct queue *, int, int);
 
 /* util.c */
 const char *hostname(void);
+const char *systemhostname(void);
 void setlogident(const char *, ...) __attribute__((__format__ (__printf__, 1, 2)));
 void errlog(int, const char *, ...) __attribute__((__format__ (__printf__, 2, 3)));
 void errlogx(int, const char *, ...) __attribute__((__format__ (__printf__, 2, 3)));
