@@ -226,7 +226,8 @@ parse_conf(const char *config_path)
 			if (fingerprint == NULL) {
 				errlogx(EX_CONFIG, "fingerprint allocation failed");
 			}
-			for (unsigned int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+			unsigned int i;
+			for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
 				if(sscanf(data + 2 * i, "%02hhx", &fingerprint[i]) != 1) {
 					errlogx(EX_CONFIG, "failed to read fingerprint");
 				}
