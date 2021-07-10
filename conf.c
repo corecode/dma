@@ -246,6 +246,8 @@ parse_conf(const char *config_path)
 			config.features |= FULLBOUNCE;
 		else if (strcmp(word, "NULLCLIENT") == 0 && data == NULL)
 			config.features |= NULLCLIENT;
+		else if (strcmp(word, "REWRITEFROM") == 0 && data == NULL)
+			config.features |= REWRITEFROM;
 		else {
 			errlogx(EX_CONFIG, "syntax error in %s:%d", config_path, lineno);
 			/* NOTREACHED */
