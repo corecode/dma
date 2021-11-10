@@ -150,9 +150,18 @@ read_remote(int fd, int extbufsize, char *extbuf)
 			pos = 0;
 			if (((config.features & SECURETRANSFER) != 0) &&
 			    (config.features & NOSSL) == 0) {
-				if ((rlen = SSL_read(config.ssl, buff + len, sizeof(buff) - len)) == -1) {
-					strlcpy(neterr, ssl_errstr(), sizeof(neterr));
-					goto error;
+				if ((rlen = SSL_read(config.ssl, buff + len, sizeof(buff) - len)) <= 0) {
+					switch (SSL_get_error(config.ssl, rlen)) {
+					case SSL_ERROR_ZERO_RETURN:
+					case SSL_ERROR_SYSCALL:
+					case SSL_ERROR_SSL:
+						strlcpy(neterr, ssl_errstr(), sizeof(neterr));
+						goto error;
+					default:
+						/* in case of recoverable error, retry after short sleep */
+						usleep(10000);
+						continue;
+					}
 				}
 			} else {
 				if ((rlen = read(fd, buff + len, sizeof(buff) - len)) == -1) {
