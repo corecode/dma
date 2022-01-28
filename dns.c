@@ -273,12 +273,21 @@ err:
 	return (err);
 }
 
+/*
+ * Standalone test implemenation
+ * cc -DCONF_PATH=xxx -DLIBEXEC_PATH=xxx -DTESTING -g -o dns dns.c
+ */
 #if defined(TESTING)
 int
 main(int argc, char **argv)
 {
 	struct mx_hostentry *he, *p;
 	int err;
+
+	if (argc != 2) {
+		fprintf(stderr, "usage: %s name\n", argv[0]);
+		exit(1);
+	}
 
 	err = dns_get_mx_list(argv[1], 53, &he, 0);
 	if (err)
