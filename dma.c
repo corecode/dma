@@ -86,7 +86,7 @@ struct config config = {
 	.masquerade_host = NULL,
 	.masquerade_user = NULL,
 	.fingerprint = NULL,
-    .header_from_address = NULL,
+	.header_from_address = NULL,
 };
 
 

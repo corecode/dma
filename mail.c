@@ -415,9 +415,9 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 				had_messagid = 1;
 			else if (strprefixcmp(line, "From:") == 0) {
 				had_from = 1;
-                if (config.header_from_address)
-                    snprintf(line, sizeof(line), "From: <%s>\n", config.header_from_address);
-            }
+				if (config.header_from_address)
+					snprintf(line, sizeof(line), "From: <%s>\n", config.header_from_address);
+			}
 			else if (strprefixcmp(line, "Bcc:") == 0)
 				nocopy = 1;
 
@@ -456,10 +456,10 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 						 hostname());
 				} else if (!had_from) {
 					had_from = 1;
-                    if (config.header_from_address)
-                        snprintf(line, sizeof(line), "From: <%s>\n", config.header_from_address);
-                    else
-					    snprintf(line, sizeof(line), "From: <%s>\n", queue->sender);
+					if (config.header_from_address)
+						snprintf(line, sizeof(line), "From: <%s>\n", config.header_from_address);
+					else
+						snprintf(line, sizeof(line), "From: <%s>\n", queue->sender);
 				}
 				if (fwrite(line, strlen(line), 1, queue->mailf) != 1)
 					return (-1);

@@ -246,7 +246,7 @@ parse_conf(const char *config_path)
 			config.features |= FULLBOUNCE;
 		else if (strcmp(word, "NULLCLIENT") == 0 && data == NULL)
 			config.features |= NULLCLIENT;
-        else if (strcmp(word, "REPLACEFROM") == 0 && data != NULL) {
+		else if (strcmp(word, "REPLACEFROM") == 0 && data != NULL) {
 			config.header_from_address = data;
 		}
 		else {
