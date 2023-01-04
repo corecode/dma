@@ -99,7 +99,9 @@ static char *
 set_from(struct queue *queue, const char *osender)
 {
 	const char *addr;
+	const char *from_host;
 	char *sender;
+	int len_user;
 
 	if (config.masquerade_user) {
 		addr = config.masquerade_user;
@@ -111,19 +113,20 @@ set_from(struct queue *queue, const char *osender)
 		addr = username;
 	}
 
-	if (!strchr(addr, '@')) {
-		const char *from_host = hostname();
-
-		if (config.masquerade_host)
-			from_host = config.masquerade_host;
-
-		if (asprintf(&sender, "%s@%s", addr, from_host) <= 0)
-			return (NULL);
+	from_host = strchr(addr, '@');
+	if (from_host) {
+		len_user = from_host - addr;
+		from_host++;
 	} else {
-		sender = strdup(addr);
-		if (sender == NULL)
-			return (NULL);
+		len_user = strlen(addr);
+		from_host = hostname();
 	}
+
+	if (config.masquerade_host)
+		from_host = config.masquerade_host;
+
+	if (asprintf(&sender, "%.*s@%s", len_user, addr, from_host) <= 0)
+		return (NULL);
 
 	if (strchr(sender, '\n') != NULL) {
 		errno = EINVAL;
