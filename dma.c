@@ -99,30 +99,57 @@ static char *
 set_from(struct queue *queue, const char *osender)
 {
 	const char *addr;
+	const char *from_user = NULL;
+	const char *from_host = NULL;
 	char *sender;
+	int len_user = 0;	/* length of user */
 
-	if (config.masquerade_user) {
-		addr = config.masquerade_user;
-	} else if (osender) {
+	/* Get any sender address from parameters or environment. */
+	if (osender) {
 		addr = osender;
-	} else if (getenv("EMAIL") != NULL) {
-		addr = getenv("EMAIL");
 	} else {
-		addr = username;
+		addr = getenv("EMAIL");
 	}
 
-	if (!strchr(addr, '@')) {
-		const char *from_host = hostname();
+	if (addr) {
+		/*
+		 * Try and split into user and host.  User is not
+		 * null-terminated if the split is successful.
+		 */
+		from_user = addr;
+		from_host = strchr(addr, '@');
+		if (from_host) {
+			len_user = from_host - addr;
+			from_host++;
+		} else {
+			len_user = strlen(from_user);
+		}
+	}
 
-		if (config.masquerade_host)
-			from_host = config.masquerade_host;
+	/* Replace empty user name and/or host name with defaults. */
+	if (len_user == 0) {
+		from_user = username;
+	}
+	if (from_host == NULL || strlen(from_host) == 0) {
+		from_host = hostname();
+	}
 
-		if (asprintf(&sender, "%s@%s", addr, from_host) <= 0)
-			return (NULL);
-	} else {
-		sender = strdup(addr);
-		if (sender == NULL)
-			return (NULL);
+	/* Deal with masquerades. */
+	if (config.masquerade_user) {
+		from_user = config.masquerade_user;
+	}
+	if (config.masquerade_host) {
+		from_host = config.masquerade_host;
+	}
+
+	if (from_user != addr) {
+		/* Fix up length of user. */
+		len_user = strlen(from_user);
+	}
+
+	/* Construct final sender address. */
+	if (asprintf(&sender, "%.*s@%s", len_user, from_user, from_host) <= 0) {
+		return (NULL);
 	}
 
 	if (strchr(sender, '\n') != NULL) {
