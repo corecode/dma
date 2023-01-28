@@ -535,11 +535,15 @@ main(int argc, char **argv)
 
 		case 'o':
 			/* -oX is being ignored, except for -oi */
-			if (optarg[0] != 'i')
-				break;
-			/* Else FALLTHROUGH */
-		case 'O':
+			if (optarg[0] == 'i') {
+				nodot = 1;
+			}
 			break;
+
+		case 'O':
+			/* -O name=val is also a no-op */
+			break;
+
 		case 'i':
 			nodot = 1;
 			break;
