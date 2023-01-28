@@ -533,13 +533,13 @@ main(int argc, char **argv)
 			recp_from_header = 1;
 			break;
 
+		case 'O':
+			break;
 		case 'o':
 			/* -oX is being ignored, except for -oi */
 			if (optarg[0] != 'i')
 				break;
 			/* Else FALLTHROUGH */
-		case 'O':
-			break;
 		case 'i':
 			nodot = 1;
 			break;
