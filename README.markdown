@@ -12,6 +12,13 @@ or postfix(1).  Consequently, dma does not listen on port 25 for
 incoming connections.
 
 
+Install by a package manager
+----------------------------
+
+* FreeBSD `pkg install dma`
+* Ubuntu `sudo apt install dma`
+* Arch `yaourt -S dma`
+
 Building
 --------
 
@@ -35,3 +42,10 @@ Contact
 -------
 
 Simon Schubert <2@0x2c.org>
+
+See Also
+--------
+
+* [man dma](https://man.freebsd.org/cgi/man.cgi?query=dma)
+* [dma on Arch Wiki](https://wiki.archlinux.org/title/Dma)
+* [Awesome Selfhosted: MTAs](https://github.com/awesome-selfhosted/awesome-selfhosted#communication---email---mail-transfer-agents) - Other open source MTAs
