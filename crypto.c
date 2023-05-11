@@ -33,6 +33,11 @@
  * SUCH DAMAGE.
  */
 
+#include <openssl/opensslv.h>
+#if (OPENSSL_VERSION_NUMBER >= 0x300000L)
+#define	IS_OPENSSL3	1
+#endif
+
 #include <openssl/x509.h>
 #include <openssl/md5.h>
 #include <openssl/ssl.h>
@@ -40,6 +45,7 @@
 #include <openssl/pem.h>
 #include <openssl/rand.h>
 
+#include <assert.h>
 #include <strings.h>
 #include <string.h>
 #include <syslog.h>
@@ -115,8 +121,10 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 
 	/* XXX clean up on error/close */
 	/* Init SSL library */
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
 	SSL_library_init();
 	SSL_load_error_strings();
+#endif
 
 	// Allow any possible version
 #if (OPENSSL_VERSION_NUMBER >= 0x10100000L)
@@ -225,7 +233,12 @@ void
 hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
     unsigned char* digest)
 {
-        MD5_CTX context;
+#ifdef	IS_OPENSSL3
+	const EVP_MD	*md;
+	EVP_MD_CTX	*context;
+#else
+	MD5_CTX		context;
+#endif
         unsigned char k_ipad[65];    /* inner padding -
                                       * key XORd with ipad
                                       */
@@ -234,15 +247,26 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
                                       */
         unsigned char tk[16];
         int i;
+
+#ifdef	IS_OPENSSL3
+	context = EVP_MD_CTX_new();
+	assert(context != NULL);
+
+	md = EVP_md5();
+	assert(md != NULL);
+#endif
+
         /* if key is longer than 64 bytes reset it to key=MD5(key) */
         if (key_len > 64) {
-
-                MD5_CTX      tctx;
-
-                MD5_Init(&tctx);
-                MD5_Update(&tctx, key, key_len);
-                MD5_Final(tk, &tctx);
-
+#ifdef	IS_OPENSSL3
+		EVP_DigestInit_ex(context, md, NULL);
+		EVP_DigestUpdate(context, key, key_len);
+		EVP_DigestFinal_ex(context, tk, NULL);
+#else
+                MD5_Init(&context);
+                MD5_Update(&context, key, key_len);
+                MD5_Final(tk, &context);
+#endif
                 key = tk;
                 key_len = 16;
         }
@@ -270,6 +294,36 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
                 k_ipad[i] ^= 0x36;
                 k_opad[i] ^= 0x5c;
         }
+
+#ifdef	IS_OPENSSL3
+        /**
+         * Perform inner MD5.
+         */
+
+	/* Init context for first pass. */
+	EVP_DigestInit_ex(context, md, NULL);
+	/* Start with inner pad. */
+	EVP_DigestUpdate(context, k_ipad, 64);
+	/* Update with text of datagram. */
+	EVP_DigestUpdate(context, text, text_len);
+	/* Finish up first pass. */
+	EVP_DigestFinal_ex(context, digest, NULL);
+
+	/**
+	 * Perform outer MD5.
+	 */
+
+	/* Re-init context for second pass. */
+	EVP_DigestInit_ex(context, md, NULL);
+	/* Start with outer pad. */
+	EVP_DigestUpdate(context, k_opad, 64);
+	/* Update with results of first hash. */
+	EVP_DigestUpdate(context, digest, 16);
+	/* Finish up second pass. */
+	EVP_DigestFinal_ex(context, digest, NULL);
+
+	EVP_MD_CTX_free(context);
+#else
         /*
          * perform inner MD5
          */
@@ -287,6 +341,7 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
         MD5_Update(&context, digest, 16);     /* then results of 1st
                                               * hash */
         MD5_Final(digest, &context);          /* finish up 2nd pass */
+#endif
 }
 
 /*
