@@ -103,7 +103,7 @@ verify_server_fingerprint(const X509 *cert)
 }
 
 int
-smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char *server_hostname, int smarthost)
+smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char *server_hostname)
 {
 	SSL_CTX *ctx = NULL;
 #if (OPENSSL_VERSION_NUMBER >= 0x00909000L)
@@ -143,7 +143,7 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char
 		}
 	}
 
-	verify_cert = smarthost && (!(config.features & NOVERIFYCERT));
+	verify_cert = config.features & VERIFYCERT;
 	if (verify_cert) {
 		int (*verify_cb)(int, X509_STORE_CTX *) = NULL;
 		int mode = SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;

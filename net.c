@@ -474,7 +474,7 @@ int perform_server_greeting(int fd, struct smtp_features* features) {
 }
 
 static int
-deliver_to_host(struct qitem *it, struct mx_hostentry *host, int smarthost)
+deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
 	struct authuser *a;
 	struct smtp_features features;
@@ -519,7 +519,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host, int smarthost)
 	}
 
 	if ((config.features & SECURETRANSFER) != 0) {
-		error = smtp_init_crypto(fd, config.features, &features, host->host, smarthost);
+		error = smtp_init_crypto(fd, config.features, &features, host->host);
 		if (error == 0)
 			syslog(LOG_DEBUG, "SSL initialization successful");
 		else
@@ -668,7 +668,7 @@ deliver_remote(struct qitem *it)
 	}
 
 	for (h = hosts; *h->host != 0; h++) {
-		switch (deliver_to_host(it, h, smarthost)) {
+		switch (deliver_to_host(it, h)) {
 		case 0:
 			/* success */
 			error = 0;
