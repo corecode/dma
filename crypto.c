@@ -178,7 +178,6 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char
 		return (1);
 	}
 
-#ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
 	/* Only do SNI if hostname is not an IP address */
 	ip = a2i_IPADDRESS(server_hostname);
 	if (ip != NULL) {
@@ -194,11 +193,6 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char
 			return (1);
 		}
 	}
-#else
-	/* Silence GCC warning */
-	(void) ip;
-	(void) server_hostname;
-#endif
 
 	/* Set ssl to work in client mode */
 	SSL_set_connect_state(config.ssl);
