@@ -34,6 +34,7 @@
  */
 
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 #include <openssl/md5.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -102,7 +103,7 @@ verify_server_fingerprint(const X509 *cert)
 }
 
 int
-smtp_init_crypto(int fd, int feature, struct smtp_features* features)
+smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char *server_hostname)
 {
 	SSL_CTX *ctx = NULL;
 #if (OPENSSL_VERSION_NUMBER >= 0x00909000L)
@@ -112,6 +113,7 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 #endif
 	X509 *cert;
 	int error;
+	ASN1_OCTET_STRING *ip = NULL;
 
 	/* XXX clean up on error/close */
 	/* Init SSL library */
@@ -175,6 +177,28 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features)
 		       ssl_errstr());
 		return (1);
 	}
+
+#ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
+	/* Only do SNI if hostname is not an IP address */
+	ip = a2i_IPADDRESS(server_hostname);
+	if (ip != NULL) {
+		ASN1_OCTET_STRING_free(ip);
+		ip = NULL;
+	} else {
+		ERR_clear_error();
+
+		error = SSL_set_tlsext_host_name(config.ssl, server_hostname);
+		if (error == 0) {
+			syslog(LOG_NOTICE, "remote delivery deferred: SSL set TLS host name failed: %s",
+			       ssl_errstr());
+			return (1);
+		}
+	}
+#else
+	/* Silence GCC warning */
+	(void) ip;
+	(void) server_hostname;
+#endif
 
 	/* Set ssl to work in client mode */
 	SSL_set_connect_state(config.ssl);

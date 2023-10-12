@@ -519,7 +519,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	}
 
 	if ((config.features & SECURETRANSFER) != 0) {
-		error = smtp_init_crypto(fd, config.features, &features);
+		error = smtp_init_crypto(fd, config.features, &features, host->host);
 		if (error == 0)
 			syslog(LOG_DEBUG, "SSL initialization successful");
 		else
