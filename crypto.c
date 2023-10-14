@@ -195,7 +195,6 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char
 		return (1);
 	}
 
-
 	/* Only do SNI if hostname is not an IP address */
 	ip = a2i_IPADDRESS(server_hostname);
 	if (ip != NULL) {
