@@ -315,6 +315,9 @@ setting it to
 will send all mails as
 .Ql Sm off Va username @percolator .
 .Sm on
+.Pp
+It can be useful to combine this setting with
+.Sq REPLACEFROM .
 .It Ic NULLCLIENT Xo
 (boolean, default=commented)
 .Xc
@@ -325,6 +328,10 @@ the defined
 requires
 .Sq SMARTHOST
 to be set.
+.It Ic REPLACEFROM Xo
+(string, default=empty)
+.Xc
+Replace the message header "From" address with the given address.
 .El
 .Ss Environment variables
 The behavior of
