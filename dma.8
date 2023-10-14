@@ -315,16 +315,20 @@ setting it to
 will send all mails as
 .Ql Sm off Va username @percolator .
 .Sm on
-.It Ic NULLCLIENT Xo
-(boolean, default=commented)
+.It Ic DELIVERY Xo
+(string, default=LOCALANDREMOTE)
 .Xc
-Bypass aliases and local delivery, and instead forward all mails to
-the defined
-.Sq SMARTHOST .
-.Sq NULLCLIENT
-requires
-.Sq SMARTHOST
-to be set.
+Type(s) of delivery that
+.Nm
+should perform.
+Set this to
+.Sq LOCALONLY
+to allow only deliveries to local recipients.
+Set it to
+.Sq REMOTEONLY
+to forward all messages to the defined
+.Sq SMARTHOST ,
+bypassing local aliases.
 .El
 .Ss Environment variables
 The behavior of

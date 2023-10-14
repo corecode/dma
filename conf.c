@@ -216,9 +216,23 @@ parse_conf(const char *config_path)
                                 user = NULL;
 			config.masquerade_host = host;
 			config.masquerade_user = user;
+		} else if (strcmp(word, "DELIVERY") == 0 && data != NULL) {
+			if (strcmp(data, "LOCALANDREMOTE") == 0)
+				config.features |= (DELIVERY_LOCAL | DELIVERY_REMOTE);
+			else if (strcmp(data, "LOCALONLY") == 0) {
+				config.features |=  DELIVERY_LOCAL;
+				config.features &= ~DELIVERY_REMOTE;
+			} else if (strcmp(data, "REMOTEONLY") == 0) {
+				config.features &= ~DELIVERY_LOCAL;
+				config.features |=  DELIVERY_REMOTE;
+			} else {
+				errlogx(EX_CONFIG, "invalid DELIVERY value in %s:%d", config_path, lineno);
+				/* NOTREACHED */
+			}
+			free(data);
 		} else if (strcmp(word, "STARTTLS") == 0 && data == NULL)
 			config.features |= STARTTLS;
-		else if (strcmp(word, "FINGERPRINT") == 0) {
+		else if (strcmp(word, "FINGERPRINT") == 0 && data != NULL) {
 			if (strlen(data) != SHA256_DIGEST_LENGTH * 2) {
 				errlogx(EX_CONFIG, "invalid sha256 fingerprint length");
 			}
@@ -244,16 +258,17 @@ parse_conf(const char *config_path)
 			config.features |= INSECURE;
 		else if (strcmp(word, "FULLBOUNCE") == 0 && data == NULL)
 			config.features |= FULLBOUNCE;
-		else if (strcmp(word, "NULLCLIENT") == 0 && data == NULL)
-			config.features |= NULLCLIENT;
-		else {
+		else if (strcmp(word, "NULLCLIENT") == 0 && data == NULL) {
+			config.features &= ~DELIVERY_LOCAL;
+			config.features |=  DELIVERY_REMOTE;
+		} else {
 			errlogx(EX_CONFIG, "syntax error in %s:%d", config_path, lineno);
 			/* NOTREACHED */
 		}
 	}
 
-	if ((config.features & NULLCLIENT) && config.smarthost == NULL) {
-		errlogx(EX_CONFIG, "%s: NULLCLIENT requires SMARTHOST", config_path);
+	if (!(config.features & DELIVERY_LOCAL) && config.smarthost == NULL) {
+		errlogx(EX_CONFIG, "%s: remote-only delivery requires SMARTHOST", config_path);
 		/* NOTREACHED */
 	}
 

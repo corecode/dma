@@ -69,7 +69,8 @@
 #define INSECURE	0x020		/* Allow plain login w/o encryption */
 #define FULLBOUNCE	0x040		/* Bounce the full message */
 #define TLS_OPP		0x080		/* Opportunistic STARTTLS */
-#define NULLCLIENT	0x100		/* Nullclient support */
+#define DELIVERY_LOCAL	0x100		/* Do local delivery */
+#define DELIVERY_REMOTE	0x200		/* Do remote delivery */
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH

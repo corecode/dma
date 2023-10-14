@@ -81,7 +81,7 @@ struct config config = {
 	.spooldir	= "/var/spool/dma",
 	.authpath	= NULL,
 	.certfile	= NULL,
-	.features	= 0,
+	.features	= DELIVERY_LOCAL | DELIVERY_REMOTE,
 	.mailname	= NULL,
 	.masquerade_host = NULL,
 	.masquerade_user = NULL,
@@ -233,10 +233,9 @@ add_recp(struct queue *queue, const char *str, int expand)
 	LIST_INSERT_HEAD(&queue->queue, it, next);
 
 	/**
-	 * Do local delivery if there is no @.
-	 * Do not do local delivery when NULLCLIENT is set.
+	 * Do local delivery if there is no @ and DELIVERY_LOCAL is set.
 	 */
-	if (strrchr(it->addr, '@') == NULL && (config.features & NULLCLIENT) == 0) {
+	if (strrchr(it->addr, '@') == NULL && (config.features & DELIVERY_LOCAL)) {
 		it->remote = 0;
 		if (expand) {
 			aliased = do_alias(queue, it->addr);
@@ -255,8 +254,10 @@ add_recp(struct queue *queue, const char *str, int expand)
 				endpwent();
 			}
 		}
-	} else {
+	} else if (config.features & DELIVERY_REMOTE) {
 		it->remote = 1;
+	} else {
+		return (-1);
 	}
 
 	return (0);
