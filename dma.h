@@ -70,6 +70,7 @@
 #define FULLBOUNCE	0x040		/* Bounce the full message */
 #define TLS_OPP		0x080		/* Opportunistic STARTTLS */
 #define NULLCLIENT	0x100		/* Nullclient support */
+#define VERIFYCERT	0x200		/* Verify remote host's certificate against CA */
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH
@@ -198,7 +199,7 @@ void parse_authfile(const char *);
 /* crypto.c */
 void hmac_md5(unsigned char *, int, unsigned char *, int, unsigned char *);
 int smtp_auth_md5(int, char *, char *);
-int smtp_init_crypto(int, int, struct smtp_features*, const char *);
+int smtp_init_crypto(int, int, struct smtp_features*, const char *server_hostname);
 
 /* dns.c */
 int dns_get_mx_list(const char *, int, struct mx_hostentry **, int);

@@ -114,6 +114,7 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char
 	X509 *cert;
 	int error;
 	ASN1_OCTET_STRING *ip = NULL;
+	int verify_cert = 0;
 
 	/* XXX clean up on error/close */
 	/* Init SSL library */
@@ -138,6 +139,22 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char
 		error = init_cert_file(ctx, config.certfile);
 		if (error) {
 			syslog(LOG_WARNING, "remote delivery deferred");
+			return (1);
+		}
+	}
+
+	verify_cert = config.features & VERIFYCERT;
+	if (verify_cert) {
+		int (*verify_cb)(int, X509_STORE_CTX *) = NULL;
+		int mode = SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+		/* NB: Don't change verify_cb */
+                verify_cb = SSL_CTX_get_verify_callback(ctx);
+		SSL_CTX_set_verify(ctx, mode, verify_cb);
+
+		error = SSL_CTX_set_default_verify_paths(ctx);
+		if (error == 0) {
+			syslog(LOG_NOTICE, "remote delivery deferred: SSL failed to set default CA path: %s",
+			       ssl_errstr());
 			return (1);
 		}
 	}
@@ -191,6 +208,35 @@ smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char
 			syslog(LOG_NOTICE, "remote delivery deferred: SSL set TLS host name failed: %s",
 			       ssl_errstr());
 			return (1);
+		}
+	}
+
+	if (verify_cert) {
+		X509_VERIFY_PARAM *param = SSL_get0_param(config.ssl);
+
+		ip = a2i_IPADDRESS(server_hostname);
+		if (ip == NULL) {
+			ERR_clear_error();
+
+			error = X509_VERIFY_PARAM_set1_host(param, server_hostname,
+							    strlen(server_hostname));
+			if (error == 0) {
+				syslog(LOG_NOTICE, "remote delivery deferred: SSL set hostname check failed: %s",
+				       ssl_errstr());
+				return (1);
+			}
+		} else {
+			error = X509_VERIFY_PARAM_set1_ip(param, ASN1_STRING_get0_data(ip),
+							  ASN1_STRING_length(ip));
+
+			ASN1_OCTET_STRING_free(ip);
+			ip = NULL;
+
+			if (error == 0) {
+				syslog(LOG_NOTICE, "remote delivery deferred: SSL set ip check failed: %s",
+				       ssl_errstr());
+				return (1);
+			}
 		}
 	}
 
