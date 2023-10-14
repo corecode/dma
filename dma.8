@@ -226,6 +226,11 @@ Uncomment if you want TLS/SSL secured transfer.
 Uncomment if you want to use STARTTLS.
 Only useful together with
 .Sq SECURETRANSFER .
+.It Ic VERIFYCERT Xo
+(boolean, default=commented)
+.Xc
+Verify the server certificate against the CA.
+Only makes sense if you use a smarthost.
 .It Ic FINGERPRINT Xo
 (string, default=empty)
 .Xc
