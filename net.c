@@ -51,8 +51,8 @@
 #include <err.h>
 #include <errno.h>
 #include <netdb.h>
-#include <setjmp.h>
-#include <signal.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <strings.h>
 #include <string.h>
 #include <syslog.h>
@@ -86,7 +86,7 @@ send_remote_command(int fd, const char* fmt, ...)
 	va_start(va, fmt);
 	s = vsnprintf(cmd, sizeof(cmd) - 2, fmt, va);
 	va_end(va);
-	if (s == sizeof(cmd) - 2 || s < 0) {
+	if (s < 0 || (size_t)s >= sizeof(cmd) - 2) {
 		strcpy(neterr, "Internal error: oversized command string");
 		return (-1);
 	}
