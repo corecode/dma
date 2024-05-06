@@ -51,8 +51,8 @@
 #include <err.h>
 #include <errno.h>
 #include <netdb.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <strings.h>
 #include <string.h>
 #include <syslog.h>
