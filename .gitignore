@@ -1,6 +1,15 @@
 *.o
-dma
-dma-mbox-create
-aliases_parse.c
-aliases_parse.h
-aliases_scan.c
+# Omit binaries.
+./dma
+./dma-mbox-create
+./aliases_parse.c
+./aliases_parse.h
+./aliases_scan.c
+# BSD-related...
+# - Omit files created on FreeBSD as part of bsd.prog.mk.
+*.depend
+*.debug
+*.full
+# - Omit files created in bsd if `make obj` isn't called first.
+bsd/dma/dma*
+bsd/dma-mbox-create/dma-mbox-create*
