@@ -396,8 +396,11 @@ readmail(struct queue *queue, int nodot, int recp_from_header)
 			/*
 			 * Ignore a leading RFC-976 From_ or >From_ line mistakenly
 			 * inserted by some programs.
+			 * And also malformed cron "From: root (Cron Daemon)".
 			 */
-			if (strprefixcmp(line, "From ") == 0 || strprefixcmp(line, ">From ") == 0)
+			if (strprefixcmp(line, "From ")                    == 0 ||
+				strprefixcmp(line, ">From ")                   == 0 ||
+				strprefixcmp(line, "From: root (Cron Daemon)") == 0)
 				continue;
 			had_first_line = 1;
 		}
