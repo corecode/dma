@@ -643,13 +643,13 @@ skipopts:
 	}
 
 	if (LIST_EMPTY(&queue.queue) && !recp_from_header)
-		errlogx(EX_NOINPUT, "no recipients");
+		errlogx(EX_NOINPUT, "no recipients from command line");
 
 	if (readmail(&queue, nodot, recp_from_header) != 0)
 		errlog(EX_NOINPUT, "can not read mail");
 
 	if (LIST_EMPTY(&queue.queue))
-		errlogx(EX_NOINPUT, "no recipients");
+		errlogx(EX_NOINPUT, "no recipients from headers");
 
 	if (linkspool(&queue) != 0)
 		errlog(EX_CANTCREAT, "can not create spools");
