@@ -43,7 +43,7 @@
 
 #include "dma.h"
 
-#define DP	": \t"
+#define DP	":| \t"
 #define EQS	" \t"
 
 
