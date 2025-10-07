@@ -130,7 +130,6 @@ deliver_local(struct qitem *it)
 	char fn[PATH_MAX+1];
 	char line[1000];
 	const char *sender;
-	const char *newline = "\n";
 	size_t linelen;
 	int tries = 0;
 	int mbox;
@@ -184,10 +183,6 @@ retry:
 
 	mboxlen = lseek(mbox, 0, SEEK_END);
 
-	/* New mails start with \nFrom ...., unless we're at the beginning of the mbox */
-	if (mboxlen == 0)
-		newline = "";
-
 	/* If we're bouncing a message, claim it comes from MAILER-DAEMON */
 	sender = it->sender;
 	if (strcmp(sender, "") == 0)
@@ -198,7 +193,7 @@ retry:
 		goto out;
 	}
 
-	error = snprintf(line, sizeof(line), "%sFrom %s %s", newline, sender, ctime(&now));
+	error = snprintf(line, sizeof(line), "From %s %s", sender, ctime(&now));
 	if (error < 0 || (size_t)error >= sizeof(line)) {
 		syslog(LOG_NOTICE, "local delivery deferred: can not write header: %m");
 		goto out;
@@ -241,6 +236,11 @@ retry:
 		if ((size_t)write(mbox, line, linelen) != linelen)
 			goto wrerror;
 	}
+
+	/* Each message in the mbox must be terminated by an empty line. */
+	if (write(mbox, "\n", 1) != 1)
+		goto wrerror;
+
 	close(mbox);
 	return (0);
 
