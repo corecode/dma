@@ -54,6 +54,7 @@ bounce(struct qitem *it, const char *reason)
 	/* Don't bounce bounced mails */
 	if (it->sender[0] == 0) {
 		syslog(LOG_INFO, "can not bounce a bounce message, discarding");
+		delqueue(it);
 		exit(EX_SOFTWARE);
 	}
 
