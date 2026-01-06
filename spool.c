@@ -181,7 +181,7 @@ readqueuef(struct queue *queue, char *queuefn)
 		*s = 0;
 
 		s++;
-		while (isspace(*s))
+		while (isspace((unsigned char)*s))
 			s++;
 
 		s = strdup(s);
