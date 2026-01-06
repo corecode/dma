@@ -201,7 +201,7 @@ read_remote(int fd, int extbufsize, char *extbuf)
 		switch (parsestate) {
 		case parse_status:
 			for (; pos < len; pos++) {
-				if (isdigit(buff[pos])) {
+				if (isdigit((unsigned char)buff[pos])) {
 					status_running = status_running * 10 + (buff[pos] - '0');
 				} else {
 					status = status_running;

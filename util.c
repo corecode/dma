@@ -83,7 +83,8 @@ hostname(void)
 		if (s == NULL)
 			goto local;
 
-		for (s = name; *s != 0 && (isalnum(*s) || strchr("_.-", *s)); ++s)
+		for (s = name; *s != 0
+		    && (isalnum((unsigned char)*s) || strchr("_.-", *s)); ++s)
 			/* NOTHING */;
 		*s = 0;
 
@@ -126,7 +127,8 @@ systemhostname(void)
 	 */
 	name[sizeof(name) - 1] = 0;
 
-	for (s = name; *s != 0 && (isalnum(*s) || strchr("_.-", *s)); ++s)
+	for (s = name; *s != 0 &&
+	    (isalnum((unsigned char)*s) || strchr("_.-", *s)); ++s)
 		/* NOTHING */;
 	*s = 0;
 
