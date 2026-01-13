@@ -368,7 +368,7 @@ smtp_auth_md5(int fd, char *login, char *password)
 	unsigned char digest[BUF_SIZE];
 	char buffer[BUF_SIZE], ascii_digest[33];
 	char *temp;
-	int len, i;
+	int len, i, res;
 	static char hextab[] = "0123456789abcdef";
 
 	temp = calloc(BUF_SIZE, 1);
@@ -383,7 +383,7 @@ smtp_auth_md5(int fd, char *login, char *password)
 		       " AUTH cram-md5 not available: %s", neterr);
 		/* if cram-md5 is not available */
 		free(temp);
-		return (-1);
+		return (1);
 	}
 
 	/* skip 3 char status + 1 char space */
@@ -405,16 +405,17 @@ smtp_auth_md5(int fd, char *login, char *password)
 	len = base64_encode(buffer, strlen(buffer), &temp);
 	if (len < 0) {
 		syslog(LOG_ERR, "can not encode auth reply: %m");
-		return (-1);
+		return (1);
 	}
 
 	/* send answer */
 	send_remote_command(fd, "%s", temp);
 	free(temp);
-	if (read_remote(fd, 0, NULL) != 2) {
-		syslog(LOG_WARNING, "remote delivery deferred:"
-				" AUTH cram-md5 failed: %s", neterr);
-		return (-2);
+	res = read_remote(fd, 0, NULL);
+	if (res != 2) {
+		syslog(LOG_NOTICE, "remote delivery %s: AUTH cram-md5 failed: %s",
+		    res == 5 ? "failed" : "deferred", neterr);
+		return (res == 5 ? -1 : 1);
 	}
 
 	return (0);

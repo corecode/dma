@@ -258,77 +258,125 @@ error:
 	return (-1);
 }
 
-/*
- * Handle SMTP authentication
- */
 static int
-smtp_login(int fd, char *login, char* password, const struct smtp_features* features)
+smtp_auth_login(int fd, char *login, char* password)
 {
 	char *temp;
 	int len, res = 0;
 
-	// CRAM-MD5
-	if (features->auth.cram_md5) {
-		res = smtp_auth_md5(fd, login, password);
-		if (res == 0) {
-			return (0);
-		} else if (res == -2) {
-		/*
-		 * If the return code is -2, then then the login attempt failed,
-		 * do not try other login mechanisms
-		 */
-			return (1);
-		}
+	/* Send AUTH command according to RFC 2554 */
+	send_remote_command(fd, "AUTH LOGIN");
+	if (read_remote(fd, 0, NULL) != 3) {
+		syslog(LOG_NOTICE, "remote delivery deferred:"
+		    " AUTH login not available: %s",
+		    neterr);
+		return (1);
 	}
 
-	// LOGIN
-	if (features->auth.login) {
-		if ((config.features & INSECURE) != 0 ||
-		    (config.features & SECURETRANSFER) != 0) {
-			/* Send AUTH command according to RFC 2554 */
-			send_remote_command(fd, "AUTH LOGIN");
-			if (read_remote(fd, 0, NULL) != 3) {
-				syslog(LOG_NOTICE, "remote delivery deferred:"
-						" AUTH login not available: %s",
-						neterr);
-				return (1);
-			}
-
-			len = base64_encode(login, strlen(login), &temp);
-			if (len < 0) {
+	len = base64_encode(login, strlen(login), &temp);
+	if (len < 0) {
 encerr:
-				syslog(LOG_ERR, "can not encode auth reply: %m");
-				return (1);
-			}
+		syslog(LOG_ERR, "can not encode auth reply: %m");
+		return (1);
+	}
 
-			send_remote_command(fd, "%s", temp);
-			free(temp);
-			res = read_remote(fd, 0, NULL);
-			if (res != 3) {
-				syslog(LOG_NOTICE, "remote delivery %s: AUTH login failed: %s",
-				       res == 5 ? "failed" : "deferred", neterr);
-				return (res == 5 ? -1 : 1);
-			}
+	send_remote_command(fd, "%s", temp);
+	free(temp);
+	res = read_remote(fd, 0, NULL);
+	if (res != 3) {
+		syslog(LOG_NOTICE, "remote delivery %s: AUTH login failed: %s",
+		    res == 5 ? "failed" : "deferred", neterr);
+		return (res == 5 ? -1 : 1);
+	}
 
-			len = base64_encode(password, strlen(password), &temp);
-			if (len < 0)
-				goto encerr;
+	len = base64_encode(password, strlen(password), &temp);
+	if (len < 0)
+		goto encerr;
 
-			send_remote_command(fd, "%s", temp);
-			free(temp);
-			res = read_remote(fd, 0, NULL);
-			if (res != 2) {
-				syslog(LOG_NOTICE, "remote delivery %s: Authentication failed: %s",
-						res == 5 ? "failed" : "deferred", neterr);
-				return (res == 5 ? -1 : 1);
-			}
-		} else {
-			syslog(LOG_WARNING, "non-encrypted SMTP login is disabled in config, so skipping it. ");
-			return (1);
-		}
+	send_remote_command(fd, "%s", temp);
+	free(temp);
+	res = read_remote(fd, 0, NULL);
+	if (res != 2) {
+		syslog(LOG_NOTICE, "remote delivery %s: Authentication failed: %s",
+		    res == 5 ? "failed" : "deferred", neterr);
+		return (res == 5 ? -1 : 1);
 	}
 
 	return (0);
+}
+
+static int
+smtp_auth_plain(int fd, char *login, char* password)
+{
+	char *temp, *authdata;
+	int len, res;
+
+	len = asprintf(&authdata, "%c%s%c%s", '\0', login, '\0', password);
+	if (len < 0) {
+		syslog(LOG_ERR, "can not format auth reply: %m");
+		return (1);
+	}
+	
+	len = base64_encode(authdata, len, &temp);
+	free(authdata);
+	if (len < 0) {
+		syslog(LOG_ERR, "can not encode auth reply: %m");
+		return (1);
+	}
+
+	/* Send AUTH command according to RFC 2554 */
+	send_remote_command(fd, "AUTH PLAIN %s", temp);
+	free(temp);
+	res = read_remote(fd, 0, NULL);
+	if (res != 2) {
+		syslog(LOG_NOTICE, "remote delivery %s: Authentication failed: %s",
+		    res == 5 ? "failed" : "deferred", neterr);
+		return (res == 5 ? -1 : 1);
+	}
+
+	return (0);
+}
+
+/*
+ * Handle SMTP authentication
+ */
+static int
+smtp_auth(int fd, char *login, char* password, const struct smtp_features* features)
+{
+	int res = 1;
+
+	// CRAM-MD5
+	if (features->auth.cram_md5) {
+		res = smtp_auth_md5(fd, login, password);
+		if (res != 1) {
+			return (res);
+		}
+	}
+
+	if ((config.features & INSECURE) != 0 ||
+		    (config.features & SECURETRANSFER) != 0) {
+
+		// LOGIN
+		if (features->auth.login) {
+			res = smtp_auth_login(fd, login, password);
+			if (res != 1) {
+				return (res);
+			}
+		}
+
+		// PLAIN
+		if (features->auth.plain) {
+			res = smtp_auth_plain(fd, login, password);
+			if (res != 1) {
+				return (res);
+			}
+		}	
+	} else if (features->auth.login || features->auth.plain) {
+		syslog(LOG_WARNING, "non-encrypted SMTP authentication is disabled in config, so skipping it.");
+		return (1);
+	}
+
+	return (res);
 }
 
 static int
@@ -380,6 +428,9 @@ static void parse_auth_line(char* line, struct smtp_auth_mechanisms* auth) {
 
 		else if (strcmp(method, "LOGIN") == 0)
 			auth->login = 1;
+
+		else if (strcmp(method, "PLAIN") == 0)
+			auth->plain = 1;
 
 		method = strtok(NULL, " ");
 	}
@@ -469,6 +520,9 @@ int perform_server_greeting(int fd, struct smtp_features* features) {
 	if (features->auth.login) {
 		syslog(LOG_DEBUG, "  Server supports LOGIN authentication");
 	}
+	if (features->auth.plain) {
+		syslog(LOG_DEBUG, "  Server supports PLAIN authentication");
+	}
 
 	return 0;
 }
@@ -480,7 +534,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	struct smtp_features features;
 	char line[1000], *addrtmp = NULL, *to_addr;
 	size_t linelen;
-	int fd, error = 0, do_auth = 0, res = 0;
+	int fd, error = 0, do_auth = 0, res = 0, complete = 0;
 
 	if (fseek(it->mailf, 0, SEEK_SET) != 0) {
 		snprintf(errmsg, sizeof(errmsg), "can not seek: %s", strerror(errno));
@@ -553,17 +607,15 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		 * encryption.
 		 */
 		syslog(LOG_INFO, "using SMTP authentication for user %s", a->login);
-		error = smtp_login(fd, a->login, a->password, &features);
+		error = smtp_auth(fd, a->login, a->password, &features);
 		if (error < 0) {
-			syslog(LOG_ERR, "remote delivery failed:"
-					" SMTP login failed: %m");
-			snprintf(errmsg, sizeof(errmsg), "SMTP login to %s failed", host->host);
+			snprintf(errmsg, sizeof(errmsg), "SMTP auth to %s failed", host->host);
 			error = -1;
 			goto out;
 		}
-		/* SMTP login is not available, so try without */
+		/* SMTP auth is not available, so try without */
 		else if (error > 0) {
-			syslog(LOG_WARNING, "SMTP login not available. Trying without.");
+			syslog(LOG_WARNING, "SMTP auth not available. Trying without.");
 		}
 	}
 
@@ -618,11 +670,12 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 
 	send_remote_command(fd, ".");
 	READ_REMOTE_CHECK("final DATA", 2);
+	complete = 1;
 
+out:
 	send_remote_command(fd, "QUIT");
 	if (read_remote(fd, 0, NULL) != 2)
-		syslog(LOG_INFO, "remote delivery succeeded but QUIT failed: %s", neterr);
-out:
+		syslog(LOG_INFO, "%sQUIT failed: %s", complete ? "remote delivery succeeded but " : "",neterr);
 
 	free(addrtmp);
 	close_connection(fd);

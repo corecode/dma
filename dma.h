@@ -166,6 +166,7 @@ struct mx_hostentry {
 struct smtp_auth_mechanisms {
 	int cram_md5;
 	int login;
+	int plain;
 };
 
 struct smtp_features {
