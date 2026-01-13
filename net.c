@@ -281,44 +281,67 @@ smtp_login(int fd, char *login, char* password, const struct smtp_features* feat
 		}
 	}
 
-	// LOGIN
-	if (features->auth.login) {
+	// LOGIN or PLAIN
+	if (features->auth.login || features->auth.plain) {
 		if ((config.features & INSECURE) != 0 ||
 		    (config.features & SECURETRANSFER) != 0) {
 			/* Send AUTH command according to RFC 2554 */
-			send_remote_command(fd, "AUTH LOGIN");
+			const char *auth_mechanism = features->auth.login ? "LOGIN" : "PLAIN";	
+			send_remote_command(fd, "AUTH %s", auth_mechanism);
 			if (read_remote(fd, 0, NULL) != 3) {
 				syslog(LOG_NOTICE, "remote delivery deferred:"
-						" AUTH login not available: %s",
-						neterr);
+						" AUTH %s not available: %s",
+						auth_mechanism, neterr);
 				return (1);
 			}
 
-			len = base64_encode(login, strlen(login), &temp);
-			if (len < 0) {
+			if (features->auth.login) {
+				// LOGIN mechanism
+				len = base64_encode(login, strlen(login), &temp);
+				if (len < 0) {
 encerr:
-				syslog(LOG_ERR, "can not encode auth reply: %m");
-				return (1);
+					syslog(LOG_ERR, "can not encode auth reply: %m");
+					return (1);
+				}
+
+				send_remote_command(fd, "%s", temp);
+				free(temp);
+				res = read_remote(fd, 0, NULL);
+				if (res != 3) {
+					syslog(LOG_NOTICE, "remote delivery %s: AUTH LOGIN failed: %s",
+						res == 5 ? "failed" : "deferred", neterr);
+					return (res == 5 ? -1 : 1);
+				}
+
+				len = base64_encode(password, strlen(password), &temp);
+				if (len < 0)
+					goto encerr;
+
+				send_remote_command(fd, "%s", temp);
+				free(temp);
+			} else if (features->auth.plain) {
+				// PLAIN mechanism
+				size_t buflen = strlen(login) + strlen(password) + 3;
+				char *plainbuf = malloc(buflen);
+				if (plainbuf == NULL) {
+					syslog(LOG_ERR, "remote delivery deferred: unable to allocate memory");
+					return (1);
+				}
+
+				snprintf(plainbuf, buflen, "%c%s%c%s", '\0', login, '\0', password);
+
+				len = base64_encode(plainbuf, buflen, &temp);
+				free(plainbuf);
+				if (len < 0)
+					goto encerr;
+
+				send_remote_command(fd, "%s", temp);
+				free(temp);
 			}
 
-			send_remote_command(fd, "%s", temp);
-			free(temp);
-			res = read_remote(fd, 0, NULL);
-			if (res != 3) {
-				syslog(LOG_NOTICE, "remote delivery %s: AUTH login failed: %s",
-				       res == 5 ? "failed" : "deferred", neterr);
-				return (res == 5 ? -1 : 1);
-			}
-
-			len = base64_encode(password, strlen(password), &temp);
-			if (len < 0)
-				goto encerr;
-
-			send_remote_command(fd, "%s", temp);
-			free(temp);
 			res = read_remote(fd, 0, NULL);
 			if (res != 2) {
-				syslog(LOG_NOTICE, "remote delivery %s: Authentication failed: %s",
+				syslog(LOG_NOTICE, "remote delivery %s: AUTH PLAIN failed: %s",
 						res == 5 ? "failed" : "deferred", neterr);
 				return (res == 5 ? -1 : 1);
 			}
@@ -380,6 +403,9 @@ static void parse_auth_line(char* line, struct smtp_auth_mechanisms* auth) {
 
 		else if (strcmp(method, "LOGIN") == 0)
 			auth->login = 1;
+
+		else if (strcmp(method, "PLAIN") == 0)
+			auth->plain = 1;
 
 		method = strtok(NULL, " ");
 	}
@@ -468,6 +494,9 @@ int perform_server_greeting(int fd, struct smtp_features* features) {
 	}
 	if (features->auth.login) {
 		syslog(LOG_DEBUG, "  Server supports LOGIN authentication");
+	}
+	if (features->auth.plain) {
+		syslog(LOG_DEBUG, "  Server supports PLAIN authentication");
 	}
 
 	return 0;
