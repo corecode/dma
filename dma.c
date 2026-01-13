@@ -153,6 +153,7 @@ set_from(struct queue *queue, const char *osender)
 	}
 
 	if (strchr(sender, '\n') != NULL) {
+		free(sender);
 		errno = EINVAL;
 		return (NULL);
 	}
