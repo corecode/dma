@@ -606,16 +606,21 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		 * Check if the user wants plain text login without using
 		 * encryption.
 		 */
-		syslog(LOG_INFO, "using SMTP authentication for user %s", a->login);
-		error = smtp_auth(fd, a->login, a->password, &features);
-		if (error < 0) {
-			snprintf(errmsg, sizeof(errmsg), "SMTP auth to %s failed", host->host);
-			error = -1;
-			goto out;
-		}
-		/* SMTP auth is not available, so try without */
-		else if (error > 0) {
-			syslog(LOG_WARNING, "SMTP auth not available. Trying without.");
+		if (features.auth.cram_md5 || features.auth.login || features.auth.plain) {
+			syslog(LOG_INFO, "using SMTP authentication for user %s", a->login);
+			error = smtp_auth(fd, a->login, a->password, &features);
+			if (error < 0) {
+				snprintf(errmsg, sizeof(errmsg), "SMTP auth to %s failed", host->host);
+				error = -1;
+				goto out;
+			}
+			/* SMTP authentication is not available, so try without */
+			else if (error > 0) {
+				syslog(LOG_WARNING, "SMTP authentication not available. Trying without.");
+			}
+		} else {
+			syslog(LOG_ERR, "No supported AUTH mechanisms in common with server."
+					" Skipping authentication.");
 		}
 	}
 
