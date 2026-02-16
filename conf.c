@@ -125,12 +125,14 @@ parse_authfile(const char *path)
 
 		data = strdup(line);
 		au->login = strsep(&data, "|");
+		au->is_command = au->login[0] == '!';
+		if (au->is_command) au->login++;
 		au->host = strsep(&data, DP);
-		au->password = data;
+		au->data = data;
 
 		if (au->login == NULL ||
-		    au->host == NULL ||
-		    au->password == NULL) {
+			au->host == NULL ||
+			au->data == NULL) {
 			errlogx(EX_CONFIG, "syntax error in authfile %s:%d", path, lineno);
 			/* NOTREACHED */
 		}
