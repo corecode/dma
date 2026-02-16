@@ -62,6 +62,17 @@
 
 char neterr[ERRMSG_SIZE];
 
+
+static void
+rtrim(char *s) {
+	if (!s) return;
+	size_t len = strlen(s);
+	while (len > 0 && isspace(s[len - 1])) {
+		s[len - 1] = '\0';
+		len--;
+	}
+}
+
 char *
 ssl_errstr(void)
 {
@@ -262,14 +273,46 @@ error:
  * Handle SMTP authentication
  */
 static int
-smtp_login(int fd, char *login, char* password, const struct smtp_features* features)
+smtp_login(int fd, struct authuser* au, const struct smtp_features* features)
 {
 	char *temp;
 	int len, res = 0;
+	char password_buf[256];
+	char* password = au->data;
 
+	if (au->is_command) {
+	    /* enable sigchild temporarly */
+	    int ret = 0;
+		struct sigaction sa, osa;
+		bzero(&sa, sizeof(sa));
+		sa.sa_handler = SIG_DFL;
+		sigaction(SIGCHLD, &sa, &osa);
+		FILE* pass = popen(au->data, "r");
+		if (pass == NULL) {
+			syslog(LOG_ERR, "calling password program failed: %s", au->data);
+			ret = 1; goto error;
+		}
+		size_t read = fread(password_buf, 1, sizeof(password_buf) - 1, pass);
+		int status = pclose(pass);
+		if (status != 0) {
+			syslog(LOG_ERR, "password program returned an error: (%d) %s",
+					status, strerror(errno));
+			ret = 1; goto error;
+		}
+		password_buf[read] = '\0';
+		rtrim(password_buf);
+		if (strlen(password_buf) == 0) {
+			syslog(LOG_ERR, "password program returned no data: %s", au->data);
+			ret = 1; goto error;
+		}
+		password = password_buf;
+		error:
+		sigaction(SIGCHLD, &osa, NULL);
+		if (ret) return ret;
+	}
 	// CRAM-MD5
 	if (features->auth.cram_md5) {
-		res = smtp_auth_md5(fd, login, password);
+		res = smtp_auth_md5(fd, au->login, password);
 		if (res == 0) {
 			return (0);
 		} else if (res == -2) {
@@ -294,7 +337,7 @@ smtp_login(int fd, char *login, char* password, const struct smtp_features* feat
 				return (1);
 			}
 
-			len = base64_encode(login, strlen(login), &temp);
+			len = base64_encode(au->login, strlen(au->login), &temp);
 			if (len < 0) {
 encerr:
 				syslog(LOG_ERR, "can not encode auth reply: %m");
@@ -553,7 +596,7 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 		 * encryption.
 		 */
 		syslog(LOG_INFO, "using SMTP authentication for user %s", a->login);
-		error = smtp_login(fd, a->login, a->password, &features);
+		error = smtp_login(fd, a, &features);
 		if (error < 0) {
 			syslog(LOG_ERR, "remote delivery failed:"
 					" SMTP login failed: %m");

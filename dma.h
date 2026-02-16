@@ -149,8 +149,9 @@ struct config {
 struct authuser {
 	SLIST_ENTRY(authuser) next;
 	char *login;
-	char *password;
+	char *data;
 	char *host;
+	int is_command;
 };
 SLIST_HEAD(authusers, authuser);
 
