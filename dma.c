@@ -586,7 +586,8 @@ main(int argc, char **argv)
 	argv += optind;
 	opterr = 1;
 
-	if (argc != 0 && (showq || doqueue))
+	/* At this point argc is -1 when callig "dma -q" on linux(-musl) */
+	if (argc > 0 && (showq || doqueue))
 		errx(EX_USAGE, "sending mail and queue operations are mutually exclusive");
 
 	if (showq + doqueue > 1)
