@@ -71,6 +71,7 @@
 #define TLS_OPP		0x080		/* Opportunistic STARTTLS */
 #define NULLCLIENT	0x100		/* Nullclient support */
 #define VERIFYCERT	0x200		/* Verify remote host's certificate against CA */
+#define LMTP		0x300		/* Use LMTP instead of SMTP with the relay */
 
 #ifndef CONF_PATH
 #error Please define CONF_PATH
