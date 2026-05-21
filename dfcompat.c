@@ -1,6 +1,7 @@
 #ifndef HAVE_STRLCPY
-
 /*
+ * SPDX-License-Identifier: BSD-2-Clause AND ISC
+ *
  * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
