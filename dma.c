@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
  * Copyright (c) 2008-2014, Simon Schubert <2@0x2c.org>.
  * Copyright (c) 2008 The DragonFly Project.  All rights reserved.
  *
