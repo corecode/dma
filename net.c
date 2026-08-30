@@ -180,7 +180,7 @@ read_remote(int fd, int extbufsize, char *extbuf)
 			copysize = sizeof(neterr) - strlen(neterr) - 1;
 			if (copysize > len)
 				copysize = len;
-			strncat(neterr, buff, copysize);
+			strlcat(neterr, buff, copysize);
 		}
 		/*
 		 * If there is an external buffer with a size bigger than zero
