@@ -682,6 +682,9 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	READ_REMOTE_CHECK("final DATA", 2);
 	complete = 1;
 
+	syslog(LOG_INFO, "remote host %s [%s] said: %s",
+	       host->host, host->addr, neterr);
+
 out:
 	send_remote_command(fd, "QUIT");
 	if (read_remote(fd, 0, NULL) != 2)
