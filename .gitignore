@@ -1,10 +1,10 @@
 *.o
 # Omit binaries.
-./dma
-./dma-mbox-create
-./aliases_parse.c
-./aliases_parse.h
-./aliases_scan.c
+dma
+dma-mbox-create
+aliases_parse.c
+aliases_parse.h
+aliases_scan.c
 # BSD-related...
 # - Omit files created on FreeBSD as part of bsd.prog.mk.
 *.depend
