@@ -97,6 +97,14 @@ sighup_handler(int signo)
 	(void)signo;	/* so that gcc doesn't complain */
 }
 
+static void
+sigint_term_handler(int signo)
+{
+	deltmp();
+	signal(signo, SIG_DFL);
+	raise(signo);
+}
+
 static char *
 set_from(struct queue *queue, const char *osender)
 {
@@ -603,6 +611,18 @@ skipopts:
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
 	if (sigaction(SIGHUP, &act, NULL) != 0)
+		syslog(LOG_WARNING, "can not set signal handler: %m");
+
+	act.sa_handler = sigint_term_handler;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	if (sigaction(SIGINT, &act, NULL) != 0)
+		syslog(LOG_WARNING, "can not set signal handler: %m");
+
+	act.sa_handler = sigint_term_handler;
+	act.sa_flags = 0;
+	sigemptyset(&act.sa_mask);
+	if (sigaction(SIGTERM, &act, NULL) != 0)
 		syslog(LOG_WARNING, "can not set signal handler: %m");
 
 	parse_conf(CONF_PATH "/dma.conf");
