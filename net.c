@@ -661,17 +661,10 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 			goto out;
 		}
 
-		/* Remove trailing \n's and escape leading dots */
-		trim_line(line);
+		/* Remove trailing \n's and \r\n's, and escape leading dots */
+		linelen = trim_line(line, sizeof(line));
 
-		/*
-		 * If the first character is a dot, we escape it so the line
-		 * length increases
-		*/
-		if (line[0] == '.')
-			linelen++;
-
-		if (send_remote_command(fd, "%s", line) != (ssize_t)linelen+1) {
+		if (send_remote_command(fd, "%s", line) != (ssize_t)linelen+2) {
 			syslog(LOG_NOTICE, "remote delivery deferred: write error");
 			error = 1;
 			goto out;

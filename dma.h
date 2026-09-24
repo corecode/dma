@@ -196,7 +196,7 @@ int yylex(void);
 extern FILE *yyin;
 
 /* conf.c */
-void trim_line(char *);
+size_t trim_line(char *, size_t);
 void parse_conf(const char *);
 void parse_authfile(const char *);
 
