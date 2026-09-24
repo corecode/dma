@@ -106,7 +106,7 @@ verify_server_fingerprint(const X509 *cert)
 }
 
 int
-smtp_init_crypto(int fd, int feature, struct smtp_features* features, const char *server_hostname)
+smtp_init_crypto(int fd, int feature, struct smtp_features* features, char *server_hostname)
 {
 	SSL_CTX *ctx = NULL;
 #if (OPENSSL_VERSION_NUMBER >= 0x00909000L)
