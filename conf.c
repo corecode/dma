@@ -50,27 +50,30 @@
 
 
 /*
- * Remove trailing \n's
+ * Remove \n's and \r\n's, and escape leading dot
  */
-void
-trim_line(char *line)
+size_t
+trim_line(char *line, size_t linesize)
 {
 	size_t linelen;
 	char *p;
 
-	if ((p = strchr(line, '\n')))
+	if ((p = strstr(line, "\r\n")) || (p = strchr(line, '\n')))
 		*p = (char)0;
 
 	/* Escape leading dot in every case */
 	linelen = strlen(line);
 	if (line[0] == '.') {
-		if ((linelen + 2) > 1000) {
+		if ((linelen + 2) > linesize) {
 			syslog(LOG_CRIT, "Cannot escape leading dot.  Buffer overflow");
 			exit(EX_DATAERR);
 		}
 		memmove((line + 1), line, (linelen + 1));
 		line[0] = '.';
+		linelen++;
 	}
+
+	return linelen;
 }
 
 static void
