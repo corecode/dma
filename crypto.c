@@ -37,7 +37,7 @@
 
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/pem.h>
@@ -297,7 +297,7 @@ void
 hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
     unsigned char* digest)
 {
-        MD5_CTX context;
+        EVP_MD_CTX *context;
         unsigned char k_ipad[65];    /* inner padding -
                                       * key XORd with ipad
                                       */
@@ -306,14 +306,18 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
                                       */
         unsigned char tk[16];
         int i;
+        unsigned int len;
+
         /* if key is longer than 64 bytes reset it to key=MD5(key) */
         if (key_len > 64) {
 
-                MD5_CTX      tctx;
+                EVP_MD_CTX      *tctx;
 
-                MD5_Init(&tctx);
-                MD5_Update(&tctx, key, key_len);
-                MD5_Final(tk, &tctx);
+                tctx = EVP_MD_CTX_new();
+                EVP_DigestInit_ex(tctx, EVP_md5(), NULL);
+                EVP_DigestUpdate(tctx, key, key_len);
+                EVP_DigestFinal_ex(tctx, tk, &len);
+                EVP_MD_CTX_free(tctx);
 
                 key = tk;
                 key_len = 16;
@@ -342,23 +346,29 @@ hmac_md5(unsigned char *text, int text_len, unsigned char *key, int key_len,
                 k_ipad[i] ^= 0x36;
                 k_opad[i] ^= 0x5c;
         }
+
         /*
          * perform inner MD5
          */
-        MD5_Init(&context);                   /* init context for 1st
-                                              * pass */
-        MD5_Update(&context, k_ipad, 64);     /* start with inner pad */
-        MD5_Update(&context, text, text_len); /* then text of datagram */
-        MD5_Final(digest, &context);          /* finish up 1st pass */
+        context = EVP_MD_CTX_new();                /* init context for 1st
+                                                    * pass */
+        EVP_DigestInit_ex(context, EVP_md5(), NULL);
+        EVP_DigestUpdate(context, k_ipad, 64);     /* start with inner pad */
+        EVP_DigestUpdate(context, text, text_len); /* then text of datagram */
+        EVP_DigestFinal_ex(context, digest, &len); /* finish up 1st pass */
+        EVP_MD_CTX_free(context);
+
         /*
          * perform outer MD5
          */
-        MD5_Init(&context);                   /* init context for 2nd
-                                              * pass */
-        MD5_Update(&context, k_opad, 64);     /* start with outer pad */
-        MD5_Update(&context, digest, 16);     /* then results of 1st
-                                              * hash */
-        MD5_Final(digest, &context);          /* finish up 2nd pass */
+        context = EVP_MD_CTX_new();                /* init context for 2nd
+                                                    * pass */
+        EVP_DigestInit_ex(context, EVP_md5(), NULL);
+        EVP_DigestUpdate(context, k_opad, 64);     /* start with outer pad */
+        EVP_DigestUpdate(context, digest, 16);     /* then results of 1st
+                                                    * hash */
+        EVP_DigestFinal_ex(context, digest, &len); /* finish up 2nd pass */
+        EVP_MD_CTX_free(context);
 }
 
 /*
