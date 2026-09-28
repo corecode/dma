@@ -166,6 +166,23 @@ SMTP authentication can be configured in
 .Pa auth.conf .
 Each line has the format
 .Dq Li user|smarthost:password .
+The
+.Sq AUTHPATH
+setting in
+.Pa dma.conf
+must point to this file for it to be used.
+The hostname in an
+.Pa auth.conf
+entry is compared with the hostname reported by the remote SMTP server.
+This hostname may differ from the hostname used as the
+.Sq SMARTHOST
+setting.
+For authentication matching, the last two components of the hostnames
+are compared.
+For example, an entry for
+.Ql web.de
+also matches a server reporting itself as
+.Ql smtp.web.de .
 .Ss dma.conf
 Most of the behaviour of
 .Nm
@@ -221,6 +238,13 @@ Just stick with the default.
 Path to the
 .Sq auth.conf
 file.
+SMTP authentication is only configured if this option is set.
+The hostname in
+.Pa auth.conf
+is matched against the hostname reported by the remote SMTP server;
+see the
+.Sx auth.conf
+section above.
 .It Ic SECURETRANSFER Xo
 .Pq boolean, default=commented
 .Xc
