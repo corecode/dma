@@ -532,6 +532,36 @@ int perform_server_greeting(int fd, struct smtp_features* features) {
 	return 0;
 }
 
+static const char *
+auth_domain(const char *host)
+{
+    const char *p;
+
+    p = strrchr(host, '.');
+    if (p == NULL)
+        return host;
+
+    /* get point before TLD */
+    while (p > host && p[-1] != '.')
+        p--;
+
+    /*
+     * p now points to the beginning of the last
+     * two labels or to the hostname.
+     *
+     * smtp.web.de -> web.de
+     * web.de      -> web.de
+     */
+
+    return p;
+}
+
+static int
+same_auth_domain(const char *host1, const char *host2)
+{
+    return strcmp(auth_domain(host1), auth_domain(host2)) == 0;
+}
+
 static int
 deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 {
@@ -599,12 +629,19 @@ deliver_to_host(struct qitem *it, struct mx_hostentry *host)
 	 * Use SMTP authentication if the user defined an entry for the remote
 	 * or smarthost
 	 */
+	int found_auth_entry = 0;
 	SLIST_FOREACH(a, &authusers, next) {
-		if (strcmp(a->host, host->host) == 0) {
+		if (same_auth_domain(a->host, host->host)) {
+			found_auth_entry = 1;
 			do_auth = 1;
 			break;
 		}
 	}
+
+	if (!found_auth_entry && config.authpath != NULL)
+		syslog(LOG_WARNING, 
+			"No matching SMTP authentication entry for %s.",
+			host->host);
 
 	if (do_auth == 1) {
 		/*
