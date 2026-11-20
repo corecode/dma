@@ -159,7 +159,7 @@ SLIST_HEAD(authusers, authuser);
 
 
 struct mx_hostentry {
-	char		host[MAXDNAME];
+	char		host[NS_MAXDNAME];
 	char		addr[INET6_ADDRSTRLEN];
 	int		pref;
 	struct addrinfo	ai;
