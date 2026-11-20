@@ -133,7 +133,7 @@ out:
 int
 dns_get_mx_list(const char *host, int port, struct mx_hostentry **he, int no_mx)
 {
-	char outname[MAXDNAME];
+	char outname[NS_MAXDNAME];
 	ns_msg msg;
 	ns_rr rr;
 	const char *searchhost;
