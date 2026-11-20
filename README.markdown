@@ -19,6 +19,8 @@ Install by a package manager
 * Ubuntu `sudo apt install dma`
 * Arch `yaourt -S dma`
 
+There is also a [package](https://pkgsrc.se/wip/dma) for other platforms in [pkgsrc](https://pkgsrc.org/) (currently in [pkgsrc-wip](https://www.pkgsrc.org/wip/)).  This is has been tested on NetBSD, OmniOS, MacOS and Debian Testing.
+
 Building
 --------
 
