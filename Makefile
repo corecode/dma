@@ -10,14 +10,14 @@
 
 SH?=		sh
 
-version=	$(shell ${SH} get-version.sh)
+version=	$$(${SH} get-version.sh)
 debversion=	$(shell ${SH} get-version.sh | sed -Ee 's/^v//;s/[.]([[:digit:]]+)[.](g[[:xdigit:]]+)$$/+\1+\2/')
 
 CC?=		gcc
 CFLAGS?=	-O -pipe
 LDADD?=		-lssl -lcrypto -lresolv
 
-CFLAGS+=	-Wall -Wno-format-truncation -DDMA_VERSION='"${version}"' -DLIBEXEC_PATH='"${LIBEXEC}"' -DCONF_PATH='"${CONFDIR}"'
+CFLAGS+=	-Wall -Wno-format-truncation -DDMA_VERSION="\"${version}\"" -DLIBEXEC_PATH='"${LIBEXEC}"' -DCONF_PATH='"${CONFDIR}"'
 
 INSTALL?=	install -p
 CHGRP?=		chgrp
