@@ -103,21 +103,3 @@ reallocf(void *ptr, size_t size)
 }
 
 #endif /* !HAVE_REALLOCF */
-
-#ifndef HAVE_GETPROGNAME
-
-#ifdef __GLIBC__
-
-#include <errno.h>
-
-const char *
-getprogname(void)
-{
-	return (program_invocation_short_name);
-}
-
-#else /* __GLIBC__ */
-#error "no getprogname implementation available"
-#endif
-
-#endif /* !HAVE_GETPROGNAME */

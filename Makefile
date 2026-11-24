@@ -5,7 +5,6 @@
 # Define HAVE_* (in caps) if your system already provides:
 #   reallocf
 #   strlcpy
-#   getprogname
 #
 
 SH?=		sh

@@ -17,8 +17,4 @@ size_t strlcpy(char *, const char *, size_t);
 void *reallocf(void *, size_t);
 #endif
 
-#ifndef HAVE_GETPROGNAME
-const char *getprogname(void);
-#endif
-
 #endif /* DFCOMPAT_H */
