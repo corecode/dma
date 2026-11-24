@@ -71,6 +71,7 @@ struct authusers authusers = LIST_HEAD_INITIALIZER(authusers);
 char username[USERNAME_SIZE];
 uid_t useruid;
 const char *logident_base;
+const char *dma_progname = "dma";
 char errmsg[ERRMSG_SIZE];
 
 static int daemonize = 1;
@@ -451,11 +452,13 @@ main(int argc, char **argv)
 {
 	struct sigaction act;
 	char *sender = NULL;
-	char *own_name = NULL;
 	struct queue queue;
 	int i, ch;
 	int nodot = 0, showq = 0, queue_only = 0, newaliases = 0;
 	int recp_from_header = 0;
+
+	if (argc > 0 && argv[0][0] != '\0')
+		dma_progname = basename(argv[0]);
 
 	set_username();
 
@@ -488,15 +491,13 @@ main(int argc, char **argv)
 	bzero(&queue, sizeof(queue));
 	LIST_INIT(&queue.queue);
 
-	own_name = basename(argv[0]);
-
-	if (strcmp(own_name, "mailq") == 0) {
+	if (strcmp(dma_progname, "mailq") == 0) {
 		argv++; argc--;
 		showq = 1;
 		if (argc != 0)
 			errx(EX_USAGE, "invalid arguments");
 		goto skipopts;
-	} else if (strcmp(own_name, "newaliases") == 0) {
+	} else if (strcmp(dma_progname, "newaliases") == 0) {
 		newaliases = 1;
 		goto skipopts;
 	}

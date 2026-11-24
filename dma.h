@@ -185,6 +185,7 @@ extern struct authusers authusers;
 extern char username[USERNAME_SIZE];
 extern uid_t useruid;
 extern const char *logident_base;
+extern const char *dma_progname;
 
 extern char neterr[ERRMSG_SIZE];
 extern char errmsg[ERRMSG_SIZE];

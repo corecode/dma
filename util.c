@@ -177,10 +177,10 @@ errlog(int exitcode, const char *fmt, ...)
 	errno = oerrno;
 	if (*outs != 0) {
 		syslog(LOG_ERR, "%s: %m", outs);
-		fprintf(stderr, "%s: %s: %s\n", getprogname(), outs, strerror(oerrno));
+		fprintf(stderr, "%s: %s: %s\n", dma_progname, outs, strerror(oerrno));
 	} else {
 		syslog(LOG_ERR, "%m");
-		fprintf(stderr, "%s: %s\n", getprogname(), strerror(oerrno));
+		fprintf(stderr, "%s: %s\n", dma_progname, strerror(oerrno));
 	}
 
 	exit(exitcode);
@@ -201,10 +201,10 @@ errlogx(int exitcode, const char *fmt, ...)
 
 	if (*outs != 0) {
 		syslog(LOG_ERR, "%s", outs);
-		fprintf(stderr, "%s: %s\n", getprogname(), outs);
+		fprintf(stderr, "%s: %s\n", dma_progname, outs);
 	} else {
 		syslog(LOG_ERR, "Unknown error");
-		fprintf(stderr, "%s: Unknown error\n", getprogname());
+		fprintf(stderr, "%s: Unknown error\n", dma_progname);
 	}
 
 	exit(exitcode);
